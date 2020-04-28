@@ -1,0 +1,11 @@
+*.nc
+*.nc4
+*.mat
+*.zip
+*.asc
+*.m~
+*.DS_store
+*.gif
+*.jpg
+*.pdf
+*.npz
