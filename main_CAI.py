@@ -52,10 +52,10 @@ ow_weight = 0
 ow_stn = 0
 
 # setting: output files
-FileStnData = '/home/gut428/pyGMET/station_CV1_data.npz'
-FileWeight = '/home/gut428/pyGMET/weight_CV1_nearstn.npz'
-FileRegError_daily = '/home/gut428/pyGMET/regress_daily_CV1_error.npz'  # regression error at station points
-FileRegression_daily = '/home/gut428/pyGMET/regress_daily_CV1_output.npz'
+FileStnData = '/home/gut428/PyGMET/station_CV1_data.npz'
+FileWeight = '/home/gut428/PyGMET/weight_CV1_nearstn.npz'
+FileRegError_daily = '/home/gut428/PyGMET/regress_daily_CV1_error.npz'  # regression error at station points
+FileRegression_daily = '/home/gut428/PyGMET/regress_daily_CV1_output.npz'
 # FileStnData = '/Users/localuser/GMET/Example/station_data.npz'
 # FileWeight = '/Users/localuser/GMET/Example/weight_nearstn.npz'
 # FileRegError_daily = '/Users/localuser/GMET/Example/regress_daily_error.npz'  # regression error at station points
@@ -453,126 +453,126 @@ pathind = '/Users/localuser/GMET/Example_tgq/StnDaily_test'
 #         np.nanmedian(metric_stn_cai[2][:, 3])))
 
 # 8.1 evaluate regression for each station
-kge_stn = [0] * 3
-metric_stn = [0]*3
-for i in range(3):
-    kge_stn[i] = np.zeros([nstn, 4])
-    metric_stn[i] = np.zeros([nstn, 4])
-
-for i in range(nstn):
-    obs = prcp_stn_daily[i, :].copy()
-    obst = au.transform(obs, trans_exp_daily, trans_mode)
-    est = au.retransform(obst + pcp_err_stn_daily[i, :], trans_exp_daily, trans_mode)
-    kge_stn[0][i, :] = au.kge2012(obs, est)
-    metric_stn[0][i, :] = au.metric(obs, est)
-
-    obs = tmean_stn_daily[i, :]
-    est = obs + tmean_err_stn_daily[i, :]
-    kge_stn[1][i, :] = au.kge2012(obs, est)
-    metric_stn[1][i, :] = au.metric(obs, est)
-
-    obs = trange_stn_daily[i, :]
-    est = obs + trange_err_stn_daily[i, :]
-    kge_stn[2][i, :] = au.kge2012(obs, est)
-    metric_stn[2][i, :] = au.metric(obs, est)
-
-# plot temperature KGE
-plt.figure(figsize=(15,5))
-plt.subplot(121)
-plt.scatter(stninfo[:,2],stninfo[:,1],5,kge_stn[1][:,0])
-plt.colorbar()
-plt.clim([0,1])
-plt.title('Tmean KGE')
-plt.subplot(122)
-plt.scatter(stninfo[:,2],stninfo[:,1],5,kge_stn[2][:,0])
-plt.colorbar()
-plt.clim([0,1])
-plt.title('Trange KGE')
-
-# plot pcp KGE CC beta mean error
-plt.figure(figsize=(15,10))
-plt.subplot(221)
-plt.scatter(stninfo[:,2],stninfo[:,1],5,kge_stn[0][:,0],cmap=plt.get_cmap('jet'))
-plt.colorbar()
-plt.clim([0,1])
-plt.title('pcp KGE')
-plt.subplot(222)
-plt.scatter(stninfo[:,2],stninfo[:,1],5,kge_stn[0][:,1],cmap=plt.get_cmap('jet'))
-plt.colorbar()
-plt.clim([0,1])
-plt.title('pcp CC')
-plt.subplot(223)
-plt.scatter(stninfo[:,2],stninfo[:,1],5,kge_stn[0][:,3],cmap=plt.get_cmap('jet'))
-plt.colorbar()
-plt.clim([0.5,1.5])
-plt.title('pcp beta')
-plt.subplot(224)
-plt.scatter(stninfo[:,2],stninfo[:,1],5,metric_stn[0][:,1],cmap=plt.get_cmap('jet'))
-plt.colorbar()
-plt.clim([-1,1])
-plt.title('pcp mean error')
-
-# plot pcp histogram
-plt.figure(figsize=(15,10))
-plt.subplot(221)
-temp = kge_stn[0][:,0].copy()
-temp[temp<0] = np.nan
-plt.hist(temp,50)
-plt.xlim([0,1])
-plt.title('pcp KGE')
-plt.subplot(222)
-plt.hist(kge_stn[0][:,1],50)
-plt.xlim([0,1])
-plt.title('pcp CC')
-plt.subplot(223)
-temp = kge_stn[0][:,3].copy()
-temp[temp<0] = np.nan
-temp[temp>2] = np.nan
-plt.hist(temp,50)
-plt.xlim([0,2])
-plt.title('pcp beta')
-plt.subplot(224)
-temp=metric_stn[0][:,1].copy()
-temp[temp<-5]=np.nan
-temp[temp>5]=np.nan
-plt.hist(temp,50)
-plt.xlim([-5,5])
-plt.title('pcp mean error')
-
-# plot q-q for pcp
-import pylab
-import scipy.stats as stats
-prcp_stn_daily_est = \
-    au.retransform(au.transform(prcp_stn_daily,trans_exp_daily,trans_mode) + pcp_err_stn_daily,trans_exp_daily,trans_mode)
-
-zz = prcp_stn_daily_est.flatten()
-zz=zz[zz>0]
-zz2 = prcp_stn_daily_est.flatten()
-zz2=zz2[zz2>0]
-plt.figure(figsize=(10,10))
-plt.subplot(221)
-stats.probplot(au.transform(zz,trans_exp_daily,'box-cox'), dist="norm", plot=plt)
-plt.title('Station observations: box-cox')
-plt.subplot(222)
-stats.probplot(au.transform(zz,trans_exp_daily,'none'), dist="norm", plot=plt)
-plt.title('Station observations: none')
-plt.subplot(223)
-stats.probplot(au.transform(zz2,trans_exp_daily,'box-cox'), dist="norm", plot=plt)
-plt.title('Station estimates: box-cox')
-plt.subplot(224)
-stats.probplot(au.transform(zz2,trans_exp_daily,'none'), dist="norm", plot=plt)
-plt.title('Station estimates: none')
-plt.show()
-
-
-zz = prcp_stn_daily[10310,:]
-zz=zz[zz>0]
-plt.subplot(234)
-stats.probplot(au.transform(zz,trans_exp_daily,'box-cox'), dist="norm", plot=plt)
-plt.title('One station: box-cox')
-plt.subplot(235)
-stats.probplot(au.transform(zz,trans_exp_daily,'power-law'), dist="norm", plot=plt)
-plt.title('One station: box-cox')
-plt.subplot(236)
-stats.probplot(au.transform(zz,trans_exp_daily,'none'), dist="norm", plot=plt)
-plt.title('One station: box-cox')
+# kge_stn = [0] * 3
+# metric_stn = [0]*3
+# for i in range(3):
+#     kge_stn[i] = np.zeros([nstn, 4])
+#     metric_stn[i] = np.zeros([nstn, 4])
+#
+# for i in range(nstn):
+#     obs = prcp_stn_daily[i, :].copy()
+#     obst = au.transform(obs, trans_exp_daily, trans_mode)
+#     est = au.retransform(obst + pcp_err_stn_daily[i, :], trans_exp_daily, trans_mode)
+#     kge_stn[0][i, :] = au.kge2012(obs, est)
+#     metric_stn[0][i, :] = au.metric(obs, est)
+#
+#     obs = tmean_stn_daily[i, :]
+#     est = obs + tmean_err_stn_daily[i, :]
+#     kge_stn[1][i, :] = au.kge2012(obs, est)
+#     metric_stn[1][i, :] = au.metric(obs, est)
+#
+#     obs = trange_stn_daily[i, :]
+#     est = obs + trange_err_stn_daily[i, :]
+#     kge_stn[2][i, :] = au.kge2012(obs, est)
+#     metric_stn[2][i, :] = au.metric(obs, est)
+#
+# # plot temperature KGE
+# plt.figure(figsize=(15,5))
+# plt.subplot(121)
+# plt.scatter(stninfo[:,2],stninfo[:,1],5,kge_stn[1][:,0])
+# plt.colorbar()
+# plt.clim([0,1])
+# plt.title('Tmean KGE')
+# plt.subplot(122)
+# plt.scatter(stninfo[:,2],stninfo[:,1],5,kge_stn[2][:,0])
+# plt.colorbar()
+# plt.clim([0,1])
+# plt.title('Trange KGE')
+#
+# # plot pcp KGE CC beta mean error
+# plt.figure(figsize=(15,10))
+# plt.subplot(221)
+# plt.scatter(stninfo[:,2],stninfo[:,1],5,kge_stn[0][:,0],cmap=plt.get_cmap('jet'))
+# plt.colorbar()
+# plt.clim([0,1])
+# plt.title('pcp KGE')
+# plt.subplot(222)
+# plt.scatter(stninfo[:,2],stninfo[:,1],5,kge_stn[0][:,1],cmap=plt.get_cmap('jet'))
+# plt.colorbar()
+# plt.clim([0,1])
+# plt.title('pcp CC')
+# plt.subplot(223)
+# plt.scatter(stninfo[:,2],stninfo[:,1],5,kge_stn[0][:,3],cmap=plt.get_cmap('jet'))
+# plt.colorbar()
+# plt.clim([0.5,1.5])
+# plt.title('pcp beta')
+# plt.subplot(224)
+# plt.scatter(stninfo[:,2],stninfo[:,1],5,metric_stn[0][:,1],cmap=plt.get_cmap('jet'))
+# plt.colorbar()
+# plt.clim([-1,1])
+# plt.title('pcp mean error')
+#
+# # plot pcp histogram
+# plt.figure(figsize=(15,10))
+# plt.subplot(221)
+# temp = kge_stn[0][:,0].copy()
+# temp[temp<0] = np.nan
+# plt.hist(temp,50)
+# plt.xlim([0,1])
+# plt.title('pcp KGE')
+# plt.subplot(222)
+# plt.hist(kge_stn[0][:,1],50)
+# plt.xlim([0,1])
+# plt.title('pcp CC')
+# plt.subplot(223)
+# temp = kge_stn[0][:,3].copy()
+# temp[temp<0] = np.nan
+# temp[temp>2] = np.nan
+# plt.hist(temp,50)
+# plt.xlim([0,2])
+# plt.title('pcp beta')
+# plt.subplot(224)
+# temp=metric_stn[0][:,1].copy()
+# temp[temp<-5]=np.nan
+# temp[temp>5]=np.nan
+# plt.hist(temp,50)
+# plt.xlim([-5,5])
+# plt.title('pcp mean error')
+#
+# # plot q-q for pcp
+# import pylab
+# import scipy.stats as stats
+# prcp_stn_daily_est = \
+#     au.retransform(au.transform(prcp_stn_daily,trans_exp_daily,trans_mode) + pcp_err_stn_daily,trans_exp_daily,trans_mode)
+#
+# zz = prcp_stn_daily_est.flatten()
+# zz=zz[zz>0]
+# zz2 = prcp_stn_daily_est.flatten()
+# zz2=zz2[zz2>0]
+# plt.figure(figsize=(10,10))
+# plt.subplot(221)
+# stats.probplot(au.transform(zz,trans_exp_daily,'box-cox'), dist="norm", plot=plt)
+# plt.title('Station observations: box-cox')
+# plt.subplot(222)
+# stats.probplot(au.transform(zz,trans_exp_daily,'none'), dist="norm", plot=plt)
+# plt.title('Station observations: none')
+# plt.subplot(223)
+# stats.probplot(au.transform(zz2,trans_exp_daily,'box-cox'), dist="norm", plot=plt)
+# plt.title('Station estimates: box-cox')
+# plt.subplot(224)
+# stats.probplot(au.transform(zz2,trans_exp_daily,'none'), dist="norm", plot=plt)
+# plt.title('Station estimates: none')
+# plt.show()
+#
+#
+# zz = prcp_stn_daily[10310,:]
+# zz=zz[zz>0]
+# plt.subplot(234)
+# stats.probplot(au.transform(zz,trans_exp_daily,'box-cox'), dist="norm", plot=plt)
+# plt.title('One station: box-cox')
+# plt.subplot(235)
+# stats.probplot(au.transform(zz,trans_exp_daily,'power-law'), dist="norm", plot=plt)
+# plt.title('One station: box-cox')
+# plt.subplot(236)
+# stats.probplot(au.transform(zz,trans_exp_daily,'none'), dist="norm", plot=plt)
+# plt.title('One station: box-cox')
