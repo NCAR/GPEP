@@ -2,18 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test_code.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/GMET_py.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/pyGMET.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/Main_test-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/Main_test-checkpoint.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Main_test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Main_test.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auxiliary.py" beforeDir="false" afterPath="$PROJECT_DIR$/auxiliary.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comparison.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/plot_gif.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/regression.py" beforeDir="false" afterPath="$PROJECT_DIR$/regression.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stndata_prepare.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_CAI.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_CAI.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_code.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

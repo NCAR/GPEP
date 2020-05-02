@@ -18,17 +18,18 @@ from scipy.interpolate import griddata
 # FileStnInfo = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'  # station basic information (lists)
 # FileGridInfo = '/Users/localuser/GMET/pyGMET_NA/gridinfo_whole.nc'  # study area information
 # PathStn = '/Users/localuser/GMET/StnInput_daily'
-FileStnInfo = '/Users/localuser/GMET/Example/inputs/stnlist_slope.w_subset.txt'  # station basic information (lists)
-FileGridInfo = '/Users/localuser/GMET/Example/inputs/gridinfo.0625.w_subset.nc'  # study area information
-PathStn = '/Users/localuser/GMET/Example/stndata'
+# Plato
+FileStnInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/CrossValidate/stnlist_whole_CV1.txt'  # station basic information (lists)
+FileGridInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/gridinfo_whole.nc'  # study area information
+PathStn = '/home/gut428/GMET/StnInput_daily'
 
 # setting: start and end date
 # calculation start/end date:
-date_cal_start = 19700101  # yyyymmdd: start date
-date_cal_end = 19700131  # yyyymmdd: end date
+date_cal_start = 20180101  # yyyymmdd: start date
+date_cal_end = 20181231  # yyyymmdd: end date
 # station data (in PathStn) start/end date:
-date_stn_start = 19700101  # yyyymmdd: start date
-date_stn_end = 19700131  # yyyymmdd: end date
+date_stn_start = 19790101  # yyyymmdd: start date
+date_stn_end = 20181231  # yyyymmdd: end date
 
 # setting: paramters for lag correlation of tmean_stn_daily, and cross-correlation between prcp and trange_stn_daily
 windows = 31  # parameters for auto-cc t-p-cc calculation: 1 could be better than 31
@@ -51,10 +52,10 @@ ow_weight = 0
 ow_stn = 0
 
 # setting: output files
-FileStnData = '/Users/localuser/GMET/pyGMET_NA/station_data.npz'
-FileWeight = '/Users/localuser/GMET/pyGMET_NA/weight_nearstn.npz'
-FileRegError_daily = '/Users/localuser/GMET/pyGMET_NA/regress_daily_error.npz'  # regression error at station points
-FileRegression_daily = '/Users/localuser/GMET/pyGMET_NA/regress_daily_output.npz'
+FileStnData = '/home/gut428/pyGMET/station_CV1_data.npz'
+FileWeight = '/home/gut428/pyGMET/weight_CV1_nearstn.npz'
+FileRegError_daily = '/home/gut428/pyGMET/regress_daily_CV1_error.npz'  # regression error at station points
+FileRegression_daily = '/home/gut428/pyGMET/regress_daily_CV1_output.npz'
 # FileStnData = '/Users/localuser/GMET/Example/station_data.npz'
 # FileWeight = '/Users/localuser/GMET/Example/weight_nearstn.npz'
 # FileRegError_daily = '/Users/localuser/GMET/Example/regress_daily_error.npz'  # regression error at station points
