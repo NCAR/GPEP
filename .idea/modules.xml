@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../PyGMET/.idea/GMET_py.iml" filepath="$PROJECT_DIR$/../PyGMET/.idea/GMET_py.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/pyGMET.iml" filepath="$PROJECT_DIR$/.idea/pyGMET.iml" />
     </modules>
   </component>
 </project>
