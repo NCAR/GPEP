@@ -38,6 +38,6 @@ DataInfo.suffix={'.tang390256','.tang392048','.tang392048'}; % file name suffix
 DataInfo.varname={'TPRAT_GDS4_SFC_ave3h','TMIN_GDS4_HTGL','TMAX_GDS4_HTGL'}; % variable to read
 DataInfo.prefixout={'JRA55_prcp_','JRA55_tmin_','JRA55_tmax_'}; % prefix for output file
 
-for year=1979:2018
+parfor year=1979:2018
     f_JRA55_read(Inpath,Outpath,year,DataInfo);
 end
