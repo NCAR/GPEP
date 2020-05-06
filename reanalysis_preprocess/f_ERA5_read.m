@@ -12,12 +12,12 @@ varnum=length(varname);
 for vv=1:varnum  % for each var, re-read the basic information
     % basic information of original ERA5 data. All data in this directory must
     % have the same information
-    Infile=[Inpath{vv},'/',prefix{vv},num2str(year(1)),num2str(1,'%.2d'),suffix{vv},'.mat'];
+    Infile=[Inpath{vv},'/',prefix{vv},num2str(year(1)),num2str(1,'%.2d'),suffix{vv},'.nc'];
     latitude=ncread(Infile,'latitude');
     longitude=ncread(Infile,'longitude');
 
     for yy=year(1):year(end)
-        Outfile=[Outpath{vv},'/',prefixout{vv},num2str(yy),'.nc4'];
+        Outfile=[Outpath{vv},'/',prefixout{vv},num2str(yy),'.mat'];
         if ~exist(Outfile,'file')
             fprintf('ERA5 Data in process. Var %d; Year %d--%d\n',vv,yy,year(end));
             % read, hour 2 day, unit conversion, interpolation

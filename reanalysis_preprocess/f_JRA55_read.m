@@ -10,7 +10,7 @@ varnum=length(varname);
 
 for vv=1:varnum  % for each var, re-read the basic information
     % specific for MERRA2 since its date could change after 2014
-    Indir=dir(fullfile(Inpath{vv},'*.mat'));
+    Indir=dir(fullfile(Inpath{vv},'*.nc'));
     if isempty(Indir)
         Indir=dir(fullfile(Inpath{vv},'*.nc4'));
     end
@@ -28,7 +28,7 @@ for vv=1:varnum  % for each var, re-read the basic information
     longitude=ncread(file,'g4_lon_3');
     
     for yy=year(1):year(end)
-        Outfile=[Outpath{vv},'/',prefixout{vv},num2str(yy),'.nc4'];
+        Outfile=[Outpath{vv},'/',prefixout{vv},num2str(yy),'.mat'];
         if ~exist(Outfile,'file')
             fprintf('JRA55 Data in process. Var %d; Year %d--%d\n',vv,yy,year(end));
             data=[];
