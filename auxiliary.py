@@ -55,7 +55,7 @@ def distance(origin, destination):
         num = 1
     lat1, lon1 = origin[0], origin[1]
     if num == 1:
-        destination = destination[0]
+        # destination = destination[0]
         lat2, lon2 = destination[0], destination[1]
     else:
         lat2, lon2 = destination[:, 0], destination[:, 1]
@@ -73,7 +73,6 @@ def transform(data, texp, mode):
     # transform prcp to approximate normal distribution
     # mode: box-cox; power-law
     if mode == 'box-cox':
-        ind0 = (data == 0)
         datat = (data ** (1 / texp) - 1) / (1 / texp)
         datat[data == 0] = -3
     elif mode == 'power-law':
@@ -410,8 +409,10 @@ def find_nearstn(latlon_gridrc, latlon_stn, try_radius, search_radius, max_dist,
     nearstn_use = np.shape(near_stnDistrc2)[0]
     if nearstn_use > 0:
         max_distrc = max(max_dist, max(near_stnDistrc2) + 1)
-        near_stnWeightrc[0:nearstn_use] = (1 - (near_stnDistrc2 / max_distrc) ** 3) ** 3
-        near_stnWeightrc[0:nearstn_use] = near_stnWeightrc[0:nearstn_use] / np.sum(near_stnWeightrc[0:nearstn_use])
+        temp = (1 - (near_stnDistrc2 / max_distrc) ** 3) ** 3
+        temp[temp > max_distrc] = 0
+        near_stnWeightrc[0:nearstn_use] = temp
+        # near_stnWeightrc[0:nearstn_use] = near_stnWeightrc[0:nearstn_use] / np.sum(near_stnWeightrc[0:nearstn_use])
 
     return near_stnLocrc, near_stnDistrc, near_stnWeightrc
 

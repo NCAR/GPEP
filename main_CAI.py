@@ -12,6 +12,9 @@ from scipy.interpolate import griddata
 ########################################################################################################################
 # 0. read/define configuration information
 # setting: file and path names of inputs
+FileStnInfo = '/Users/localuser/GMET/pyGMET_exp/inputs/stnlist_example.txt'  # station basic information (lists)
+FileGridInfo = '/Users/localuser/GMET/pyGMET_exp/inputs/gridinfo_example.nc'  # study area information
+PathStn = '/Users/localuser/GMET/pyGMET_exp/StnDaily_train'  # original station data (prcp ...)
 # FileStnInfo = '/Users/localuser/GMET/Example_tgq/inputs/stnlist_example.txt'  # station basic information (lists)
 # FileGridInfo = '/Users/localuser/GMET/Example_tgq/inputs/gridinfo_example.nc'  # study area information
 # PathStn = '/Users/localuser/GMET/Example_tgq/StnDaily_train'  # original station data (prcp ...)
@@ -19,16 +22,16 @@ from scipy.interpolate import griddata
 # FileGridInfo = '/Users/localuser/GMET/pyGMET_NA/gridinfo_whole.nc'  # study area information
 # PathStn = '/Users/localuser/GMET/StnInput_daily'
 # Plato
-FileStnInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/CrossValidate/stnlist_whole_CV1.txt'  # station basic information (lists)
-FileGridInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/gridinfo_whole.nc'  # study area information
-PathStn = '/home/gut428/GMET/StnInput_daily'
+# FileStnInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/CrossValidate/stnlist_whole_CV1.txt'  # station basic information (lists)
+# FileGridInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/gridinfo_whole.nc'  # study area information
+# PathStn = '/home/gut428/GMET/StnInput_daily'
 
 # setting: start and end date
 # calculation start/end date:
 date_cal_start = 20180101  # yyyymmdd: start date
 date_cal_end = 20181231  # yyyymmdd: end date
 # station data (in PathStn) start/end date:
-date_stn_start = 19790101  # yyyymmdd: start date
+date_stn_start = 20180101  # yyyymmdd: start date
 date_stn_end = 20181231  # yyyymmdd: end date
 
 # setting: paramters for lag correlation of tmean_stn_daily, and cross-correlation between prcp and trange_stn_daily
@@ -38,7 +41,7 @@ lag = 1
 # setting: searching nearby stations
 nearstn_min = 20  # nearby stations: minimum number
 nearstn_max = 30  # nearby stations: maximum number
-search_radius = 1000  # km. only search stations within this radius even nearstn_max cannot be reached
+search_radius = 400  # km. only search stations within this radius even nearstn_max cannot be reached
 max_dist = 100  # max_distance in distance-based weight calculation
 
 # note: if cai_mode = 0, all *_climo and *_anom files won't work.
@@ -52,10 +55,10 @@ ow_weight = 0
 ow_stn = 0
 
 # setting: output files
-FileStnData = '/home/gut428/PyGMET/station_CV1_data.npz'
-FileWeight = '/home/gut428/PyGMET/weight_CV1_nearstn.npz'
-FileRegError_daily = '/home/gut428/PyGMET/regress_daily_CV1_error.npz'  # regression error at station points
-FileRegression_daily = '/home/gut428/PyGMET/regress_daily_CV1_output.npz'
+FileStnData = '/Users/localuser/GMET/pyGMET_exp/station_data.npz'
+FileWeight = '/Users/localuser/GMET/pyGMET_exp/weight_nearstn.npz'
+FileRegError_daily = '/Users/localuser/GMET/pyGMET_exp/regress_daily_error_boxcox.npz'  # regression error at station points
+FileRegression_daily = '/Users/localuser/GMET/pyGMET_exp/regress_daily_output_boxcox.npz'
 # FileStnData = '/Users/localuser/GMET/Example/station_data.npz'
 # FileWeight = '/Users/localuser/GMET/Example/weight_nearstn.npz'
 # FileRegError_daily = '/Users/localuser/GMET/Example/regress_daily_error.npz'  # regression error at station points
@@ -400,7 +403,7 @@ if cai_mode == 1:
 
 # 9. Evaluate regression results
 # directory that stores independent stations for validation
-pathind = '/Users/localuser/GMET/Example_tgq/StnDaily_test'
+# pathind = '/Users/localuser/GMET/Example_tgq/StnDaily_test'
 
 # daily evaluation
 # if cai_mode == 0 or daily_flag == 1:
@@ -540,10 +543,10 @@ pathind = '/Users/localuser/GMET/Example_tgq/StnDaily_test'
 # plt.title('pcp mean error')
 #
 # # plot q-q for pcp
-# import pylab
-# import scipy.stats as stats
-# prcp_stn_daily_est = \
-#     au.retransform(au.transform(prcp_stn_daily,trans_exp_daily,trans_mode) + pcp_err_stn_daily,trans_exp_daily,trans_mode)
+import pylab
+import scipy.stats as stats
+prcp_stn_daily_est = \
+    au.retransform(au.transform(prcp_stn_daily,trans_exp_daily,trans_mode) + pcp_err_stn_daily,trans_exp_daily,trans_mode)
 #
 # zz = prcp_stn_daily_est.flatten()
 # zz=zz[zz>0]

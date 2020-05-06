@@ -1,6 +1,8 @@
 import numpy as np
 import auxiliary as au
 import sys
+import netCDF4 as nc
+from fromNR import *
 
 def least_squares(x, y, tx):
     # In fortran version, ludcmp and lubksb are used to calcualte matrix inversion
@@ -8,8 +10,11 @@ def least_squares(x, y, tx):
     # call lubksb(a, indx, b)
 
     # In Python version, numpy is used to calculate matrix inversion
-    b = np.matmul(tx, y)
+    c = np.matmul(tx, y)
     a = np.matmul(tx, x)
+
+    n = np.shape(a)[0]
+    b = np.zeros(n)
 
     deta = np.linalg.det(a)  # Compute the determinant of an array
     if deta == 0:
@@ -17,7 +22,7 @@ def least_squares(x, y, tx):
         b[:] = 0
     else:
         ainv = np.linalg.inv(a)
-        b = np.matmul(ainv, b)
+        b = np.matmul(ainv, c)
 
     return b
 
@@ -121,7 +126,7 @@ def station_error(prcp_stn, tmean_stn, trange_stn, stninfo, near_stn_prcpLoc, ne
                     vv = np.max(np.abs(tmp), axis=1)
 
                     # decide if slope is to be used in regression
-                    if np.any(vv) == 0 or (abs(stninfo[gg, 4]) < 3.6 or abs(stninfo[gg, 5]) < 3.6):
+                    if np.any(vv == 0) or abs(stninfo[gg, 4]) < 3.6 or abs(stninfo[gg, 5]) < 3.6:
                         slope_flag_pcp = 0
                         x_red_use = x_red[:, 0:4]  # do not use slope in regression
                         stninfo_use = stninfo[gg, 0:4]
@@ -178,6 +183,185 @@ def station_error(prcp_stn, tmean_stn, trange_stn, stninfo, near_stn_prcpLoc, ne
 
     return pcp_err_stn, tmean_err_stn, trange_err_stn
 
+
+def station_rea_error(prcp_stn, tmean_stn, trange_stn, stninfo, near_stn_prcpLoc, near_stn_prcpWeight, near_stn_tempLoc,
+                  near_stn_tempWeight, trans_exp, trans_mode, nearstn_min):
+    nstn, ntimes = np.shape(prcp_stn)
+    pcp_err_stn = -999 * np.ones([nstn, ntimes])
+    tmean_err_stn = -999 * np.ones([nstn, ntimes])
+    trange_err_stn = -999 * np.ones([nstn, ntimes])
+
+    # read reanalysis data
+    file1 = '/Users/localuser/GMET/ERA5_prcp_2018_sub.npz'
+    file2 = '/Users/localuser/GMET/MERRA2_prcp_2018_sub.npz'
+    file3 = '/Users/localuser/GMET/JRA55_prcp_2018_sub.npz'
+    pcpera = np.load(file1)
+    pcpera = pcpera['pcprea']
+    pcpmerra = np.load(file2)
+    pcpmerra = pcpmerra['pcprea']
+    pcpjra = np.load(file3)
+    pcpjra = pcpjra['pcprea']
+    pcpera = np.flipud(pcpera)
+    pcpmerra = np.flipud(pcpmerra)
+    pcpjra = np.flipud(pcpjra)
+
+    # read station data
+    FileGridInfo = '/Users/localuser/GMET/pyGMET_exp/inputs/gridinfo_example.nc'
+    ncfid = nc.Dataset(FileGridInfo)
+    gridlat = ncfid.variables['latitude'][:].data
+    gridlon = ncfid.variables['longitude'][:].data
+    gridele = ncfid.variables['elev'][:].data
+    gridgns = ncfid.variables['gradient_n_s'][:].data
+    gridgwe = ncfid.variables['gradient_w_e'][:].data
+    mask = ncfid.variables['mask'][:].data  # 1: grids to be considered; the other values: invalid grids
+    ncfid.close()
+
+    nrows, ncols = np.shape(gridlat)
+    gridinfo = np.zeros([nrows, ncols, 6])
+    gridinfo[:, :, 0] = 1
+    gridinfo[:, :, 1] = gridlat
+    gridinfo[:, :, 2] = gridlon
+    gridinfo[:, :, 3] = gridele
+    gridinfo[:, :, 4] = gridgns
+    gridinfo[:, :, 5] = gridgwe
+    del gridlat, gridlon, gridele, gridgns, gridgwe
+    gridlat = gridinfo[:, 1, 1]
+    gridlon = gridinfo[1, :, 2]
+    pcpera2 = np.zeros([nstn, 365])
+    pcpmerra2 = np.zeros([nstn, 365])
+    pcpjra2 = np.zeros([nstn, 365])
+    for i in range(nstn):
+        stnlat = stninfo[i, 1]
+        stnlon = stninfo[i, 2]
+        row = np.argmin(np.abs(stnlat - gridlat))
+        col = np.argmin(np.abs(stnlon - gridlon))
+
+        pcpera2[i, :] = pcpera[row, col, :]
+        pcpmerra2[i, :] = pcpmerra[row, col, :]
+        pcpjra2[i, :] = pcpjra[row, col, :]
+    pcpera2 = au.transform(pcpera2,trans_exp,trans_mode)
+    pcpera2[pcpera2<-3] = -3
+    pcpmerra2 = au.transform(pcpmerra2, trans_exp, trans_mode)
+    pcpera2[pcpera2 < -3] = -3
+    pcpjra2 = au.transform(pcpjra2, trans_exp, trans_mode)
+    pcpera2[pcpera2 < -3] = -3
+
+
+    for t in range(ntimes):
+        print('Current time:', t, 'Total times:', ntimes)
+        # assign vectors of station alues for prcp_stn, temp, for current time step
+        # transform prcp_stn to approximate normal distribution
+        y_prcp = au.transform(prcp_stn[:, t], trans_exp, trans_mode)
+        y_tmean = tmean_stn[:, t]
+        y_trange = trange_stn[:, t]
+
+        for gg in range(nstn):
+            if prcp_stn[gg, t] > -1:
+                # reduced matrices for precip
+                nstn_prcp = int(np.sum(near_stn_prcpLoc[gg, :] > -1))
+                if nstn_prcp >= nearstn_min:
+                    w_pcp_red = np.zeros([nstn_prcp, nstn_prcp])
+                    yrea_red = np.zeros([nstn_prcp, 3])
+                    yrea_redgg = np.zeros(3)
+
+                    for i in range(nstn_prcp):
+                        w_pcp_red[i, i] = near_stn_prcpWeight[gg, i]  # eye matrix: stn weight in one-one line
+                    w_pcp_1d = near_stn_prcpWeight[gg, 0:nstn_prcp]  # stn weight
+                    w_pcp_1d_loc = near_stn_prcpLoc[gg, 0:nstn_prcp]  # stn ID number/location
+                    y_prcp_red = y_prcp[w_pcp_1d_loc]  # transformed prcp_stn
+                    x_red = stninfo[w_pcp_1d_loc, :]  # station lat/lon/ele/slope_ns/slope_we
+                    yrea_red[:,0] = pcpera2[w_pcp_1d_loc,t]
+                    yrea_red[:,1] = pcpmerra2[w_pcp_1d_loc, t]
+                    yrea_red[:,2] = pcpjra2[w_pcp_1d_loc, t]
+                    yrea_redgg[0] = pcpera2[gg,t]
+                    yrea_redgg[1] = pcpmerra2[gg, t]
+                    yrea_redgg[2] = pcpjra2[gg, t]
+
+                    yp_red = np.zeros(nstn_prcp)  # pop: 0/1
+                    yp_red[prcp_stn[w_pcp_1d_loc, t] > 0] = 1
+                    ndata = np.sum(yp_red == 1)  # number of prcp_stn>0
+                else:
+                    # there are not enough nearby stations
+                    x_red = 0  # not really necessary. just to stop warming from Pycharm
+                    w_pcp_red = 0  # not really necessary. just to stop warming from Pycharm
+                    yp_red = 0  # not really necessary. just to stop warming from Pycharm
+                    y_prcp_red = 0  # not really necessary. just to stop warming from Pycharm
+                    ndata = 0
+
+                # prcp processing
+                if ndata == 0:
+                    # nearby stations do not have positive prcp data
+                    pcp_err_stn[gg, t] = 0
+                else:
+                    # tmp needs to be matmul(TX, X) where TX = TWX_red and X = X_red
+                    mat_test = np.matmul(np.transpose(x_red), w_pcp_red)
+                    tmp = np.matmul(mat_test, x_red)
+                    vv = np.max(np.abs(tmp), axis=1)
+
+                    # decide if slope is to be used in regression
+                    if np.any(vv == 0) or abs(stninfo[gg, 4]) < 3.6 or abs(stninfo[gg, 5]) < 3.6:
+                        slope_flag_pcp = 0
+                        x_red_use = x_red[:, 0:1]  # do not use slope in regression
+                        stninfo_use = stninfo[gg, 0:1]
+                    else:
+                        slope_flag_pcp = 1
+                        x_red_use = x_red[:,0:1]
+                        stninfo_use = stninfo[gg, 0:1]
+
+                    # add reanalysis precipitation
+                    x_red_use = np.hstack((x_red_use, yrea_red))
+                    stninfo_use = np.hstack((stninfo_use, yrea_redgg))
+
+                    tx_red = np.transpose(x_red_use)
+                    twx_red = np.matmul(tx_red, w_pcp_red)
+
+                    # calculate pcp
+                    b = least_squares(x_red_use, y_prcp_red, twx_red)
+                    if np.all(np.abs(b)<0.0000001):
+                        pcpgg = np.nan
+                    else:
+                        pcpgg = np.dot(stninfo_use, b)
+                    pcp_err_stn[gg, t] = pcpgg - y_prcp[gg]
+
+            # tmean/trange processing
+            if y_tmean[gg] > -100:
+                # reduced matrices for tmean_stn/trange_stn
+                nstn_temp = int(np.sum(near_stn_tempLoc[gg, :] > -1))
+                if nstn_temp >= nearstn_min:
+                    w_temp_red = np.zeros([nstn_temp, nstn_temp])
+                    for i in range(nstn_temp):
+                        w_temp_red[i, i] = near_stn_tempWeight[gg, i]  # eye matrix: stn weight in one-one lien
+                    w_temp_1d = near_stn_tempWeight[gg, 0:nstn_temp]  # stn weight
+                    w_temp_1d_loc = near_stn_tempLoc[gg, 0:nstn_temp]  # stn ID number/location
+                    y_tmean_red = y_tmean[w_temp_1d_loc]  # transformed temp
+                    y_trange_red = y_trange[w_temp_1d_loc]  # transformed temp
+                    x_red_t = stninfo[w_temp_1d_loc, :]  # station lat/lon/ele/slope_ns/slope_we
+
+                    ndata_t = np.sum(y_tmean_red > -100)
+                    nodata_t = nstn_temp - ndata_t  # invalid temperature
+                else:
+                    x_red_t = 0  # not really necessary. just to stop warming from Pycharm
+                    w_temp_red = 0  # not really necessary. just to stop warming from Pycharm
+                    y_tmean_red = 0  # not really necessary. just to stop warming from Pycharm
+                    y_trange_red = 0  # not really necessary. just to stop warming from Pycharm
+                    ndata_t = 0
+                    nodata_t = 0
+
+                if ndata_t > 0:
+                    stninfo_use = stninfo[gg, 0:4]
+                    x_red_use = x_red_t[:, 0:4]  # do not use slope for temperature
+                    tx_red = np.transpose(x_red_use)
+                    twx_red = np.matmul(tx_red, w_temp_red)
+
+                    b = least_squares(x_red_use, y_tmean_red, twx_red)
+                    tmeangg = np.dot(stninfo_use, b)
+                    tmean_err_stn[gg, t] = tmeangg - y_tmean[gg]
+
+                    b = least_squares(x_red_use, y_trange_red, twx_red)
+                    trangegg = np.dot(stninfo_use, b)
+                    trange_err_stn[gg, t] = trangegg - y_trange[gg]
+
+    return pcp_err_stn, tmean_err_stn, trange_err_stn
 
 def regression(prcp_stn, tmean_stn, trange_stn, pcp_err_stn, tmean_err_stn, trange_err_stn, stninfo, gridinfo,
                mask, near_grid_prcpLoc, near_grid_prcpWeight, near_grid_tempLoc, near_grid_tempWeight,
@@ -249,7 +433,7 @@ def regression(prcp_stn, tmean_stn, trange_stn, pcp_err_stn, tmean_err_stn, tran
                         mat_test = np.matmul(np.transpose(x_red), w_pcp_red)
                         tmp = np.matmul(mat_test, x_red)
                         vv = np.max(np.abs(tmp), axis=1)
-                        if np.any(vv) == 0 or (abs(gridinfo[rr, cc, 4]) < 3.6 or abs(gridinfo[rr, cc, 5]) < 3.6):
+                        if np.any(vv == 0) or np.abs(gridinfo[rr, cc, 4]) < 3.6 or np.abs(gridinfo[rr, cc, 5]) < 3.6:
                             slope_flag_pcp = 0
                             x_red_use = x_red[:, 0:4]  # do not use slope in regression
                             gridinfo_use = gridinfo[rr, cc, 0:4]
