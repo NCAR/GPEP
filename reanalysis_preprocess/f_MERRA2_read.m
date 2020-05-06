@@ -1,35 +1,11 @@
-function f_MERRA2_read(Inpath,FileDEMLow,FileDEMHigh,Outpath,year,BasicInfo,DataInfo,TLRfile)
+function f_MERRA2_read(Inpath,Outpath,year,DataInfo)
 % read MERRA2 data and conduct resolution transform
 
 % basic information of file characteristics and reading
 suffix=DataInfo.suffix;
 varname=DataInfo.varname;
-imethod=DataInfo.imethod;
 prefixout=DataInfo.prefixout;
 varnum=length(varname);
-
-% basic information of target region
-tXll=BasicInfo.tXll;  % top right
-tYll=BasicInfo.tYll;
-Xll=BasicInfo.Xll;   % bottom left
-Yll=BasicInfo.Yll;
-cellsize=BasicInfo.cellsize;  % new resolution
-Ncol=(tXll-Xll)/cellsize;
-Nrow=(tYll-Yll)/cellsize;
-X1=(Xll+cellsize/2):cellsize:(Xll+cellsize*Ncol-cellsize/2); % lat/lon of grid centers
-Y1=(Yll+cellsize*Nrow-cellsize/2):-cellsize:(Yll+cellsize/2);
-[XX1,YY1]=meshgrid(X1,Y1);
-
-% varables for saving into the structure (info)
-varsav={'tXll','tYll','Xll','Yll','Nrow','Ncol','cellsize','varname','imethod'};
-for i=1:length(varsav)
-    command=['info.',varsav{i},'=',varsav{i},';'];
-    eval(command);
-end
-
-% read temperature lapse rate information
-[TLR,TLRdate]=f_TLR_process(TLRfile,XX1,YY1);
-
 
 for vv=1:varnum  % for each var, re-read the basic information
     
@@ -47,51 +23,18 @@ for vv=1:varnum  % for each var, re-read the basic information
     
     % basic information of original MERRA2 data
     Infile=[Inpath{vv},'/',Indir(1).name];
-    latori=ncread(Infile,'lat');
-    lonori=ncread(Infile,'lon');
-    latori=sort(latori,'descend'); lonori=sort(lonori,'ascend');
-    [XX0,YY0]=meshgrid(lonori,latori);
-    REAinfo.Xsize=abs(lonori(2)-lonori(1));
-    REAinfo.Ysize=abs(latori(2)-latori(1));
-    REAinfo.xll=min(lonori)-REAinfo.Xsize/2;
-    REAinfo.yll=min(latori)-REAinfo.Ysize/2;
-    REAinfo.nrows=size(XX0,1);
-    REAinfo.ncols=size(XX0,2);
-    
-    % if there exists lapserate in imethod, calcualte temperature changes in
-    % each reanalysis grid pixel
-    if ismember('lapserate',imethod)
-        % read DEM data
-        % DEMLow must have larger or equal spatial extent compared with DEMhigh,
-        % otherwise it is hard to downscale
-        % DEMhigh must have the same spatial extent with BasicInfo
-        load(FileDEMLow,'DEM','Info');
-        DEMLow=DEM;
-        InfoLow=Info;
-        clear DEM Info
-        
-        mm=arcgridread_tgq(FileDEMHigh);
-        DEMHigh=mm.mask;
-        clear mm
-        % interpolate DEMLow to match reanalysis. Theoretically, DEMLow should
-        % totally match reanalysis. But sometimes due to marginal differences,
-        % interpolation is necessary.
-        latLow=(InfoLow.yll+InfoLow.Ysize*InfoLow.nrows-InfoLow.Ysize/2):-InfoLow.Ysize:(InfoLow.yll+InfoLow.Ysize/2);
-        lonLow=(InfoLow.xll+InfoLow.Xsize/2):InfoLow.Xsize:(InfoLow.xll+InfoLow.Xsize*InfoLow.ncols-InfoLow.Xsize/2);
-        [XXLow,YYLow]=meshgrid(lonLow,latLow);
-        DEMLow=interp2(XXLow,YYLow,DEMLow,XX0,YY0,'linear');
-    end
-    
-    method=imethod{vv};
+    latitude=ncread(Infile,'lat');
+    longitude=ncread(Infile,'lon');
+  
     for yy=year(1):year(end)
-        Outfile=[Outpath{vv},'/',prefixout{vv},num2str(yy),'.nc4'];
+        Outfile=[Outpath{vv},'/',prefixout{vv},num2str(yy),'.mat'];
         if ~exist(Outfile,'file')
             fprintf('MERRA2 Data in process. Var %d; Year %d--%d\n',vv,yy,year(end));
             
             Startdate=datenum(yy,1,1);  %yyyymmdd
             Enddate=datenum(yy,12,31);
             daysyy=Enddate-Startdate+1;
-            data=zeros(Nrow,Ncol,daysyy);
+            data=zeros(length(latitude),length(longitude),daysyy);
             flagmissing=0;
             for i=Startdate:Enddate
                 datei=datestr(i,'yyyymmdd');
@@ -105,24 +48,12 @@ for vv=1:varnum  % for each var, re-read the basic information
                 end
                 Infile=[Inpath{vv},'/',Indir(z).name];
                 var=f_MERRA2_VarRead(Infile,varname{vv});
-                if strcmp(method,'lapserate')
-                    varint0=ff_interpolate(var,XX0,YY0,XX1,YY1,'near');
-                    
-                    % find the lapse rate for this month
-                    mm=str2double(datei(5:6));
-                    TLRym=TLR(:,:,TLRdate==yy*100+mm);
-                    Tadd=ff_Tdownscale_lp(XX1,YY1,REAinfo,DEMHigh,DEMLow,TLRym);
-                    
-                    varint=ff_Tdownscale_add(varint0,Tadd);
-                    varint(isnan(varint))=varint0(isnan(varint));  % over pixels without dem
-                else
-                    varint=ff_interpolate(var,XX0,YY0,XX1,YY1,method);
-                end
-                data(:,:,i-Startdate+1)=varint;
+                data(:,:,i-Startdate+1)=var;
             end         
             % save data
-%             save(Outfile,'data','BasicInfo','REAinfo','-v7.3');
-            f_save_nc(Outfile,data,BasicInfo,DEMHigh);
+            data=single(data);
+            save(Outfile,'data','latitude','longitude','-v7.3');
+%             f_save_nc(Outfile,data,BasicInfo,DEMHigh);
         else
             fprintf('MERRA2 Data already exist. Var %d; Year %d--%d\n',vv,yy,year(end));
         end

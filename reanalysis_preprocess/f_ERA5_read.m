@@ -12,7 +12,7 @@ varnum=length(varname);
 for vv=1:varnum  % for each var, re-read the basic information
     % basic information of original ERA5 data. All data in this directory must
     % have the same information
-    Infile=[Inpath{vv},'/',prefix{vv},num2str(year(1)),num2str(1,'%.2d'),suffix{vv},'.nc'];
+    Infile=[Inpath{vv},'/',prefix{vv},num2str(year(1)),num2str(1,'%.2d'),suffix{vv},'.mat'];
     latitude=ncread(Infile,'latitude');
     longitude=ncread(Infile,'longitude');
 
@@ -37,6 +37,7 @@ for vv=1:varnum  % for each var, re-read the basic information
                 flag=flag+daysmm;
             end
             % save data
+            data=single(data);
             save(Outfile,'data','latitude','longitude','-v7.3');
 %             f_save_nc(Outfile,data,BasicInfo,DEMHigh);
         else

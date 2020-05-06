@@ -1,46 +1,16 @@
-function f_JRA55_read(Inpath,FileDEMLow,FileDEMHigh,Outpath,year,BasicInfo,DataInfo,TLRfile)
+function f_JRA55_read(Inpath,Outpath,year,DataInfo)
 % precipitation unit: mm/day
 % basic information of file characteristics and reading
 % dbstop if error
 prefix=DataInfo.prefix;
 suffix=DataInfo.suffix;
 varname=DataInfo.varname;
-imethod=DataInfo.imethod;
 prefixout=DataInfo.prefixout;
 varnum=length(varname);
 
-% basic information of target region
-tXll=BasicInfo.tXll;  % top right
-if tXll<0
-   tXll=tXll+360;
-end
-tYll=BasicInfo.tYll;
-Xll=BasicInfo.Xll;   % bottom left
-if Xll<0
-   Xll=Xll+360;
-end
-Yll=BasicInfo.Yll;
-cellsize=BasicInfo.cellsize;  % new resolution
-Ncol=(tXll-Xll)/cellsize;
-Nrow=(tYll-Yll)/cellsize;
-X1=(Xll+cellsize/2):cellsize:(Xll+cellsize*Ncol-cellsize/2); % lat/lon of grid centers
-Y1=(Yll+cellsize*Nrow-cellsize/2):-cellsize:(Yll+cellsize/2);
-[XX1,YY1]=meshgrid(X1,Y1);
-
-% basic variables to be saved in the output file
-varsav={'tXll','tYll','Xll','Yll','Nrow','Ncol','cellsize','varname','imethod'};
-for i=1:length(varsav)
-    command=['info.',varsav{i},'=',varsav{i},';'];
-    eval(command);
-end
-
-% read temperature lapse rate information
-[TLR,TLRdate]=f_TLR_process(TLRfile,XX1,YY1);
-
-
 for vv=1:varnum  % for each var, re-read the basic information
     % specific for MERRA2 since its date could change after 2014
-    Indir=dir(fullfile(Inpath{vv},'*.nc'));
+    Indir=dir(fullfile(Inpath{vv},'*.mat'));
     if isempty(Indir)
         Indir=dir(fullfile(Inpath{vv},'*.nc4'));
     end
@@ -54,50 +24,8 @@ for vv=1:varnum  % for each var, re-read the basic information
     % basic information of original JRA55 data
     tempind=find(yearin==year(1)); tempind=tempind(1);
     file=[Inpath{vv},'/',Indir(tempind).name];
-    latori0=ncread(file,'g4_lat_2'); % lat/lon of grid centers
-    lonori0=ncread(file,'g4_lon_3');
-    latori0=sort(latori0,'descend'); lonori0=sort(lonori0,'ascend');
-    [XX00,YY00]=meshgrid(lonori0,latori0);
-    %%%% since JRA has irregular lat/lon, we interpolate JRA into regular grid
-    latori=(90-0.5625/2):-0.5625:(-90+0.5625/2);
-    lonori=0:0.5625:(360-0.5625);
-    [XX0,YY0]=meshgrid(lonori,latori);
-    REAinfo.Xsize=abs(lonori(2)-lonori(1));
-    REAinfo.Ysize=abs(latori(2)-latori(1));
-    REAinfo.xll=min(lonori)-REAinfo.Xsize/2;
-    REAinfo.yll=min(latori)-REAinfo.Ysize/2;
-    REAinfo.nrows=size(XX0,1);
-    REAinfo.ncols=size(XX0,2);
-    
-    % if there exists lapserate in imethod, calcualte temperature changes in
-    % each reanalysis grid pixel
-    if ismember('lapserate',imethod)
-        % read DEM data
-        % DEMLow must have larger or equal spatial extent compared with DEMhigh,
-        % otherwise it is hard to downscale
-        % DEMhigh must have the same spatial extent with BasicInfo
-        load(FileDEMLow,'DEM','Info');
-        DEMLow=DEM;
-        InfoLow=Info;
-        if InfoLow.xll<0
-            InfoLow.xll=InfoLow.xll+360;  % -180 180 to 0 360
-        end
-        
-        clear DEM Info
-        mm=arcgridread_tgq(FileDEMHigh);
-        DEMHigh=mm.mask;
-        clear mm
-        % interpolate DEMLow to match reanalysis. Theoretically, DEMLow should
-        % totally match reanalysis. But sometimes due to marginal differences,
-        % interpolation is necessary.
-        latLow=(InfoLow.yll+InfoLow.Ysize*InfoLow.nrows-InfoLow.Ysize/2):-InfoLow.Ysize:(InfoLow.yll+InfoLow.Ysize/2);
-        lonLow=(InfoLow.xll+InfoLow.Xsize/2):InfoLow.Xsize:(InfoLow.xll+InfoLow.Xsize*InfoLow.ncols-InfoLow.Xsize/2);
-        [XXLow,YYLow]=meshgrid(lonLow,latLow);
-        DEMLow=interp2(XXLow,YYLow,DEMLow,XX0,YY0,'linear');
-        
-    end
-    
-    method=imethod{vv};
+    latitude=ncread(file,'g4_lat_2'); % lat/lon of grid centers
+    longitude=ncread(file,'g4_lon_3');
     
     for yy=year(1):year(end)
         Outfile=[Outpath{vv},'/',prefixout{vv},num2str(yy),'.nc4'];
@@ -111,29 +39,14 @@ for vv=1:varnum  % for each var, re-read the basic information
                 if strcmp(prefixii,prefix{vv})                
                     Infile=[Inpath{vv},'/',Indir(indyy(ii)).name];
                     [varint0,varmonth]=f_JRA55_VarRead(Infile,varname{vv});
-                    varint1=ff_interpolate(varint0,XX00,YY00,XX0,YY0,'linear');
-
-                    if strcmp(method,'lapserate')
-                        varint2=ff_interpolate(varint1,XX0,YY0,XX1,YY1,'near');
-                        % find the lapse rate for this month
-                        monthU=unique(varmonth);
-                        varint=nan*zeros(Nrow,Ncol,size(varint2,3));
-                        for uu=1:length(monthU)
-                            TLRym=TLR(:,:,TLRdate==yy*100+monthU(uu));
-                            Tadd=ff_Tdownscale_lp(XX1,YY1,REAinfo,DEMHigh,DEMLow,TLRym);
-                            induu=varmonth==monthU(uu);
-                            varint(:,:,induu)=ff_Tdownscale_add(varint2(:,:,induu),Tadd);
-                        end
-                        varint(isnan(varint))=varint2(isnan(varint));  % over pixels without dem
-                    else
-                        varint=ff_interpolate(varint1,XX0,YY0,XX1,YY1,method);
-                    end
-                    data=cat(3,data,varint);
+                    
+                    data=cat(3,data,varint0);
                 end
             end
             
-%             save(Outfile,'data','BasicInfo','REAinfo','-v7.3');
-            f_save_nc(Outfile,data,BasicInfo,DEMHigh);
+            data=single(data);
+            save(Outfile,'data','latitude','longitude','-v7.3');
+%             f_save_nc(Outfile,data,BasicInfo,DEMHigh);
         else
             fprintf('JRA55 Data already exist. Var %d; Year %d--%d\n',vv,yy,year(end));
         end
