@@ -32,7 +32,7 @@ for vv=1:varnum  % for each var, re-read the basic information
                     varmd=f_ERA5_VarRead(Infile,varname{vv},0); 
                 end
 
-                daysmm=size(varint,3);
+                daysmm=size(varmd,3);
                 data(:,:,flag:flag+daysmm-1)=varmd;
                 flag=flag+daysmm;
             end
