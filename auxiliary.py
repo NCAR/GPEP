@@ -3,6 +3,9 @@ import sys
 import netCDF4 as nc
 import os
 
+def distanceweight(dist,maxdist,exp):
+    weight = (1 - (dist / maxdist) ** exp) ** exp
+    return weight
 
 def readstnlist(FileStnInfo):
     # read txt (station list)
@@ -409,7 +412,7 @@ def find_nearstn(latlon_gridrc, latlon_stn, try_radius, search_radius, max_dist,
     nearstn_use = np.shape(near_stnDistrc2)[0]
     if nearstn_use > 0:
         max_distrc = max(max_dist, max(near_stnDistrc2) + 1)
-        temp = (1 - (near_stnDistrc2 / max_distrc) ** 3) ** 3
+        temp = distanceweight(near_stnDistrc2, max_distrc, 3)
         temp[temp > max_distrc] = 0
         near_stnWeightrc[0:nearstn_use] = temp
         # near_stnWeightrc[0:nearstn_use] = near_stnWeightrc[0:nearstn_use] / np.sum(near_stnWeightrc[0:nearstn_use])
