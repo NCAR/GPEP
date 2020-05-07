@@ -2,14 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/ECCC_read_plato.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/ERA5_read_plato.m" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_preprocess/ERA5_read_plato.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/GHCN_read_plato.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/JRA55_read_plato.m" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_preprocess/JRA55_read_plato.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/MERRA2_read_plato.m" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_preprocess/MERRA2_read_plato.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/f_ERA5_read.m" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_preprocess/f_ERA5_read.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/f_JRA55_read.m" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_preprocess/f_JRA55_read.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/f_MERRA2_read.m" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_preprocess/f_MERRA2_read.m" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Plato_commands" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Plato_readown.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/reanalysis_test-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/reanalysis_test-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reanalysis_downscale.py" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_downscale.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reanalysis_test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_test.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/regression.py" beforeDir="false" afterPath="$PROJECT_DIR$/regression.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,7 +37,12 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
-  <component name="RunManager" selected="Python.run">
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.reanalysis_downscale">
     <configuration name="compare_outputs" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="pyGMET" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -102,6 +106,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="reanalysis_downscale" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="pyGMET" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/reanalysis_downscale.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="run" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="pyGMET" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -123,34 +148,13 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="test_code" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="pyGMET" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test_code.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.reanalysis_downscale" />
         <item itemvalue="Python.run" />
         <item itemvalue="Python.reanalysis" />
         <item itemvalue="Python.main_CAI" />
         <item itemvalue="Python.compare_outputs" />
-        <item itemvalue="Python.test_code" />
       </list>
     </recent_temporary>
   </component>
@@ -173,66 +177,75 @@
     </state>
     <state x="536" y="172" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1680.947@0.23.1680.947" timestamp="1588286920539" />
     <state x="536" y="172" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1680.949@0.23.1680.949" timestamp="1587606401108" />
-    <state x="567" y="302" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1588283384193">
-      <screen x="0" y="23" width="1680" height="947" />
+    <state x="567" y="303" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1588827618011">
+      <screen x="0" y="23" width="1680" height="949" />
     </state>
     <state x="567" y="302" key="#com.intellij.fileTypes.FileTypeChooser/0.23.1680.947@0.23.1680.947" timestamp="1588283384193" />
-    <state width="1315" height="175" key="GridCell.Tab.0.bottom" timestamp="1588702454316">
-      <screen x="0" y="23" width="1680" height="949" />
+    <state x="567" y="303" key="#com.intellij.fileTypes.FileTypeChooser/0.23.1680.949@0.23.1680.949" timestamp="1588827618011" />
+    <state width="1315" height="322" key="GridCell.Tab.0.bottom" timestamp="1588822795361">
+      <screen x="0" y="23" width="1680" height="952" />
     </state>
     <state width="1315" height="310" key="GridCell.Tab.0.bottom/0.23.1680.942@0.23.1680.942" timestamp="1588464566079" />
     <state width="1315" height="179" key="GridCell.Tab.0.bottom/0.23.1680.944@0.23.1680.944" timestamp="1588567493522" />
     <state width="1315" height="179" key="GridCell.Tab.0.bottom/0.23.1680.947@0.23.1680.947" timestamp="1588567335399" />
     <state width="1315" height="175" key="GridCell.Tab.0.bottom/0.23.1680.949@0.23.1680.949" timestamp="1588702454316" />
-    <state width="1315" height="175" key="GridCell.Tab.0.center" timestamp="1588702454315">
-      <screen x="0" y="23" width="1680" height="949" />
+    <state width="1315" height="322" key="GridCell.Tab.0.bottom/0.23.1680.952@0.23.1680.952" timestamp="1588822795361" />
+    <state width="1315" height="322" key="GridCell.Tab.0.center" timestamp="1588822795359">
+      <screen x="0" y="23" width="1680" height="952" />
     </state>
     <state width="1315" height="310" key="GridCell.Tab.0.center/0.23.1680.942@0.23.1680.942" timestamp="1588464566079" />
     <state width="1315" height="179" key="GridCell.Tab.0.center/0.23.1680.944@0.23.1680.944" timestamp="1588567493521" />
     <state width="1315" height="179" key="GridCell.Tab.0.center/0.23.1680.947@0.23.1680.947" timestamp="1588567335398" />
     <state width="1315" height="175" key="GridCell.Tab.0.center/0.23.1680.949@0.23.1680.949" timestamp="1588702454315" />
-    <state width="1315" height="175" key="GridCell.Tab.0.left" timestamp="1588702454315">
-      <screen x="0" y="23" width="1680" height="949" />
+    <state width="1315" height="322" key="GridCell.Tab.0.center/0.23.1680.952@0.23.1680.952" timestamp="1588822795359" />
+    <state width="1315" height="322" key="GridCell.Tab.0.left" timestamp="1588822795358">
+      <screen x="0" y="23" width="1680" height="952" />
     </state>
     <state width="1315" height="310" key="GridCell.Tab.0.left/0.23.1680.942@0.23.1680.942" timestamp="1588464566078" />
     <state width="1315" height="179" key="GridCell.Tab.0.left/0.23.1680.944@0.23.1680.944" timestamp="1588567493520" />
     <state width="1315" height="179" key="GridCell.Tab.0.left/0.23.1680.947@0.23.1680.947" timestamp="1588567335398" />
     <state width="1315" height="175" key="GridCell.Tab.0.left/0.23.1680.949@0.23.1680.949" timestamp="1588702454315" />
-    <state width="1315" height="175" key="GridCell.Tab.0.right" timestamp="1588702454316">
-      <screen x="0" y="23" width="1680" height="949" />
+    <state width="1315" height="322" key="GridCell.Tab.0.left/0.23.1680.952@0.23.1680.952" timestamp="1588822795358" />
+    <state width="1315" height="322" key="GridCell.Tab.0.right" timestamp="1588822795360">
+      <screen x="0" y="23" width="1680" height="952" />
     </state>
     <state width="1315" height="310" key="GridCell.Tab.0.right/0.23.1680.942@0.23.1680.942" timestamp="1588464566079" />
     <state width="1315" height="179" key="GridCell.Tab.0.right/0.23.1680.944@0.23.1680.944" timestamp="1588567493521" />
     <state width="1315" height="179" key="GridCell.Tab.0.right/0.23.1680.947@0.23.1680.947" timestamp="1588567335398" />
     <state width="1315" height="175" key="GridCell.Tab.0.right/0.23.1680.949@0.23.1680.949" timestamp="1588702454316" />
-    <state width="1315" height="322" key="GridCell.Tab.1.bottom" timestamp="1588701076080">
-      <screen x="0" y="23" width="1680" height="949" />
+    <state width="1315" height="322" key="GridCell.Tab.0.right/0.23.1680.952@0.23.1680.952" timestamp="1588822795360" />
+    <state width="1315" height="322" key="GridCell.Tab.1.bottom" timestamp="1588822795363">
+      <screen x="0" y="23" width="1680" height="952" />
     </state>
     <state width="1315" height="310" key="GridCell.Tab.1.bottom/0.23.1680.942@0.23.1680.942" timestamp="1588464557169" />
     <state width="1315" height="193" key="GridCell.Tab.1.bottom/0.23.1680.944@0.23.1680.944" timestamp="1588567275076" />
     <state width="1315" height="104" key="GridCell.Tab.1.bottom/0.23.1680.947@0.23.1680.947" timestamp="1588544012031" />
     <state width="1315" height="322" key="GridCell.Tab.1.bottom/0.23.1680.949@0.23.1680.949" timestamp="1588701076080" />
-    <state width="1315" height="322" key="GridCell.Tab.1.center" timestamp="1588701076080">
-      <screen x="0" y="23" width="1680" height="949" />
+    <state width="1315" height="322" key="GridCell.Tab.1.bottom/0.23.1680.952@0.23.1680.952" timestamp="1588822795363" />
+    <state width="1315" height="322" key="GridCell.Tab.1.center" timestamp="1588822795362">
+      <screen x="0" y="23" width="1680" height="952" />
     </state>
     <state width="1315" height="310" key="GridCell.Tab.1.center/0.23.1680.942@0.23.1680.942" timestamp="1588464557168" />
     <state width="1315" height="193" key="GridCell.Tab.1.center/0.23.1680.944@0.23.1680.944" timestamp="1588567275076" />
     <state width="1315" height="104" key="GridCell.Tab.1.center/0.23.1680.947@0.23.1680.947" timestamp="1588544012030" />
     <state width="1315" height="322" key="GridCell.Tab.1.center/0.23.1680.949@0.23.1680.949" timestamp="1588701076080" />
-    <state width="1315" height="322" key="GridCell.Tab.1.left" timestamp="1588701076080">
-      <screen x="0" y="23" width="1680" height="949" />
+    <state width="1315" height="322" key="GridCell.Tab.1.center/0.23.1680.952@0.23.1680.952" timestamp="1588822795362" />
+    <state width="1315" height="322" key="GridCell.Tab.1.left" timestamp="1588822795361">
+      <screen x="0" y="23" width="1680" height="952" />
     </state>
     <state width="1315" height="310" key="GridCell.Tab.1.left/0.23.1680.942@0.23.1680.942" timestamp="1588464557159" />
     <state width="1315" height="193" key="GridCell.Tab.1.left/0.23.1680.944@0.23.1680.944" timestamp="1588567275075" />
     <state width="1315" height="104" key="GridCell.Tab.1.left/0.23.1680.947@0.23.1680.947" timestamp="1588544012029" />
     <state width="1315" height="322" key="GridCell.Tab.1.left/0.23.1680.949@0.23.1680.949" timestamp="1588701076080" />
-    <state width="1315" height="322" key="GridCell.Tab.1.right" timestamp="1588701076080">
-      <screen x="0" y="23" width="1680" height="949" />
+    <state width="1315" height="322" key="GridCell.Tab.1.left/0.23.1680.952@0.23.1680.952" timestamp="1588822795361" />
+    <state width="1315" height="322" key="GridCell.Tab.1.right" timestamp="1588822795363">
+      <screen x="0" y="23" width="1680" height="952" />
     </state>
     <state width="1315" height="310" key="GridCell.Tab.1.right/0.23.1680.942@0.23.1680.942" timestamp="1588464557169" />
     <state width="1315" height="193" key="GridCell.Tab.1.right/0.23.1680.944@0.23.1680.944" timestamp="1588567275076" />
     <state width="1315" height="104" key="GridCell.Tab.1.right/0.23.1680.947@0.23.1680.947" timestamp="1588544012030" />
     <state width="1315" height="322" key="GridCell.Tab.1.right/0.23.1680.949@0.23.1680.949" timestamp="1588701076080" />
+    <state width="1315" height="322" key="GridCell.Tab.1.right/0.23.1680.952@0.23.1680.952" timestamp="1588822795363" />
     <state x="420" y="130" key="SettingsEditor" timestamp="1587686595282">
       <screen x="0" y="23" width="1680" height="942" />
     </state>

@@ -18,7 +18,7 @@ def least_squares(x, y, tx):
 
     deta = np.linalg.det(a)  # Compute the determinant of an array
     if deta == 0:
-        print('Singular matrix')
+        # print('Singular matrix')
         b[:] = 0
     else:
         ainv = np.linalg.inv(a)
