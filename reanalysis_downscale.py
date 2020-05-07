@@ -210,12 +210,8 @@ def readstndata(inpath, stnID, ndays):
     tmax_stn = np.nan * np.zeros([nstn, ndays])
 
     for i in range(nstn):
-        if np.mod(i, 500) == 0:
+        if np.mod(i, 1000) == 0:
             print('station', i, nstn)
-
-        if np.isnan(data0[i]):
-            continue
-
         file = inpath + '/' + stnID[i] + '.nc'
         fid = nc.Dataset(file)
         varlist = fid.variables.keys()
@@ -254,9 +250,14 @@ lattar = np.arange(85 - 0.05, 5, -0.1)
 hwsize = 2 # use (2*2+1)**2 grids to perform regression
 
 # station information
-gmet_stnfile = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'
-gmet_stnpath = '/Users/localuser/GMET/StnInput_daily'
-gmet_stndatafile = '/Users/localuser/GMET/pyGMET_NA/stndata_whole.npz' # to be saved. only process when absent
+# mac
+# gmet_stnfile = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'
+# gmet_stnpath = '/Users/localuser/GMET/StnInput_daily'
+# gmet_stndatafile = '/Users/localuser/GMET/pyGMET_NA/stndata_whole.npz' # to be saved. only process when absent
+# plato
+gmet_stnfile = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'
+gmet_stnpath = '/home/gut428/GMET/StnInput_daily'
+gmet_stndatafile = '/home/gut428/stndata_whole.npz' # to be saved. only process when absent
 
 # reanalysis path: ERA-5
 # mac
@@ -267,7 +268,7 @@ gmet_stndatafile = '/Users/localuser/GMET/pyGMET_NA/stndata_whole.npz' # to be s
 filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/ERA5_DEM2.mat'
 inpath = '/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_raw' # downscale to 0.1 degree
 outpath = '/home/gut428/ERA5_day_ds'
-file_readownstn = outpath + '/stndata_whole_readown.npz' # downscale to station points (1979-2018)
+file_readownstn = outpath + '/ERA5_downto_stn.npz' # downscale to station points (1979-2018)
 filenear = outpath + '/weight_dem.npz'
 
 ########################################################################################################################
@@ -298,44 +299,44 @@ if not os.path.isfile(gmet_stndatafile):
 ########################################################################################################################
 
 # downscale reanalysis to 0.1 degree
-for y in range(year[0], year[1] + 1):
-    for v in range(len(vars)):
-        print('year--var:', y, vars[v])
-        infile = inpath + '/ERA5_' + vars[v] + '_' + str(y) + '.mat'
-        outfile_grid = outpath + '/ERA5_' + vars[v] + '_' + str(y) + '.npz'
-        if os.path.isfile(outfile_grid):
-            continue
-
-        # load original daily reanalysis data
-        datatemp = {}
-        f = h5py.File(infile, 'r')
-        for k, v in f.items():
-            datatemp[k] = np.array(v)
-        latori = datatemp['latitude'][0]
-        lonori = datatemp['longitude'][0]
-        dataori = datatemp['data']
-        dataori = np.transpose(dataori, [2, 1, 0])
-        del datatemp
-        f.close()
-
-        # read location information
-        if not os.path.isfile(filenear):
-            rowse, colse, weight = neargrid(lattar, lontar, latori, lonori, hwsize)
-            # extract ori dem
-            demori = demread(filedem_era, latori, lonori)
-            io.savemat(filenear, {'rowse': rowse, 'colse': colse, 'weight': weight, 'demori': demori})
-        else:
-            datatemp = io.loadmat(filenear)
-            rowse = datatemp['rowse']
-            colse = datatemp['colse']
-            weight = datatemp['weight']
-            demori = datatemp['demori']
-            del datatemp
-
-        # downscale the reanalysis to 0.1 degree
-        datatar = readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight, mask)
-        datatar = np.float32(datatar)
-        np.savez_compressed(outfile_grid, data=datatar, latitude=lattar, longitude=lontar)
+# for y in range(year[0], year[1] + 1):
+#     for v in range(len(vars)):
+#         print('year--var:', y, vars[v])
+#         infile = inpath + '/ERA5_' + vars[v] + '_' + str(y) + '.mat'
+#         outfile_grid = outpath + '/ERA5_' + vars[v] + '_' + str(y) + '.npz'
+#         if os.path.isfile(outfile_grid):
+#             continue
+#
+#         # load original daily reanalysis data
+#         datatemp = {}
+#         f = h5py.File(infile, 'r')
+#         for k, v in f.items():
+#             datatemp[k] = np.array(v)
+#         latori = datatemp['latitude'][0]
+#         lonori = datatemp['longitude'][0]
+#         dataori = datatemp['data']
+#         dataori = np.transpose(dataori, [2, 1, 0])
+#         del datatemp
+#         f.close()
+#
+#         # read location information
+#         if not os.path.isfile(filenear):
+#             rowse, colse, weight = neargrid(lattar, lontar, latori, lonori, hwsize)
+#             # extract ori dem
+#             demori = demread(filedem_era, latori, lonori)
+#             io.savemat(filenear, {'rowse': rowse, 'colse': colse, 'weight': weight, 'demori': demori})
+#         else:
+#             datatemp = io.loadmat(filenear)
+#             rowse = datatemp['rowse']
+#             colse = datatemp['colse']
+#             weight = datatemp['weight']
+#             demori = datatemp['demori']
+#             del datatemp
+#
+#         # downscale the reanalysis to 0.1 degree
+#         datatar = readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight, mask)
+#         datatar = np.float32(datatar)
+#         np.savez_compressed(outfile_grid, data=datatar, latitude=lattar, longitude=lontar)
 
 ########################################################################################################################
 # downscale to station points
