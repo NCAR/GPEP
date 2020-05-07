@@ -86,47 +86,56 @@ def readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse,
     ntimes = np.shape(dataori)[2]
     lonori, latori = np.meshgrid(lonori, latori)
     datatar = np.nan * np.zeros([nrows, ncols, ntimes])
-    for tt in range(ntimes):
-        print('tt', tt)
-        for rr in range(nrows):
-            for cc in range(ncols):
-                if mask[rr, cc] == 1:
-                    rloc = rowse[rr, cc, :]
-                    cloc = colse[rr, cc, :]
+
+    for rr in range(nrows):
+        for cc in range(ncols):
+            if mask[rr, cc] == 1:
+                rloc = rowse[rr, cc, :]
+                cloc = colse[rr, cc, :]
+                latnear = latori[rloc[0]:rloc[1] + 1, cloc[0]:cloc[1] + 1]
+                lonnear = lonori[rloc[0]:rloc[1] + 1, cloc[0]:cloc[1] + 1]
+                demnear = demori[rloc[0]:rloc[1] + 1, cloc[0]:cloc[1] + 1]
+                nnum = np.size(latnear)
+                latnear = np.reshape(latnear, nnum)
+                lonnear = np.reshape(lonnear, nnum)
+                demnear = np.reshape(demnear, nnum)
+                weightnear = np.zeros([nnum, nnum])
+                for i in range(nnum):
+                    weightnear[i, i] = weight[rr, cc, i]
+
+                nearinfo = np.zeros([nnum, 4])
+                nearinfo[:, 0] = 1
+                nearinfo[:, 1] = latnear
+                nearinfo[:, 2] = lonnear
+                nearinfo[:, 3] = demnear
+
+                tarinfo = np.zeros(4)
+                tarinfo[0] = 1
+                tarinfo[1] = lattar[rr]
+                tarinfo[2] = lontar[cc]
+                tarinfo[3] = demtar[rr, cc]
+
+                tx_red = np.transpose(nearinfo)
+                twx_red = np.matmul(tx_red, weightnear)
+
+                for tt in range(ntimes):
                     datanear = dataori[rloc[0]:rloc[1] + 1, cloc[0]:cloc[1] + 1, tt]
-                    nnum = np.size(datanear)
                     datanear = np.reshape(datanear, nnum)
-                    latnear = latori[rloc[0]:rloc[1] + 1, cloc[0]:cloc[1] + 1]
-                    latnear = np.reshape(latnear, nnum)
-                    lonnear = lonori[rloc[0]:rloc[1] + 1, cloc[0]:cloc[1] + 1]
-                    lonnear = np.reshape(lonnear, nnum)
-                    demnear = demori[rloc[0]:rloc[1] + 1, cloc[0]:cloc[1] + 1]
-                    demnear = np.reshape(demnear, nnum)
-                    weightnear = np.zeros([nnum, nnum])
-                    for i in range(nnum):
-                        weightnear[i, i] = weight[rr, cc, i]
 
-                    nearinfo = np.zeros([nnum, 4])
-                    nearinfo[:, 0] = 1
-                    nearinfo[:, 1] = latnear
-                    nearinfo[:, 2] = lonnear
-                    nearinfo[:, 3] = demnear
+                    # upper and lower boundary for the downscaled data
+                    # this is a conservative limitation
+                    lowbound = np.min(datanear)
+                    upbound = np.max(datanear)
 
-                    tarinfo = np.zeros(4)
-                    tarinfo[0] = 1
-                    tarinfo[1] = lattar[rr]
-                    tarinfo[2] = lontar[cc]
-                    tarinfo[3] = demtar[rr, cc]
-
-                    tx_red = np.transpose(nearinfo)
-                    twx_red = np.matmul(tx_red, weightnear)
                     b = reg.least_squares(nearinfo, datanear, twx_red)
-                    if np.all(b == 0):
+                    datatemp = np.dot(tarinfo, b)
+                    if np.all(b == 0) or datatemp>upbound or datatemp<lowbound:
+                        # use nearest neighbor interpolation
                         weightnear = weight[rr, cc, 0:nnum]
                         mloc = np.argmax(weightnear)
                         datatar[rr, cc, tt] = datanear[mloc]
                     else:
-                        datatar[rr, cc, tt] = np.dot(tarinfo, b)
+                        datatar[rr, cc, tt] = datatemp
 
     return datatar
 
@@ -134,6 +143,7 @@ def readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse,
 a = int(sys.argv[1])
 b = int(sys.argv[2])
 year = [a, b]
+# year = [1979, 1979]
 print('year',year)
 
 # basic information
@@ -141,8 +151,6 @@ print('year',year)
 # filedem = './DEM/NA_DEM_010deg_trim.mat'
 # plato
 filedem = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
-
-# year = [1979, 2018]
 vars = ['prcp', 'tmin', 'tmax']
 lontar = np.arange(-180 + 0.05, -50, 0.1)
 lattar = np.arange(85 - 0.05, 5, -0.1)
@@ -168,7 +176,7 @@ for y in range(year[0], year[1] + 1):
     for v in range(len(vars)):
         print('year--var:', y, vars[v])
         infile = inpath + '/ERA5_' + vars[v] + '_' + str(y) + '.mat'
-        outfile = outpath + '/ERA5_' + vars[v] + '_' + str(y) + '.mat'
+        outfile = outpath + '/ERA5_' + vars[v] + '_' + str(y) + '.npz'
         if os.path.isfile(outfile):
             continue
 
@@ -200,4 +208,5 @@ for y in range(year[0], year[1] + 1):
 
         # downscale the reanalysis to 0.1 degree
         datatar = readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight, mask)
+        datatar = np.float32(datatar)
         np.savez_compressed(outfile, data=datatar, latitude=lattar, longitude=lontar)
