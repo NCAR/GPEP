@@ -134,6 +134,7 @@ def readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse,
 a = int(sys.argv[1])
 b = int(sys.argv[2])
 year = [a, b]
+print('year',year)
 
 # basic information
 # mac

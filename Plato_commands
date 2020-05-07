@@ -1,1 +1,1 @@
-sbatch --array=1979-2018%4 Plato_readown.sh
+sbatch --array=1979-1979%1 Plato_readown.sh
