@@ -353,7 +353,7 @@ if not os.path.isfile(file_readownstn):
     demori = datatemp['demori']
 
     flag = 0
-    for y in range(1980, 2019):
+    for y in range(1979, 2019):
         print('Downscale to station: year', y)
         # prcp
         infile = inpath + '/ERA5_prcp_' + str(y) + '.mat'
