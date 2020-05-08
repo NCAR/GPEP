@@ -255,14 +255,14 @@ gmet_stndatafile = '/home/gut428/stndata_whole.npz'  # to be saved. only process
 
 # reanalysis path: ERA-5
 # mac
-# filedem_era = './DEM/MERRA2_DEM2.mat'
+# filedem_era = './DEM/JRA55_DEM2.mat'
 # inpath = '/Users/localuser/Research/Test'
 # outpath = '/Users/localuser/Research'
 # plato
-filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/MERRA2_DEM2.mat'
-inpath = '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_raw'  # downscale to 0.1 degree
-outpath = '/home/gut428/MERRA2_day_ds'
-file_readownstn = outpath + '/MERRA2_downto_stn.npz'  # downscale to station points (1979-2018)
+filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/JRA55_DEM2.mat'
+inpath = '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_raw'  # downscale to 0.1 degree
+outpath = '/home/gut428/JRA55_day_ds'
+file_readownstn = outpath + '/JRA55_downto_stn.npz'  # downscale to station points (1979-2018)
 filenear = outpath + '/weight_dem.npz'
 
 ########################################################################################################################
@@ -296,8 +296,8 @@ if not os.path.isfile(gmet_stndatafile):
 for y in range(year[0], year[1] + 1):
     for v in range(len(vars)):
         print('year--var:', y, vars[v])
-        infile = inpath + '/MERRA2_' + vars[v] + '_' + str(y) + '.mat'
-        outfile_grid = outpath + '/MERRA2_' + vars[v] + '_' + str(y) + '.npz'
+        infile = inpath + '/JRA55_' + vars[v] + '_' + str(y) + '.mat'
+        outfile_grid = outpath + '/JRA55_' + vars[v] + '_' + str(y) + '.npz'
         if os.path.isfile(outfile_grid):
             continue
 
@@ -356,7 +356,7 @@ for y in range(year[0], year[1] + 1):
 #     for y in range(1979, 2019):
 #         print('Downscale to station: year', y)
 #         # prcp
-#         infile = inpath + '/MERRA2_prcp_' + str(y) + '.mat'
+#         infile = inpath + '/JRA55_prcp_' + str(y) + '.mat'
 #         datatemp = {}
 #         f = h5py.File(infile, 'r')
 #         for k, v in f.items():
@@ -372,7 +372,7 @@ for y in range(year[0], year[1] + 1):
 #         prcptar = np.float32(prcptar)
 #
 #         # tmin
-#         infile = inpath + '/MERRA2_tmin_' + str(y) + '.mat'
+#         infile = inpath + '/JRA55_tmin_' + str(y) + '.mat'
 #         datatemp = {}
 #         f = h5py.File(infile, 'r')
 #         for k, v in f.items():
@@ -388,7 +388,7 @@ for y in range(year[0], year[1] + 1):
 #         tmintar = np.float32(tmintar)
 #
 #         # tmax
-#         infile = inpath + '/MERRA2_tmax_' + str(y) + '.mat'
+#         infile = inpath + '/JRA55_tmax_' + str(y) + '.mat'
 #         datatemp = {}
 #         f = h5py.File(infile, 'r')
 #         for k, v in f.items():
