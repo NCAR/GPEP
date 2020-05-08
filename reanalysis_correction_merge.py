@@ -63,29 +63,159 @@ def double_cvindex(gmet_stndatafile, dividenum):
            tmean_trainindex1, tmean_testindex1, tmean_trainindex2, tmean_testindex2
 
 
-def error_correction_ratio(datatar, dataref, latstn, lonstn, lattar, lontar, hwsize, mode):
-    # mode: 1-lattar/lontar represents the whole gridded domain
-    # mode: 2-lattar/lontar represents station points (for validation purpose)
+def calculate_ratio(datatar, dataref, hwsize, upbound=5, lowbound=0.2):
+    # datatar, dataref: 2D [nstn, ntime]
     # hwsize: define time window (2*hwsize+1) used to calculate ratio (as ratio for a specific day is too variable)
+    # upbound/lowbound: upper and lower limitation of rario
+    nearnum = 8  # nearby stations used for extrapolation
     nstn, ntime = np.shape(datatar)
+
     # 1. calculate ratio for every day
-    upbound = 5  # upper bound of the ratio
-    lowbound = 0.2  # lower bound of the ratio
+    # lower bound of the ratio
     ratio = np.ones([nstn, ntime])
     for i in range(ntime):
         if i < hwsize:
             windex = np.arange(hwsize * 2 + 1)
-        elif i >= ntime-hwsize:
+        elif i >= ntime - hwsize:
             windex = np.arange(ntime - hwsize * 2 - 1, ntime)
         else:
             windex = np.arange(i - hwsize, i + hwsize + 1)
-        dtari = np.nansum(datatar[:,windex], axis=1)
+        dtari = np.nansum(datatar[:, windex], axis=1)
         drefi = np.nansum(dataref[:, windex], axis=1)
-        ratio[:,i] = drefi/dtari
-    ratio[ratio > upbound] = upbound # include inf: X / 0
+        ratio[:, i] = drefi / dtari
+    ratio[ratio > upbound] = upbound  # include inf: X / 0
     ratio[ratio < lowbound] = lowbound
-    ratio[np.isnan(ratio)] = 1 # 0 / 0
+    ratio[np.isnan(ratio)] = 1  # 0 / 0
+    return ratio
 
+
+
+def extrapolation(latin, lonin, datain, latout, lonout, nearnum):
+    wexp = 3
+    if np.ndim(latout) == 1:
+        nearstn_loc, nearstn_dist = findnearstn(latin, lonin, latout, lonout, nearnum, 1)
+        num = len(latout)
+        if np.ndim(datain) == 1:
+            datain = datain[:,np.newaxis]
+        ntimes = np.shape(datain)[1]
+        dataout = np.zeros([num, ntimes])
+        for i in range(num):
+            dataini = datain[nearstn_loc[i, :], :]
+            disti = nearstn_dist[i, :]
+            weighti = au.distanceweight(disti, np.max(disti) + 1, wexp)
+            weighti = weighti / np.sum(weighti)
+            for j in range(ntimes):
+                dataout[i, j] = np.sum(dataini[:, j] * weighti)
+
+    elif np.ndim(latout) == 2:
+        nearstn_loc, nearstn_dist = findnearstn(latin, lonin, latout, lonout, nearnum, 0)
+        if np.ndim(datain) == 2:
+            datain = datain[:,:,np.newaxis]
+        nrows, ncols, ntimes = np.shape(datain)
+        dataout = np.zeros([nrows, ncols, ntimes])
+        for r in range(nrows):
+            for c in range(ncols):
+                dataini = datain[nearstn_loc[r,c, :], :]
+                disti = nearstn_dist[r,c,:]
+                weighti = au.distanceweight(disti, np.max(disti) + 1, wexp)
+                weighti = weighti / np.sum(weighti)
+                for j in range(ntimes):
+                    dataout[r, c, j] = np.sum(dataini[:, j] * weighti)
+    else:
+        print('The dimensions of tarlat or tarlon are larger than 2')
+        sys.exit()
+
+    return dataout
+
+
+def findnearstn(stnlat, stnlon, tarlat, tarlon, nearnum, noself):
+    # only use lat/lon to find near stations without considering distance in km
+    # stnlat/stnlon: 1D
+    # tarlat/tarlon: 1D or 2D
+    # noself: 1--stnlat and tarlat have overlapped stations, which should be excluded from stnlat
+
+    stnll = np.zeros([len(stnlat), 2])
+    stnll[:, 0] = stnlat
+    stnll[:, 1] = stnlon
+
+    if len(np.shape(tarlat)) == 1:
+        num = len(tarlat)
+        nearstn_loc = np.zeros([num, nearnum])
+        nearstn_dist = np.zeros([num, nearnum])
+        for i in range(num):
+            tari = np.array([tarlat[i], tarlon[i]])
+            dist = au.distance(tari, stnll)
+            if noself == 1:
+                dist[dist == 0] = np.inf  # may not be perfect, but work for SCDNA
+            indi = np.argsort(dist)
+            nearstn_loc[i, :] = indi[0:nearnum]
+            nearstn_dist[i, :] = dist[nearstn_loc[i, :]]
+    elif len(np.shape(tarlat)) == 2:
+        nrows, ncols = np.shape(tarlat)
+        nearstn_loc = np.zeros([nrows, ncols, nearnum])
+        nearstn_dist = np.zeros([nrows, ncols, nearnum])
+        for r in range(nrows):
+            for c in range(ncols):
+                tari = np.array([tarlat[r, c], tarlon[r, c]])
+                dist = au.distance(tari, stnll)
+                indi = np.argsort(dist)
+                nearstn_loc[r, c, :] = indi[0:nearnum]
+                nearstn_dist[r, c, :] = dist[nearstn_loc[r, c, :]]
+    else:
+        print('The dimensions of tarlat or tarlon are larger than 2')
+        sys.exit()
+
+    return nearstn_loc, nearstn_dist
+
+def error_correction(dataori, anomaly, mode = 'ratio'):
+    # default: time is the last dimension
+    if mode == 'ratio':
+        datacorr = dataori * anomaly
+    elif mode == 'diff':
+        datacorr = dataori + anomaly
+    else:
+        sys.exit('Wrong error correction mode')
+    return datacorr
+
+def calweight(obsall, preall, mode = 'RMSE', preprocess=True):
+    nstn, ntime = np.shape(obsall)
+    met = np.zeros(nstn)
+    for i in range(nstn):
+        obs = obsall[i,:]
+        pre = preall[i,:]
+        if preprocess:
+            # delete the nan values
+            ind_nan = np.isnan(obs) | np.isnan(pre)
+            obs = obs[~ind_nan]
+            pre = pre[~ind_nan]
+        if mode == 'RMSE':
+            met[i] = np.sqrt(np.sum(np.square(obs - pre)) / len(obs))  # RMSE
+        elif mode == 'CC':
+            temp = np.corrcoef(obs, pre)
+            met[i] = temp[0][1]  # CC
+        else:
+            sys.exit('Unknown inputs for calmetric')
+
+    if mode == 'RMSE':
+        weight = 1 / (met**2)
+    elif mode == 'CC':
+        met[met<0] = 0
+        weight = met ** 2
+    else:
+        sys.exit('Unknown inputs for calmetric')
+
+    return weight
+
+def ismember(a, b):
+    # tf = np.in1d(a,b) # for newer versions of numpy
+    tf = np.array([i in b for i in a])
+    u = np.unique(a[tf])
+    index = np.array([(np.where(b == i))[0][-1] if t else 0 for i,t in zip(a,tf)])
+    return tf, index
+
+
+def weightmerge(data,weight):
+    pass
 
 
 ########################################################################################################################
@@ -94,6 +224,9 @@ def error_correction_ratio(datatar, dataref, latstn, lonstn, lattar, lontar, hws
 lontar = np.arange(-180 + 0.05, -50, 0.1)
 lattar = np.arange(85 - 0.05, 5, -0.1)
 vars = ['prcp', 'tmean', 'trange']
+hwsize_ratio = 15 # define time window (2*hwsize+1) used to calculate ratio (as ratio for a specific day is too variable)
+nearnum = 8 # the number of nearby stations used to extrapolate points to grids (for correction and merging)
+weightmode = 'RMSE' # the metric used to guide merging (CC or RMSE). Weight = CC**2 or 1/RMSE**2
 
 ########################################################################################################################
 
@@ -164,15 +297,39 @@ for lay1 in range(dividenum):
         vari = var
     trainindex1 = taintestindex[vari + '_trainindex1'][lay1, :]
     testindex1 = taintestindex[vari + '_testindex1'][lay1, :]
+    stnlle_trainl1 = stnlle[trainindex1, :]
+    stnlle_testl1 = stnlle[testindex1, :]
+
+    weight_trainl1 = np.zeros([len(trainindex1),reanum])
 
     for lay2 in range(dividenum):
-        # extract train and test index for layer-1
+        # extract train and test index for layer-2 (subsets of trainindex1)
         trainindex2 = taintestindex[vari + '_trainindex2'][lay1, lay2, :]
         testindex2 = taintestindex[vari + '_testindex2'][lay1, lay2, :]
-
-        stndatal2 = stndata[trainindex2, :]
+        stndata_trainl2 = stndata[trainindex2, :]
+        stndata_testl2 = stndata[testindex2, :]
+        stnlle_trainl2 = stnlle[trainindex2, :]
+        stnlle_testl2 = stnlle[testindex2, :]
 
         for rr in range(reanum):
-            readatal2 = readata[rr][trainindex2, :]
+            readata_trainl2 = readata[rr][trainindex2, :]
+            readata_testl2 = readata[rr][testindex2, :]
+            # calculate ratio at the train stations
+            ratio_ori = calculate_ratio(readata_trainl2, stndata_trainl2, hwsize_ratio, upbound=5, lowbound=0.2)
+            # extrapolate the ratio to the test stations (in layer-2)
+            ratio_ext = extrapolation(stnlle_trainl2[:,0], stnlle_trainl2[:,1], ratio_ori,
+                                       stnlle_testl2[:,0], stnlle_testl2[:,1], nearnum)
+            # correct data at the test stations
+            readata_testl2_corr = error_correction(readata_trainl2, ratio_ext, mode = 'ratio')
+            # estimate weight the test stations
+            weight_testl2  = calweight(stndata_testl2, readata_testl2_corr, weightmode)
+            # fill the weight to its parent station set (weight_trainl1)
+            tf, index = ismember(testindex2, trainindex1)
+            weight_trainl1[index,rr] = weight_testl2
 
-        # start correction
+    # extrapolate the weight to the test stations (in layer-1)
+    weight_testl1 = extrapolation(stnlle_trainl1[:, 0], stnlle_trainl1[:, 1], weight_trainl1,
+                              stnlle_testl1[:, 0], stnlle_testl1[:, 1], nearnum)
+    # merge reanalysis products at the test stations
+
+
