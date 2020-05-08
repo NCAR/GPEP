@@ -25,14 +25,6 @@ def demread(file, lattar, lontar):
     return demtar
 
 
-def ncread(file, var):
-    # read a variable from netcdf
-    ncfid = nc.Dataset(file)
-    data = ncfid[var][:].data
-    ncfid.close()
-    return data
-
-
 def neargrid(rowtar, coltar, rowori, colori, hwsize):
     # inputs are 1D matrices
     # tar is target area
@@ -139,7 +131,8 @@ def readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse,
     return datatar
 
 
-def readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight, stn_row, stn_col, data0):
+def readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight, stn_row, stn_col,
+                       data0):
     nstn = len(stn_row)
     ntimes = np.shape(dataori)[2]
     lonori, latori = np.meshgrid(lonori, latori)
@@ -228,6 +221,7 @@ def readstndata(inpath, stnID, ndays):
 
     return prcp_stn, tmean_stn, trange_stn
 
+
 ########################################################################################################################
 # time periods: inside or outside
 # outside
@@ -247,7 +241,7 @@ filedem = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
 vars = ['prcp', 'tmin', 'tmax']
 lontar = np.arange(-180 + 0.05, -50, 0.1)
 lattar = np.arange(85 - 0.05, 5, -0.1)
-hwsize = 2 # use (2*2+1)**2 grids to perform regression
+hwsize = 2  # use (2*2+1)**2 grids to perform regression
 
 # station information
 # mac
@@ -257,7 +251,7 @@ hwsize = 2 # use (2*2+1)**2 grids to perform regression
 # plato
 gmet_stnfile = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'
 gmet_stnpath = '/home/gut428/GMET/StnInput_daily'
-gmet_stndatafile = '/home/gut428/stndata_whole.npz' # to be saved. only process when absent
+gmet_stndatafile = '/home/gut428/stndata_whole.npz'  # to be saved. only process when absent
 
 # reanalysis path: ERA-5
 # mac
@@ -266,9 +260,9 @@ gmet_stndatafile = '/home/gut428/stndata_whole.npz' # to be saved. only process 
 # outpath = '/Users/localuser/Research'
 # plato
 filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/ERA5_DEM2.mat'
-inpath = '/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_raw' # downscale to 0.1 degree
+inpath = '/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_raw'  # downscale to 0.1 degree
 outpath = '/home/gut428/ERA5_day_ds'
-file_readownstn = outpath + '/ERA5_downto_stn.npz' # downscale to station points (1979-2018)
+file_readownstn = outpath + '/ERA5_downto_stn.npz'  # downscale to station points (1979-2018)
 filenear = outpath + '/weight_dem.npz'
 
 ########################################################################################################################
@@ -285,7 +279,7 @@ stn_lle = np.loadtxt(gmet_stnfile, dtype=float, skiprows=1, comments='#', delimi
 stn_row = ((85 - stn_lle[:, 0]) / 0.1).astype(int)
 stn_col = ((stn_lle[:, 1] + 180) / 0.1).astype(int)
 nstn = len(stn_ID)
-ndays = 14610 # days from 1979 to 2018
+ndays = 14610  # days from 1979 to 2018
 
 # read all station data and save to facilitate analysis in the future
 if not os.path.isfile(gmet_stndatafile):
@@ -342,8 +336,8 @@ if not os.path.isfile(gmet_stndatafile):
 # downscale to station points
 # original station data
 datatemp = np.load(gmet_stndatafile)
-prcp_stn0=datatemp['prcp_stn'][:,0]
-tmean_stn0=datatemp['tmean_stn'][:,0]
+prcp_stn0 = datatemp['prcp_stn'][:, 0]
+tmean_stn0 = datatemp['tmean_stn'][:, 0]
 del datatemp
 
 if not os.path.isfile(file_readownstn):
@@ -410,11 +404,13 @@ if not os.path.isfile(file_readownstn):
         tmaxtar = np.float32(tmaxtar)
 
         # merge
-        dayy = np.shape(prcptar)[2]
-        prcp_readown[:, :, flag:flag + dayy] = prcptar
-        tmean_readown[:, :, flag:flag + dayy] = (tmintar + tmaxtar) / 2
-        trange_readown[:, :, flag:flag + dayy] = np.abs(tmaxtar - tmintar)
+        dayy = np.shape(prcptar)[1]
+        prcp_readown[:, flag:flag + dayy] = prcptar
+        tmean_readown[:, flag:flag + dayy] = (tmintar + tmaxtar) / 2
+        trange_readown[:, flag:flag + dayy] = np.abs(tmaxtar - tmintar)
         flag = flag + dayy
 
-    np.savez_compressed(file_readownstn, prcp_readown=prcp_readown, tmean_readown=tmean_readown, trange_readown=trange_readown,
-                        latitude=lattar, longitude=lontar, stn_ID=stn_ID, stn_lle=stn_lle, stn_row=stn_row, stn_col=stn_col)
+    np.savez_compressed(file_readownstn, prcp_readown=prcp_readown, tmean_readown=tmean_readown,
+                        trange_readown=trange_readown,
+                        latitude=lattar, longitude=lontar, stn_ID=stn_ID, stn_lle=stn_lle, stn_row=stn_row,
+                        stn_col=stn_col)
