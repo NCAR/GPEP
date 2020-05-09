@@ -1,1 +1,1 @@
-sbatch --array=2-40%39 Plato_readown.sh
+sbatch --array=3-40%38 Plato_readown.sh
