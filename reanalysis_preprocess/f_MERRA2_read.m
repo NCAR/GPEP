@@ -25,7 +25,14 @@ for vv=1:varnum  % for each var, re-read the basic information
     Infile=[Inpath{vv},'/',Indir(1).name];
     latitude=ncread(Infile,'lat');
     longitude=ncread(Infile,'lon');
-  
+    latitude = flipud(latitude); % this should be done because data are flipped
+    
+    % screen the region (lat 0-90, lon -180 to -50
+    indlat = latitude>=0 & latitude<=90;
+    indlon = longitude>=-180 & longitude<=-50;
+    latitude=latitude(indlat);
+    longitude=longitude(indlon);
+    
     for yy=year(1):year(end)
         Outfile=[Outpath{vv},'/',prefixout{vv},num2str(yy),'.mat'];
         if ~exist(Outfile,'file')
@@ -48,6 +55,7 @@ for vv=1:varnum  % for each var, re-read the basic information
                 end
                 Infile=[Inpath{vv},'/',Indir(z).name];
                 var=f_MERRA2_VarRead(Infile,varname{vv});
+                var=var(indlat,indlon);
                 data(:,:,i-Startdate+1)=var;
             end         
             % save data

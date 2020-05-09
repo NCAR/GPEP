@@ -26,6 +26,12 @@ for vv=1:varnum  % for each var, re-read the basic information
     file=[Inpath{vv},'/',Indir(tempind).name];
     latitude=ncread(file,'g4_lat_2'); % lat/lon of grid centers
     longitude=ncread(file,'g4_lon_3');
+    longitude=mod(longitude+180,360)-180; % 0-360 to -180/180
+    
+    indlat = latitude>=0 & latitude<=90;
+    indlon = longitude>=-180 & longitude<=-50;
+    latitude=latitude(indlat);
+    longitude=longitude(indlon);
     
     for yy=year(1):year(end)
         Outfile=[Outpath{vv},'/',prefixout{vv},num2str(yy),'.mat'];
@@ -40,6 +46,7 @@ for vv=1:varnum  % for each var, re-read the basic information
                     Infile=[Inpath{vv},'/',Indir(indyy(ii)).name];
                     [varint0,varmonth]=f_JRA55_VarRead(Infile,varname{vv});
                     
+                    varint0=varint0(indlat,indlon,:);
                     data=cat(3,data,varint0);
                 end
             end

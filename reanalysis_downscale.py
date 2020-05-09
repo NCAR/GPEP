@@ -235,9 +235,9 @@ print('start/end year', year)
 
 # basic information: be set before running
 # mac
-# filedem = './DEM/NA_DEM_010deg_trim.mat'
+filedem = './DEM/NA_DEM_010deg_trim.mat'
 # plato
-filedem = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
+# filedem = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
 vars = ['prcp', 'tmin', 'tmax']
 lontar = np.arange(-180 + 0.05, -50, 0.1)
 lattar = np.arange(85 - 0.05, 5, -0.1)
@@ -245,24 +245,24 @@ hwsize = 2  # use (2*2+1)**2 grids to perform regression
 
 # station information
 # mac
-# gmet_stnfile = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'
-# gmet_stnpath = '/Users/localuser/GMET/StnInput_daily'
-# gmet_stndatafile = '/Users/localuser/GMET/pyGMET_NA/stndata_whole.npz' # to be saved. only process when absent
+gmet_stnfile = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'
+gmet_stnpath = '/Users/localuser/GMET/StnInput_daily'
+gmet_stndatafile = '/Users/localuser/GMET/pyGMET_NA/stndata_whole.npz' # to be saved. only process when absent
 # plato
-gmet_stnfile = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'
-gmet_stnpath = '/home/gut428/GMET/StnInput_daily'
-gmet_stndatafile = '/home/gut428/stndata_whole.npz'  # to be saved. only process when absent
+# gmet_stnfile = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'
+# gmet_stnpath = '/home/gut428/GMET/StnInput_daily'
+# gmet_stndatafile = '/home/gut428/stndata_whole.npz'  # to be saved. only process when absent
 
 # reanalysis path: ERA-5
 # mac
-# filedem_era = './DEM/ERA5_DEM2.mat'
-# inpath = '/Users/localuser/Research/Test'
-# outpath = '/Users/localuser/Research'
+filedem_era = './DEM/MERRA2_DEM2.mat'
+inpath = '/Users/localuser/Research/Test'
+outpath = '/Users/localuser/Research'
 # plato
-filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/ERA5_DEM2.mat'
-inpath = '/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_raw'  # downscale to 0.1 degree
-outpath = '/home/gut428/ERA5_day_ds'
-file_readownstn = outpath + '/ERA5_downto_stn.npz'  # downscale to station points (1979-2018)
+# filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/MERRA2_DEM2.mat'
+# inpath = '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_raw'  # downscale to 0.1 degree
+# outpath = '/home/gut428/MERRA2_day_ds'
+# file_readownstn = outpath + '/MERRA2_downto_stn.npz'  # downscale to station points (1979-2018)
 filenear = outpath + '/weight_dem.npz'
 
 ########################################################################################################################
@@ -293,15 +293,70 @@ if not os.path.isfile(gmet_stndatafile):
 ########################################################################################################################
 
 # downscale reanalysis to 0.1 degree
-# for y in range(year[0], year[1] + 1):
-#     for v in range(len(vars)):
-#         print('year--var:', y, vars[v])
-#         infile = inpath + '/ERA5_' + vars[v] + '_' + str(y) + '.mat'
-#         outfile_grid = outpath + '/ERA5_' + vars[v] + '_' + str(y) + '.npz'
-#         if os.path.isfile(outfile_grid):
-#             continue
+for y in range(year[0], year[1] + 1):
+    for v in range(len(vars)):
+        print('year--var:', y, vars[v])
+        infile = inpath + '/MERRA2_' + vars[v] + '_' + str(y) + '.mat'
+        outfile_grid = outpath + '/MERRA2_' + vars[v] + '_' + str(y) + '.npz'
+        if os.path.isfile(outfile_grid):
+            continue
+
+        # load original daily reanalysis data
+        datatemp = {}
+        f = h5py.File(infile, 'r')
+        for k, v in f.items():
+            datatemp[k] = np.array(v)
+        latori = datatemp['latitude'][0]
+        lonori = datatemp['longitude'][0]
+        dataori = datatemp['data']
+        dataori = np.transpose(dataori, [2, 1, 0])
+        del datatemp
+        f.close()
+
+        # read location information
+        if not os.path.isfile(filenear):
+            rowse, colse, weight = neargrid(lattar, lontar, latori, lonori, hwsize)
+            # extract ori dem
+            demori = demread(filedem_era, latori, lonori)
+            io.savemat(filenear, {'rowse': rowse, 'colse': colse, 'weight': weight, 'demori': demori})
+        else:
+            datatemp = io.loadmat(filenear)
+            rowse = datatemp['rowse']
+            colse = datatemp['colse']
+            weight = datatemp['weight']
+            demori = datatemp['demori']
+            del datatemp
+
+        # downscale the reanalysis to 0.1 degree
+        datatar = readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight, mask)
+        datatar = np.float32(datatar)
+        np.savez_compressed(outfile_grid, data=datatar, latitude=lattar, longitude=lontar)
+
+########################################################################################################################
+# downscale to station points
+# original station data
+# datatemp = np.load(gmet_stndatafile)
+# prcp_stn0 = datatemp['prcp_stn'][:, 0]
+# tmean_stn0 = datatemp['tmean_stn'][:, 0]
+# del datatemp
 #
-#         # load original daily reanalysis data
+# if not os.path.isfile(file_readownstn):
+#     prcp_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
+#     tmean_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
+#     trange_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
+#
+#     # load nearby grid information
+#     datatemp = io.loadmat(filenear)
+#     rowse = datatemp['rowse']
+#     colse = datatemp['colse']
+#     weight = datatemp['weight']
+#     demori = datatemp['demori']
+#
+#     flag = 0
+#     for y in range(1979, 2019):
+#         print('Downscale to station: year', y)
+#         # prcp
+#         infile = inpath + '/MERRA2_prcp_' + str(y) + '.mat'
 #         datatemp = {}
 #         f = h5py.File(infile, 'r')
 #         for k, v in f.items():
@@ -312,105 +367,50 @@ if not os.path.isfile(gmet_stndatafile):
 #         dataori = np.transpose(dataori, [2, 1, 0])
 #         del datatemp
 #         f.close()
+#         prcptar = readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight,
+#                                      stn_row, stn_col, prcp_stn0)
+#         prcptar = np.float32(prcptar)
 #
-#         # read location information
-#         if not os.path.isfile(filenear):
-#             rowse, colse, weight = neargrid(lattar, lontar, latori, lonori, hwsize)
-#             # extract ori dem
-#             demori = demread(filedem_era, latori, lonori)
-#             io.savemat(filenear, {'rowse': rowse, 'colse': colse, 'weight': weight, 'demori': demori})
-#         else:
-#             datatemp = io.loadmat(filenear)
-#             rowse = datatemp['rowse']
-#             colse = datatemp['colse']
-#             weight = datatemp['weight']
-#             demori = datatemp['demori']
-#             del datatemp
+#         # tmin
+#         infile = inpath + '/MERRA2_tmin_' + str(y) + '.mat'
+#         datatemp = {}
+#         f = h5py.File(infile, 'r')
+#         for k, v in f.items():
+#             datatemp[k] = np.array(v)
+#         latori = datatemp['latitude'][0]
+#         lonori = datatemp['longitude'][0]
+#         dataori = datatemp['data']
+#         dataori = np.transpose(dataori, [2, 1, 0])
+#         del datatemp
+#         f.close()
+#         tmintar = readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight,
+#                                      stn_row, stn_col, tmean_stn0)
+#         tmintar = np.float32(tmintar)
 #
-#         # downscale the reanalysis to 0.1 degree
-#         datatar = readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight, mask)
-#         datatar = np.float32(datatar)
-#         np.savez_compressed(outfile_grid, data=datatar, latitude=lattar, longitude=lontar)
-
-########################################################################################################################
-# downscale to station points
-# original station data
-datatemp = np.load(gmet_stndatafile)
-prcp_stn0 = datatemp['prcp_stn'][:, 0]
-tmean_stn0 = datatemp['tmean_stn'][:, 0]
-del datatemp
-
-if not os.path.isfile(file_readownstn):
-    prcp_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
-    tmean_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
-    trange_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
-
-    # load nearby grid information
-    datatemp = io.loadmat(filenear)
-    rowse = datatemp['rowse']
-    colse = datatemp['colse']
-    weight = datatemp['weight']
-    demori = datatemp['demori']
-
-    flag = 0
-    for y in range(1979, 2019):
-        print('Downscale to station: year', y)
-        # prcp
-        infile = inpath + '/ERA5_prcp_' + str(y) + '.mat'
-        datatemp = {}
-        f = h5py.File(infile, 'r')
-        for k, v in f.items():
-            datatemp[k] = np.array(v)
-        latori = datatemp['latitude'][0]
-        lonori = datatemp['longitude'][0]
-        dataori = datatemp['data']
-        dataori = np.transpose(dataori, [2, 1, 0])
-        del datatemp
-        f.close()
-        prcptar = readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight,
-                                     stn_row, stn_col, prcp_stn0)
-        prcptar = np.float32(prcptar)
-
-        # tmin
-        infile = inpath + '/ERA5_tmin_' + str(y) + '.mat'
-        datatemp = {}
-        f = h5py.File(infile, 'r')
-        for k, v in f.items():
-            datatemp[k] = np.array(v)
-        latori = datatemp['latitude'][0]
-        lonori = datatemp['longitude'][0]
-        dataori = datatemp['data']
-        dataori = np.transpose(dataori, [2, 1, 0])
-        del datatemp
-        f.close()
-        tmintar = readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight,
-                                     stn_row, stn_col, tmean_stn0)
-        tmintar = np.float32(tmintar)
-
-        # tmax
-        infile = inpath + '/ERA5_tmax_' + str(y) + '.mat'
-        datatemp = {}
-        f = h5py.File(infile, 'r')
-        for k, v in f.items():
-            datatemp[k] = np.array(v)
-        latori = datatemp['latitude'][0]
-        lonori = datatemp['longitude'][0]
-        dataori = datatemp['data']
-        dataori = np.transpose(dataori, [2, 1, 0])
-        del datatemp
-        f.close()
-        tmaxtar = readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight,
-                                     stn_row, stn_col, tmean_stn0)
-        tmaxtar = np.float32(tmaxtar)
-
-        # merge
-        dayy = np.shape(prcptar)[1]
-        prcp_readown[:, flag:flag + dayy] = prcptar
-        tmean_readown[:, flag:flag + dayy] = (tmintar + tmaxtar) / 2
-        trange_readown[:, flag:flag + dayy] = np.abs(tmaxtar - tmintar)
-        flag = flag + dayy
-
-    np.savez_compressed(file_readownstn, prcp_readown=prcp_readown, tmean_readown=tmean_readown,
-                        trange_readown=trange_readown,
-                        latitude=lattar, longitude=lontar, stn_ID=stn_ID, stn_lle=stn_lle, stn_row=stn_row,
-                        stn_col=stn_col)
+#         # tmax
+#         infile = inpath + '/MERRA2_tmax_' + str(y) + '.mat'
+#         datatemp = {}
+#         f = h5py.File(infile, 'r')
+#         for k, v in f.items():
+#             datatemp[k] = np.array(v)
+#         latori = datatemp['latitude'][0]
+#         lonori = datatemp['longitude'][0]
+#         dataori = datatemp['data']
+#         dataori = np.transpose(dataori, [2, 1, 0])
+#         del datatemp
+#         f.close()
+#         tmaxtar = readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight,
+#                                      stn_row, stn_col, tmean_stn0)
+#         tmaxtar = np.float32(tmaxtar)
+#
+#         # merge
+#         dayy = np.shape(prcptar)[1]
+#         prcp_readown[:, flag:flag + dayy] = prcptar
+#         tmean_readown[:, flag:flag + dayy] = (tmintar + tmaxtar) / 2
+#         trange_readown[:, flag:flag + dayy] = np.abs(tmaxtar - tmintar)
+#         flag = flag + dayy
+#
+#     np.savez_compressed(file_readownstn, prcp_readown=prcp_readown, tmean_readown=tmean_readown,
+#                         trange_readown=trange_readown,
+#                         latitude=lattar, longitude=lontar, stn_ID=stn_ID, stn_lle=stn_lle, stn_row=stn_row,
+#                         stn_col=stn_col)
