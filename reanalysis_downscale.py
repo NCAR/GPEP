@@ -235,9 +235,9 @@ print('start/end year', year)
 
 # basic information: be set before running
 # mac
-filedem = './DEM/NA_DEM_010deg_trim.mat'
+# filedem = './DEM/NA_DEM_010deg_trim.mat'
 # plato
-# filedem = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
+filedem = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
 vars = ['prcp', 'tmin', 'tmax']
 lontar = np.arange(-180 + 0.05, -50, 0.1)
 lattar = np.arange(85 - 0.05, 5, -0.1)
@@ -245,24 +245,24 @@ hwsize = 2  # use (2*2+1)**2 grids to perform regression
 
 # station information
 # mac
-gmet_stnfile = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'
-gmet_stnpath = '/Users/localuser/GMET/StnInput_daily'
-gmet_stndatafile = '/Users/localuser/GMET/pyGMET_NA/stndata_whole.npz' # to be saved. only process when absent
+# gmet_stnfile = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'
+# gmet_stnpath = '/Users/localuser/GMET/StnInput_daily'
+# gmet_stndatafile = '/Users/localuser/GMET/pyGMET_NA/stndata_whole.npz' # to be saved. only process when absent
 # plato
-# gmet_stnfile = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'
-# gmet_stnpath = '/home/gut428/GMET/StnInput_daily'
-# gmet_stndatafile = '/home/gut428/stndata_whole.npz'  # to be saved. only process when absent
+gmet_stnfile = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'
+gmet_stnpath = '/home/gut428/GMET/StnInput_daily'
+gmet_stndatafile = '/home/gut428/stndata_whole.npz'  # to be saved. only process when absent
 
 # reanalysis path: ERA-5
 # mac
-filedem_era = './DEM/MERRA2_DEM2.mat'
-inpath = '/Users/localuser/Research/Test'
-outpath = '/Users/localuser/Research'
+# filedem_era = './DEM/MERRA2_DEM2.mat'
+# inpath = '/Users/localuser/Research/Test'
+# outpath = '/Users/localuser/Research'
 # plato
-# filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/MERRA2_DEM2.mat'
-# inpath = '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_raw'  # downscale to 0.1 degree
-# outpath = '/home/gut428/MERRA2_day_ds'
-# file_readownstn = outpath + '/MERRA2_downto_stn.npz'  # downscale to station points (1979-2018)
+filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/MERRA2_DEM2.mat'
+inpath = '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_raw'  # downscale to 0.1 degree
+outpath = '/home/gut428/MERRA2_day_ds'
+file_readownstn = outpath + '/MERRA2_downto_stn.npz'  # downscale to station points (1979-2018)
 filenear = outpath + '/weight_dem.npz'
 
 ########################################################################################################################
@@ -356,7 +356,7 @@ for y in range(year[0], year[1] + 1):
 #     for y in range(1979, 2019):
 #         print('Downscale to station: year', y)
 #         # prcp
-#         infile = inpath + '/MERRA2_prcp_' + str(y) + '.mat'
+#         infile = inpath + '/JRA55_prcp_' + str(y) + '.mat'
 #         datatemp = {}
 #         f = h5py.File(infile, 'r')
 #         for k, v in f.items():
@@ -372,7 +372,7 @@ for y in range(year[0], year[1] + 1):
 #         prcptar = np.float32(prcptar)
 #
 #         # tmin
-#         infile = inpath + '/MERRA2_tmin_' + str(y) + '.mat'
+#         infile = inpath + '/JRA55_tmin_' + str(y) + '.mat'
 #         datatemp = {}
 #         f = h5py.File(infile, 'r')
 #         for k, v in f.items():
@@ -388,7 +388,7 @@ for y in range(year[0], year[1] + 1):
 #         tmintar = np.float32(tmintar)
 #
 #         # tmax
-#         infile = inpath + '/MERRA2_tmax_' + str(y) + '.mat'
+#         infile = inpath + '/JRA55_tmax_' + str(y) + '.mat'
 #         datatemp = {}
 #         f = h5py.File(infile, 'r')
 #         for k, v in f.items():
