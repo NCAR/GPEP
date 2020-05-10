@@ -62,17 +62,28 @@ def double_cvindex(gmet_stndatafile, dividenum):
     return prcp_trainindex1, prcp_testindex1, prcp_trainindex2, prcp_testindex2, \
            tmean_trainindex1, tmean_testindex1, tmean_trainindex2, tmean_testindex2
 
-
-def calculate_ratio(datatar, dataref, hwsize, upbound=5, lowbound=0.2):
+def calculate_anomaly(datatar, dataref, hwsize, amode, upbound=5, lowbound=0.2):
     # datatar, dataref: 2D [nstn, ntime]
+    # amode: anomaly mode ('ratio' or 'diff')
     # hwsize: define time window (2*hwsize+1) used to calculate ratio (as ratio for a specific day is too variable)
-    # upbound/lowbound: upper and lower limitation of rario
-    nearnum = 8  # nearby stations used for extrapolation
-    nstn, ntime = np.shape(datatar)
+    # upbound/lowbound: upper and lower limitation of ratio/difference
+    if np.ndim(datatar) == 1: # only one time step
+        datatar = datatar[:,np.newaxis]
+        dataref = dataref[:,np.newaxis]
 
-    # 1. calculate ratio for every day
-    # lower bound of the ratio
-    ratio = np.ones([nstn, ntime])
+    nstn, ntime = np.shape(datatar)
+    if ntime < hwsize * 2 + 1:
+        print('The window size is larger than time steps when calculating ratio between tar and ref datasets')
+        print('Please set a smaller hwsize')
+        sys.exit()
+
+    indnan = np.isnan(datatar) | np.isnan(dataref)
+    datatar[indnan] = np.nan
+    dataref[indnan] = np.nan
+    del indnan
+
+    anom = np.ones([nstn, ntime])
+
     for i in range(ntime):
         if i < hwsize:
             windex = np.arange(hwsize * 2 + 1)
@@ -80,13 +91,21 @@ def calculate_ratio(datatar, dataref, hwsize, upbound=5, lowbound=0.2):
             windex = np.arange(ntime - hwsize * 2 - 1, ntime)
         else:
             windex = np.arange(i - hwsize, i + hwsize + 1)
-        dtari = np.nansum(datatar[:, windex], axis=1)
-        drefi = np.nansum(dataref[:, windex], axis=1)
-        ratio[:, i] = drefi / dtari
-    ratio[ratio > upbound] = upbound  # include inf: X / 0
-    ratio[ratio < lowbound] = lowbound
-    ratio[np.isnan(ratio)] = 1  # 0 / 0
-    return ratio
+        dtari = np.nanmean(datatar[:, windex], axis=1)
+        drefi = np.nanmean(dataref[:, windex], axis=1)
+
+        if amode == 'ratio':
+            temp = drefi / dtari
+            temp[(dtari == 0) & (drefi == 0)] = 1
+            anom[:, i] = temp
+        elif amode == 'diff':
+            anom[:, i] = drefi - dtari
+        else:
+            sys.exit('Unknow amode. Please use either ratio or diff')
+
+    anom[anom > upbound] = upbound
+    anom[anom < lowbound] = lowbound
+    return anom
 
 
 def extrapolation(latin, lonin, datain, latout, lonout, nearnum):
@@ -250,12 +269,19 @@ def weightmerge(data, weight):
 # basic settings
 lontar = np.arange(-180 + 0.05, -50, 0.1)
 lattar = np.arange(85 - 0.05, 5, -0.1)
-vars = ['prcp', 'tmean', 'trange']
-hwsize_ratio = 15  # define time window (2*hwsize+1) used to calculate ratio (as ratio for a specific day is too variable)
+var = 'prcp'   # ['prcp', 'tmean', 'trange']: this should be input from sbtach script
+corrmode = 'ratio'  # ratio or diff: mode for error correction
+hwsize = 15  # define time window (2*hwsize+1) used to calculate ratio (as ratio for a specific day is too variable)
 nearnum = 8  # the number of nearby stations used to extrapolate points to grids (for correction and merging)
 weightmode = 'RMSE'  # the metric used to guide merging (CC or RMSE). Weight = CC**2 or 1/RMSE**2
-corrmode = ['ratio', 'diff', 'diff']  # mode for error correction
-dividenum = 10  # 10-fold cross-validation
+dividenum = 10  # divide the datasets into X parts, e.g. 10-fold cross-validation
+anombound = [0.2, 5] # upper and lower bound when calculating the anomaly between target and reference data for correction
+
+if corrmode == 'diff':
+    # default settings in this study since diff is for tmean and trange
+    hwsize = 0
+    anombound = [-999, 999]
+
 
 # input files
 # station list and data
@@ -290,6 +316,7 @@ mask = io.loadmat(file_mask)
 mask = mask['DEM']
 mask[~np.isnan(mask)] = 1  # 1: valid pixels
 # attributes
+reanum = len(file_readownstn)
 nrows, ncols = np.shape(mask)
 lontarm, lattarm = np.meshgrid(lontar, lattar)
 
@@ -327,33 +354,31 @@ taintestindex = np.load(gmet_stndatafile)
 # 6. use indicators from 3.4 and 5, and select the best one among three reanalysis and merged datasets for each grid
 # 7. get the final merged dataset and its accuracy indicators from steo-6
 
-# load regression estimates for all stations
-var = 'prcp'  # parameter of modules
-reanum = len(file_readownstn)
-readata = [''] * reanum
-for i in range(reanum):
-    di = np.load(file_readownstn[i])
-    readata[i] = di[var + '_readown']
-    del di
+# load downscaled reanalysis for all stations
+readata_stn = [''] * reanum
+for rr in range(reanum):
+    dr = np.load(file_readownstn[rr])
+    temp = dr[var + '_readown']
+    if prefix[rr] != 'MERRA2_': # unify the time length of all data as MERRA2 lacks 1979
+        temp = temp[:,365:]
+    readata_stn[rr] = temp
+    del dr
 
 # load observations for all stations
 datatemp = np.load(gmet_stndatafile)
 stndata = datatemp[var + '_stn']
+stndata = stndata[:, 365:]
 stnlle = datatemp['stn_lle']
+nstn, ntimes = np.shape(stndata)
 del datatemp
 
-# unify the time length of all data as MERRA2 lacks 1979
-stndata = stndata[:, 365:]
+# initialize
+metric_merge_stn = np.nan * np.zeros(nstn) # accuracy metric of merged reanalysis at station points
+metric_reacorr_stn = [''] * reanum # accuracy metric of corrected reanalysis at station points
 for i in range(reanum):
-    if np.shape(readata[i])[1] == 14610:  # 1979 to 2018
-        readata[i] = readata[i][:, 365:]
+    metric_reacorr_stn[i] = np.nan * np.zeros(nstn)
 
-nstn, ntimes = np.shape(stndata)
-metric_merge_stn = np.nan * np.zeros(nstn)
-metric_rea_stn = [''] * reanum
-for i in range(reanum):
-    metric_rea_stn[i] = np.nan * np.zeros(nstn)
-
+# start estimating correction and merging weights/metrics
 for lay1 in range(dividenum):
     # extract train and test index for layer-1
     if var == 'trange':
@@ -367,6 +392,7 @@ for lay1 in range(dividenum):
     stnlle_trainl1 = stnlle[trainindex1, :]
     stnlle_testl1 = stnlle[testindex1, :]
 
+    # merging weight of different reanalysis products at station points (trainindex1)
     weight_trainl1 = np.zeros([len(trainindex1), reanum])
 
     for lay2 in range(dividenum):
@@ -379,15 +405,16 @@ for lay1 in range(dividenum):
         stnlle_testl2 = stnlle[testindex2, :]
 
         for rr in range(reanum):
-            readata_trainl2 = readata[rr][trainindex2, :]
-            readata_testl2 = readata[rr][testindex2, :]
+            readata_trainl2 = readata_stn[rr][trainindex2, :]
+            readata_testl2 = readata_stn[rr][testindex2, :]
             # calculate ratio at the train stations
-            ratio_ori = calculate_ratio(readata_trainl2, stndata_trainl2, hwsize_ratio, upbound=5, lowbound=0.2)
+            anom_ori = calculate_anomaly(readata_trainl2, stndata_trainl2, hwsize, corrmode,
+                                         upbound=anombound[1], lowbound=[0])
             # extrapolate the ratio to the test stations (in layer-2)
-            ratio_ext = extrapolation(stnlle_trainl2[:, 0], stnlle_trainl2[:, 1], ratio_ori,
+            anom_ext = extrapolation(stnlle_trainl2[:, 0], stnlle_trainl2[:, 1], anom_ori,
                                       stnlle_testl2[:, 0], stnlle_testl2[:, 1], nearnum)
             # correct data at the test stations
-            readata_testl2_corr = error_correction(readata_trainl2, ratio_ext, mode=corrmode[rr])
+            readata_testl2_corr = error_correction(readata_trainl2, anom_ext, mode=corrmode[rr])
             # estimate weight the test stations
             weight_testl2 = calweight(stndata_testl2, readata_testl2_corr, weightmode)
             # fill the weight to its parent station set (weight_trainl1)
@@ -403,7 +430,7 @@ for lay1 in range(dividenum):
     for i in range(ntimes):
         datain = np.zeros([nstn_testl1, reanum])
         for j in range(reanum):
-            datain[:, j] = readata[j][testindex1, i]
+            datain[:, j] = readata_stn[j][testindex1, i]
         dataout = weightmerge(datain, weight_testl1)
         mergedata_testl1[:, i] = dataout
     # evaluate the merged data at the test stations (just RMSE)
@@ -413,14 +440,15 @@ for lay1 in range(dividenum):
 
     # repeat error correction using train stations in layer-1 (as in layer-2 only 0.9*0.9=0.81 stations are used)
     for rr in range(reanum):
-        readata_trainl1 = readata[rr][trainindex1, :]
-        readata_testl1 = readata[rr][testindex1, :]
-        ratio_ori = calculate_ratio(readata_trainl1, stndata_trainl1, hwsize_ratio, upbound=5, lowbound=0.2)
-        ratio_ext = extrapolation(stnlle_trainl1[:, 0], stnlle_trainl1[:, 1], ratio_ori,
+        readata_trainl1 = readata_stn[rr][trainindex1, :]
+        readata_testl1 = readata_stn[rr][testindex1, :]
+        anom_ori = calculate_anomaly(readata_trainl1, stndata_trainl1, hwsize, corrmode,
+                                     upbound=anombound[1], lowbound=[0])
+        anom_ext = extrapolation(stnlle_trainl1[:, 0], stnlle_trainl1[:, 1], anom_ori,
                                   stnlle_testl1[:, 0], stnlle_testl1[:, 1], nearnum)
-        readata_testl1_corr = error_correction(readata_trainl1, ratio_ext, mode=corrmode[rr])
+        readata_testl1_corr = error_correction(readata_trainl1, anom_ext, mode=corrmode[rr])
         metric_rea_rr = calrmse(readata_testl1_corr, stndata_testl1)
-        metric_rea_stn[rr][testindex1] = metric_rea_rr
+        metric_reacorr_stn[rr][testindex1] = metric_rea_rr
 
 # extrapolate metric_merge and metric_rea to all grids. the metrics are used to calculate weights
 metric_merge_grid = extrapolation(stnlle[:, 0], stnlle[:, 1], metric_merge_stn, lattarm, lontarm, nearnum)
@@ -428,7 +456,7 @@ metric_merge_grid = extrapolation(stnlle[:, 0], stnlle[:, 1], metric_merge_stn, 
 metric_rea_grid = np.zeros([nrows, ncols, reanum])
 weight_rea_grid = np.zeros([nrows, ncols, reanum])
 for rr in range(reanum):
-    metric_rea_grid[:,:,rr] = extrapolation(stnlle[:, 0], stnlle[:, 1], metric_rea_stn[rr], lattarm, lontarm, nearnum)
+    metric_rea_grid[:,:,rr] = extrapolation(stnlle[:, 0], stnlle[:, 1], metric_reacorr_stn[rr], lattarm, lontarm, nearnum)
     weight_rea_grid[:,:,rr] = (1 / (metric_rea_grid[rr] ** 2))
 weight_rea_gridsum = np.sum(weight_rea_grid, axis=2)
 for rr in range(reanum):
@@ -483,10 +511,10 @@ for y in range(1979, 2019):
             readata_gridy_rr = datatemp['data']
             del datatemp
             dayy = np.shape(readata_gridy_rr)[2]
-            ratio_ori = calculate_ratio(readata[rr][:, dflag:dflag + dayy], stndata[:, dflag:dflag + dayy],
-                                        hwsize_ratio, upbound=5, lowbound=0.2)
-            ratio_ext = extrapolation(stnlle[:, 0], stnlle[:, 1], ratio_ori, lattarm, lontarm, nearnum)
-            readata_gridy_rr_corr = error_correction(readata_gridy_rr, ratio_ext, mode=corrmode[rr])
+            anom_ori = calculate_anomaly(readata[rr][:, dflag:dflag + dayy], stndata[:, dflag:dflag + dayy],
+                                         hwsize, corrmode, upbound=anombound[1], lowbound=[0])
+            anom_ext = extrapolation(stnlle[:, 0], stnlle[:, 1], anom_ori, lattarm, lontarm, nearnum)
+            readata_gridy_rr_corr = error_correction(readata_gridy_rr, anom_ext, mode=corrmode[rr])
 
         readata_gridy[rr] = readata_gridy_rr_corr
         # save the corrected data

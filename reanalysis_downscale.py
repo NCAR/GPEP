@@ -293,44 +293,44 @@ if not os.path.isfile(gmet_stndatafile):
 ########################################################################################################################
 
 # downscale reanalysis to 0.1 degree
-# for y in range(year[0], year[1] + 1):
-#     for v in range(len(vars)):
-#         print('year--var:', y, vars[v])
-#         infile = inpath + '/JRA55_' + vars[v] + '_' + str(y) + '.mat'
-#         outfile_grid = outpath + '/JRA55_' + vars[v] + '_' + str(y) + '.npz'
-#         if os.path.isfile(outfile_grid):
-#             continue
-#
-#         # load original daily reanalysis data
-#         datatemp = {}
-#         f = h5py.File(infile, 'r')
-#         for k, v in f.items():
-#             datatemp[k] = np.array(v)
-#         latori = datatemp['latitude'][0]
-#         lonori = datatemp['longitude'][0]
-#         dataori = datatemp['data']
-#         dataori = np.transpose(dataori, [2, 1, 0])
-#         del datatemp
-#         f.close()
-#
-#         # read location information
-#         if not os.path.isfile(filenear):
-#             rowse, colse, weight = neargrid(lattar, lontar, latori, lonori, hwsize)
-#             # extract ori dem
-#             demori = demread(filedem_era, latori, lonori)
-#             io.savemat(filenear, {'rowse': rowse, 'colse': colse, 'weight': weight, 'demori': demori})
-#         else:
-#             datatemp = io.loadmat(filenear)
-#             rowse = datatemp['rowse']
-#             colse = datatemp['colse']
-#             weight = datatemp['weight']
-#             demori = datatemp['demori']
-#             del datatemp
-#
-#         # downscale the reanalysis to 0.1 degree
-#         datatar = readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight, mask)
-#         datatar = np.float32(datatar)
-#         np.savez_compressed(outfile_grid, data=datatar, latitude=lattar, longitude=lontar)
+for y in range(year[0], year[1] + 1):
+    for v in range(len(vars)):
+        print('year--var:', y, vars[v])
+        infile = inpath + '/JRA55_' + vars[v] + '_' + str(y) + '.mat'
+        outfile_grid = outpath + '/JRA55_' + vars[v] + '_' + str(y) + '.npz'
+        if os.path.isfile(outfile_grid):
+            continue
+
+        # load original daily reanalysis data
+        datatemp = {}
+        f = h5py.File(infile, 'r')
+        for k, v in f.items():
+            datatemp[k] = np.array(v)
+        latori = datatemp['latitude'][0]
+        lonori = datatemp['longitude'][0]
+        dataori = datatemp['data']
+        dataori = np.transpose(dataori, [2, 1, 0])
+        del datatemp
+        f.close()
+
+        # read location information
+        if not os.path.isfile(filenear):
+            rowse, colse, weight = neargrid(lattar, lontar, latori, lonori, hwsize)
+            # extract ori dem
+            demori = demread(filedem_era, latori, lonori)
+            io.savemat(filenear, {'rowse': rowse, 'colse': colse, 'weight': weight, 'demori': demori})
+        else:
+            datatemp = io.loadmat(filenear)
+            rowse = datatemp['rowse']
+            colse = datatemp['colse']
+            weight = datatemp['weight']
+            demori = datatemp['demori']
+            del datatemp
+
+        # downscale the reanalysis to 0.1 degree
+        datatar = readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight, mask)
+        datatar = np.float32(datatar)
+        np.savez_compressed(outfile_grid, data=datatar, latitude=lattar, longitude=lontar)
 
 ########################################################################################################################
 # downscale to station points
@@ -414,3 +414,27 @@ if not os.path.isfile(file_readownstn):
                         trange_readown=trange_readown,
                         latitude=lattar, longitude=lontar, stn_ID=stn_ID, stn_lle=stn_lle, stn_row=stn_row,
                         stn_col=stn_col)
+
+########################################################################################################################
+
+# additional function: tmin/tmax to tmean/trange
+outpath = '/home/gut428/JRA55_day_ds'
+for y in range(1979,2019):
+    print(y)
+    infile1 = outpath + '/JRA55_tmin_' + str(y) + '.npz'
+    infile2 = outpath + '/JRA55_tmax_' + str(y) + '.npz'
+    outfile1 = outpath + '/JRA55_tmean_' + str(y) + '.npz'
+    outfile2 = outpath + '/JRA55_trange_' + str(y) + '.npz'
+    if os.path.isfile(outfile1) and os.path.isfile(outfile2):
+        continue
+
+    tmin = np.load(infile1)
+    lattar = tmin['latitude']
+    lontar = tmin['longitude']
+    tmin = tmin['data']
+    tmax = np.load(infile2)
+    tmax=tmax['data']
+    tmean = (tmin+tmax)/2
+    trange = np.abs(tmax-tmin)
+    np.savez_compressed(outfile1, data=np.float32(tmean), latitude=lattar, longitude=lontar)
+    np.savez_compressed(outfile2, data=np.float32(trange), latitude=lattar, longitude=lontar)
