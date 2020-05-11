@@ -12,3 +12,11 @@ sbatch Plato_"$y""$m".sh
 fi
 done
 done
+
+
+for (( y=2000; y<=2004; y++))
+do
+mv output_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/
+mv stndata_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/
+mv error_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/
+done

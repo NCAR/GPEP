@@ -10,8 +10,8 @@ import sys
 from scipy.interpolate import griddata
 
 ########################################################################################################################
-date_cal_start = int(sys.argv[1]) # yyyymmdd
-date_cal_end = int(sys.argv[2])
+# date_cal_start = int(sys.argv[1]) # yyyymmdd
+# date_cal_end = int(sys.argv[2])
 
 # 0. read/define configuration information
 # setting: file and path names of inputs
@@ -21,18 +21,18 @@ date_cal_end = int(sys.argv[2])
 # FileStnInfo = '/Users/localuser/GMET/Example_tgq/inputs/stnlist_example.txt'  # station basic information (lists)
 # FileGridInfo = '/Users/localuser/GMET/Example_tgq/inputs/gridinfo_example.nc'  # study area information
 # PathStn = '/Users/localuser/GMET/Example_tgq/StnDaily_train'  # original station data (prcp ...)
-# FileStnInfo = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'  # station basic information (lists)
-# FileGridInfo = '/Users/localuser/GMET/pyGMET_NA/gridinfo_whole.nc'  # study area information
-# PathStn = '/Users/localuser/GMET/StnInput_daily'
+FileStnInfo = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'  # station basic information (lists)
+FileGridInfo = '/Users/localuser/GMET/pyGMET_NA/gridinfo_whole.nc'  # study area information
+PathStn = '/Users/localuser/GMET/StnInput_daily'
 # Plato
-FileStnInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'  # station basic information (lists)
-FileGridInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/gridinfo_whole.nc'  # study area information
-PathStn = '/home/gut428/GMET/StnInput_daily'
+# FileStnInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'  # station basic information (lists)
+# FileGridInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/gridinfo_whole.nc'  # study area information
+# PathStn = '/home/gut428/GMET/StnInput_daily'
 
 # setting: start and end date
 # calculation start/end date:
-# date_cal_start = 20180101  # yyyymmdd: start date
-# date_cal_end = 20181231  # yyyymmdd: end date
+date_cal_start = 19900101  # yyyymmdd: start date
+date_cal_end = 19900131  # yyyymmdd: end date
 # station data (in PathStn) start/end date:
 date_stn_start = 19790101  # yyyymmdd: start date
 date_stn_end = 20181231  # yyyymmdd: end date
@@ -59,14 +59,14 @@ ow_stn = 0
 
 # setting: output files
 datestr = str(date_cal_start) + '-' + str(date_cal_end)
-FileStnData = '/home/gut428/GMET/PyGMETout/stndata_' + datestr + '.npz'
-FileWeight = '/home/gut428/GMET/PyGMETout/weight.npz'
-FileRegError_daily = '/home/gut428/GMET/PyGMETout/error_' + datestr + '.npz'  # regression error at station points
-FileRegression_daily = '/home/gut428/GMET/PyGMETout/output_' + datestr + '.npz'
-# FileStnData = '/Users/localuser/GMET/Example/station_data.npz'
-# FileWeight = '/Users/localuser/GMET/Example/weight_nearstn.npz'
-# FileRegError_daily = '/Users/localuser/GMET/Example/regress_daily_error.npz'  # regression error at station points
-# FileRegression_daily = '/Users/localuser/GMET/Example/regress_daily_output.npz'
+# FileStnData = '/home/gut428/GMET/PyGMETout/stndata_' + datestr + '.npz'
+# FileWeight = '/home/gut428/GMET/PyGMETout/weight.npz'
+# FileRegError_daily = '/home/gut428/GMET/PyGMETout/error_' + datestr + '.npz'  # regression error at station points
+# FileRegression_daily = '/home/gut428/GMET/PyGMETout/output_' + datestr + '.npz'
+FileStnData = '/Users/localuser/Downloads/stndata_' + datestr + '.npz'
+FileWeight = '/Users/localuser/Downloads/weight.npz'
+FileRegError_daily = '/Users/localuser/Downloads/error_' + datestr + '.npz'  # regression error at station points
+FileRegression_daily = '/Users/localuser/Downloads/output_' + datestr + '.npz'
 # FileStnData = '/Users/localuser/GMET/pyGMET_NA/station_data.npz'
 # FileWeight = '/Users/localuser/GMET/pyGMET_NA/weight_nearstn.npz'
 # FileRegError_daily = '/Users/localuser/GMET/pyGMET_NA/regress_daily_error.npz'  # regression error at station points
@@ -315,34 +315,34 @@ if cai_mode == 0 or daily_flag == 1:
         #                   pcp_err_daily, tmean_err_daily, trange_err_daily, y_max_daily)
 
 # 6.2.2 climotological mode (climo and anomaly)
-if cai_mode == 1:
-    if (not os.path.isfile(FileRegression_climo)) or ow_climo == 1:
-        print('Locally weighted regression of climo precipitation and temperature')
-        pop_climo, pcp_climo, tmean_climo, trange_climo, pcp_err_climo, tmean_err_climo, trange_err_climo, y_max_climo = \
-            reg.regression(prcp_stn_climo, tmean_stn_climo, trange_stn_climo, pcp_err_stn_climo, tmean_err_stn_climo,
-                           trange_err_stn_climo, stninfo, gridinfo, mask,near_grid_prcpLoc,
-                           near_grid_prcpWeight, near_grid_tempLoc, near_grid_tempWeight,
-                           nearstn_min, nearstn_max, trans_exp_climo, trans_mode)
-        np.savez_compressed(FileRegression_climo, pop=pop_climo, pcp=pcp_climo, tmean=tmean_climo, trange=trange_climo,
-                            pcp_err=pcp_err_climo, tmean_err=tmean_err_climo, trange_err=trange_err_climo,
-                            y_max=y_max_climo)
-        # au.save_output_nc(FileRegression_climo, gridinfo, np.mean(seconds), mean_autocorr_climo, mean_tp_corr_climo,
-        #                   pop_climo, pcp_climo, tmean_climo, trange_climo,
-        #                   pcp_err_climo, tmean_err_climo, trange_err_climo, y_max_climo)
-
-    if (not os.path.isfile(FileRegression_anom)) or ow_anom == 1:
-        print('Locally weighted regression of anom precipitation and temperature')
-        pop_anom, pcp_anom, tmean_anom, trange_anom, pcp_err_anom, tmean_err_anom, trange_err_anom, y_max_anom = \
-            reg.regression(prcp_stn_anom, tmean_stn_anom, trange_stn_anom, pcp_err_stn_anom, tmean_err_stn_anom,
-                           trange_err_stn_anom, stninfo, gridinfo, mask,near_grid_prcpLoc,
-                           near_grid_prcpWeight, near_grid_tempLoc, near_grid_tempWeight,
-                           nearstn_min, nearstn_max, trans_exp_anom, trans_mode)
-        np.savez_compressed(FileRegression_anom, pop=pop_anom, pcp=pcp_anom, tmean=tmean_anom, trange=trange_anom,
-                            pcp_err=pcp_err_anom, tmean_err=tmean_err_anom, trange_err=trange_err_anom,
-                            y_max=y_max_anom)
-        # au.save_output_nc(FileRegression_anom, gridinfo, seconds, mean_autocorr_anom, mean_tp_corr_anom,
-        #                   pop_anom, pcp_anom, tmean_anom, trange_anom,
-        #                   pcp_err_anom, tmean_err_anom, trange_err_anom, y_max_anom)
+# if cai_mode == 1:
+#     if (not os.path.isfile(FileRegression_climo)) or ow_climo == 1:
+#         print('Locally weighted regression of climo precipitation and temperature')
+#         pop_climo, pcp_climo, tmean_climo, trange_climo, pcp_err_climo, tmean_err_climo, trange_err_climo, y_max_climo = \
+#             reg.regression(prcp_stn_climo, tmean_stn_climo, trange_stn_climo, pcp_err_stn_climo, tmean_err_stn_climo,
+#                            trange_err_stn_climo, stninfo, gridinfo, mask,near_grid_prcpLoc,
+#                            near_grid_prcpWeight, near_grid_tempLoc, near_grid_tempWeight,
+#                            nearstn_min, nearstn_max, trans_exp_climo, trans_mode)
+#         np.savez_compressed(FileRegression_climo, pop=pop_climo, pcp=pcp_climo, tmean=tmean_climo, trange=trange_climo,
+#                             pcp_err=pcp_err_climo, tmean_err=tmean_err_climo, trange_err=trange_err_climo,
+#                             y_max=y_max_climo)
+#         # au.save_output_nc(FileRegression_climo, gridinfo, np.mean(seconds), mean_autocorr_climo, mean_tp_corr_climo,
+#         #                   pop_climo, pcp_climo, tmean_climo, trange_climo,
+#         #                   pcp_err_climo, tmean_err_climo, trange_err_climo, y_max_climo)
+#
+#     if (not os.path.isfile(FileRegression_anom)) or ow_anom == 1:
+#         print('Locally weighted regression of anom precipitation and temperature')
+#         pop_anom, pcp_anom, tmean_anom, trange_anom, pcp_err_anom, tmean_err_anom, trange_err_anom, y_max_anom = \
+#             reg.regression(prcp_stn_anom, tmean_stn_anom, trange_stn_anom, pcp_err_stn_anom, tmean_err_stn_anom,
+#                            trange_err_stn_anom, stninfo, gridinfo, mask,near_grid_prcpLoc,
+#                            near_grid_prcpWeight, near_grid_tempLoc, near_grid_tempWeight,
+#                            nearstn_min, nearstn_max, trans_exp_anom, trans_mode)
+#         np.savez_compressed(FileRegression_anom, pop=pop_anom, pcp=pcp_anom, tmean=tmean_anom, trange=trange_anom,
+#                             pcp_err=pcp_err_anom, tmean_err=tmean_err_anom, trange_err=trange_err_anom,
+#                             y_max=y_max_anom)
+#         # au.save_output_nc(FileRegression_anom, gridinfo, seconds, mean_autocorr_anom, mean_tp_corr_anom,
+#         #                   pop_anom, pcp_anom, tmean_anom, trange_anom,
+#         #                   pcp_err_anom, tmean_err_anom, trange_err_anom, y_max_anom)
 
 ########################################################################################################################
 
