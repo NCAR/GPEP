@@ -10,11 +10,14 @@ import sys
 from scipy.interpolate import griddata
 
 ########################################################################################################################
+date_cal_start = int(sys.argv[1]) # yyyymmdd
+date_cal_end = int(sys.argv[2])
+
 # 0. read/define configuration information
 # setting: file and path names of inputs
-FileStnInfo = '/Users/localuser/GMET/pyGMET_exp/inputs/stnlist_example.txt'  # station basic information (lists)
-FileGridInfo = '/Users/localuser/GMET/pyGMET_exp/inputs/gridinfo_example.nc'  # study area information
-PathStn = '/Users/localuser/GMET/pyGMET_exp/StnDaily_train'  # original station data (prcp ...)
+# FileStnInfo = '/Users/localuser/GMET/pyGMET_exp/inputs/stnlist_example.txt'  # station basic information (lists)
+# FileGridInfo = '/Users/localuser/GMET/pyGMET_exp/inputs/gridinfo_example.nc'  # study area information
+# PathStn = '/Users/localuser/GMET/pyGMET_exp/StnDaily_train'  # original station data (prcp ...)
 # FileStnInfo = '/Users/localuser/GMET/Example_tgq/inputs/stnlist_example.txt'  # station basic information (lists)
 # FileGridInfo = '/Users/localuser/GMET/Example_tgq/inputs/gridinfo_example.nc'  # study area information
 # PathStn = '/Users/localuser/GMET/Example_tgq/StnDaily_train'  # original station data (prcp ...)
@@ -22,20 +25,20 @@ PathStn = '/Users/localuser/GMET/pyGMET_exp/StnDaily_train'  # original station 
 # FileGridInfo = '/Users/localuser/GMET/pyGMET_NA/gridinfo_whole.nc'  # study area information
 # PathStn = '/Users/localuser/GMET/StnInput_daily'
 # Plato
-# FileStnInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/CrossValidate/stnlist_whole_CV1.txt'  # station basic information (lists)
-# FileGridInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/gridinfo_whole.nc'  # study area information
-# PathStn = '/home/gut428/GMET/StnInput_daily'
+FileStnInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'  # station basic information (lists)
+FileGridInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/gridinfo_whole.nc'  # study area information
+PathStn = '/home/gut428/GMET/StnInput_daily'
 
 # setting: start and end date
 # calculation start/end date:
-date_cal_start = 20180101  # yyyymmdd: start date
-date_cal_end = 20181231  # yyyymmdd: end date
+# date_cal_start = 20180101  # yyyymmdd: start date
+# date_cal_end = 20181231  # yyyymmdd: end date
 # station data (in PathStn) start/end date:
-date_stn_start = 20180101  # yyyymmdd: start date
+date_stn_start = 19790101  # yyyymmdd: start date
 date_stn_end = 20181231  # yyyymmdd: end date
 
 # setting: paramters for lag correlation of tmean_stn_daily, and cross-correlation between prcp and trange_stn_daily
-windows = 31  # parameters for auto-cc t-p-cc calculation: 1 could be better than 31
+windows = 1  # parameters for auto-cc t-p-cc calculation: 1 could be better than 31
 lag = 1
 
 # setting: searching nearby stations
@@ -55,10 +58,11 @@ ow_weight = 0
 ow_stn = 0
 
 # setting: output files
-FileStnData = '/Users/localuser/GMET/pyGMET_exp/station_data.npz'
-FileWeight = '/Users/localuser/GMET/pyGMET_exp/weight_nearstn.npz'
-FileRegError_daily = '/Users/localuser/GMET/pyGMET_exp/regress_daily_error_boxcox.npz'  # regression error at station points
-FileRegression_daily = '/Users/localuser/GMET/pyGMET_exp/regress_daily_output_boxcox.npz'
+datestr = str(date_cal_start) + '-' + str(date_cal_end)
+FileStnData = '/home/gut428/GMET/PyGMETout/stndata_' + datestr + '.npz'
+FileWeight = '/home/gut428/GMET/PyGMETout/weight_' + datestr + '.npz'
+FileRegError_daily = '/home/gut428/GMET/PyGMETout/error_' + datestr + '.npz'  # regression error at station points
+FileRegression_daily = '/home/gut428/GMET/PyGMETout/output_' + datestr + '.npz'
 # FileStnData = '/Users/localuser/GMET/Example/station_data.npz'
 # FileWeight = '/Users/localuser/GMET/Example/weight_nearstn.npz'
 # FileRegError_daily = '/Users/localuser/GMET/Example/regress_daily_error.npz'  # regression error at station points
@@ -347,59 +351,59 @@ if cai_mode == 1:
 ########################################################################################################################
 
 # 7. load regression files for analysis
-if cai_mode == 0 or daily_flag == 1:
-    with np.load(FileRegression_daily) as datatemp:
-        pop_daily = datatemp['pop']
-        pcp_daily = datatemp['pcp']
-        tmean_daily = datatemp['tmean']
-        trange_daily = datatemp['trange']
-        pcp_err_daily = datatemp['pcp_err']
-        tmean_err_daily = datatemp['tmean_err']
-        trange_err_daily = datatemp['trange_err']
-        y_max_daily = datatemp['y_max']
-    del datatemp
-
-if cai_mode == 1:
-    with np.load(FileRegression_climo) as datatemp:
-        pop_climo = datatemp['pop']
-        pcp_climo = datatemp['pcp']
-        tmean_climo = datatemp['tmean']
-        trange_climo = datatemp['trange']
-        pcp_err_climo = datatemp['pcp_err']
-        tmean_err_climo = datatemp['tmean_err']
-        trange_err_climo = datatemp['trange_err']
-        y_max_climo = datatemp['y_max']
-    del datatemp
-
-    with np.load(FileRegression_anom) as datatemp:
-        pop_anom = datatemp['pop']
-        pcp_anom = datatemp['pcp']
-        tmean_anom = datatemp['tmean']
-        trange_anom = datatemp['trange']
-        pcp_err_anom = datatemp['pcp_err']
-        tmean_err_anom = datatemp['tmean_err']
-        trange_err_anom = datatemp['trange_err']
-        y_max_anom = datatemp['y_max']
-    del datatemp
+# if cai_mode == 0 or daily_flag == 1:
+#     with np.load(FileRegression_daily) as datatemp:
+#         pop_daily = datatemp['pop']
+#         pcp_daily = datatemp['pcp']
+#         tmean_daily = datatemp['tmean']
+#         trange_daily = datatemp['trange']
+#         pcp_err_daily = datatemp['pcp_err']
+#         tmean_err_daily = datatemp['tmean_err']
+#         trange_err_daily = datatemp['trange_err']
+#         y_max_daily = datatemp['y_max']
+#     del datatemp
+#
+# if cai_mode == 1:
+#     with np.load(FileRegression_climo) as datatemp:
+#         pop_climo = datatemp['pop']
+#         pcp_climo = datatemp['pcp']
+#         tmean_climo = datatemp['tmean']
+#         trange_climo = datatemp['trange']
+#         pcp_err_climo = datatemp['pcp_err']
+#         tmean_err_climo = datatemp['tmean_err']
+#         trange_err_climo = datatemp['trange_err']
+#         y_max_climo = datatemp['y_max']
+#     del datatemp
+#
+#     with np.load(FileRegression_anom) as datatemp:
+#         pop_anom = datatemp['pop']
+#         pcp_anom = datatemp['pcp']
+#         tmean_anom = datatemp['tmean']
+#         trange_anom = datatemp['trange']
+#         pcp_err_anom = datatemp['pcp_err']
+#         tmean_err_anom = datatemp['tmean_err']
+#         trange_err_anom = datatemp['trange_err']
+#         y_max_anom = datatemp['y_max']
+#     del datatemp
 
 
 # 8. recover from anomaly estimation to daily estimation
-if cai_mode == 0 or daily_flag == 1:
-    prcp_stn_REGdaily = au.retransform(pcp_err_stn_daily + au.transform(prcp_stn_daily, trans_exp_daily, trans_mode),
-                                       trans_exp_daily, trans_mode)
-    tmean_stn_REGdaily = tmean_err_stn_daily + tmean_stn_daily
-    trange_stn_REGdaily = trange_err_stn_daily + trange_stn_daily
-    pcp_daily = au.retransform(pcp_daily, trans_exp_daily, trans_mode)
-
-if cai_mode == 1:
-    prcp_stn_CAIdaily, tmean_stn_CAIdaily, trange_stn_CAIdaily, \
-    prcp_CAIdaily, tmean_CAIdaily, trange_CAIdaily = \
-        au.climoanom_to_daily(prcp_stn_climo, tmean_stn_climo, trange_stn_climo,  # station observation: climo
-                           prcp_stn_anom, tmean_stn_anom, trange_stn_anom,
-                           pcp_err_stn_climo, tmean_err_stn_climo, trange_err_stn_climo,
-                           pcp_err_stn_anom, tmean_err_stn_anom, trange_err_stn_anom,
-                           pcp_climo, tmean_climo, trange_climo, pcp_anom, tmean_anom, trange_anom,
-                           yyyymm, trans_exp_climo, trans_exp_anom, trans_mode)
+# if cai_mode == 0 or daily_flag == 1:
+#     prcp_stn_REGdaily = au.retransform(pcp_err_stn_daily + au.transform(prcp_stn_daily, trans_exp_daily, trans_mode),
+#                                        trans_exp_daily, trans_mode)
+#     tmean_stn_REGdaily = tmean_err_stn_daily + tmean_stn_daily
+#     trange_stn_REGdaily = trange_err_stn_daily + trange_stn_daily
+#     pcp_daily = au.retransform(pcp_daily, trans_exp_daily, trans_mode)
+#
+# if cai_mode == 1:
+#     prcp_stn_CAIdaily, tmean_stn_CAIdaily, trange_stn_CAIdaily, \
+#     prcp_CAIdaily, tmean_CAIdaily, trange_CAIdaily = \
+#         au.climoanom_to_daily(prcp_stn_climo, tmean_stn_climo, trange_stn_climo,  # station observation: climo
+#                            prcp_stn_anom, tmean_stn_anom, trange_stn_anom,
+#                            pcp_err_stn_climo, tmean_err_stn_climo, trange_err_stn_climo,
+#                            pcp_err_stn_anom, tmean_err_stn_anom, trange_err_stn_anom,
+#                            pcp_climo, tmean_climo, trange_climo, pcp_anom, tmean_anom, trange_anom,
+#                            yyyymm, trans_exp_climo, trans_exp_anom, trans_mode)
 
 # 9. Evaluate regression results
 # directory that stores independent stations for validation

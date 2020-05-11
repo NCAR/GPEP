@@ -2,10 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/Plato_mean.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/minmax_to_meanrange.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/generate_batch.m" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/reanalysis_test-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/reanalysis_test-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_commands" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_commands" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pyGMET.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_pyGMET.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_CAI.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_CAI.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reanalysis_correction_merge.py" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_correction_merge.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reanalysis_downscale.py" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_downscale.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reanalysis_test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_test.ipynb" afterDir="false" />
@@ -42,28 +44,7 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.reanalysis_downscale">
-    <configuration name="compare_outputs" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="pyGMET" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/compare_outputs.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python.reanalysis_correction_merge">
     <configuration name="main_CAI" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="pyGMET" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -98,6 +79,27 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/reanalysis.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="reanalysis_correction_merge" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="pyGMET" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/reanalysis_correction_merge.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -150,11 +152,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.reanalysis_correction_merge" />
         <item itemvalue="Python.reanalysis_downscale" />
         <item itemvalue="Python.run" />
         <item itemvalue="Python.reanalysis" />
         <item itemvalue="Python.main_CAI" />
-        <item itemvalue="Python.compare_outputs" />
       </list>
     </recent_temporary>
   </component>
@@ -182,68 +184,68 @@
     </state>
     <state x="567" y="302" key="#com.intellij.fileTypes.FileTypeChooser/0.23.1680.947@0.23.1680.947" timestamp="1588283384193" />
     <state x="567" y="303" key="#com.intellij.fileTypes.FileTypeChooser/0.23.1680.949@0.23.1680.949" timestamp="1588827618011" />
-    <state width="1315" height="322" key="GridCell.Tab.0.bottom" timestamp="1588829419211">
-      <screen x="0" y="23" width="1680" height="949" />
+    <state width="1390" height="322" key="GridCell.Tab.0.bottom" timestamp="1589147446828">
+      <screen x="0" y="23" width="1680" height="947" />
     </state>
     <state width="1315" height="310" key="GridCell.Tab.0.bottom/0.23.1680.942@0.23.1680.942" timestamp="1588464566079" />
     <state width="1315" height="179" key="GridCell.Tab.0.bottom/0.23.1680.944@0.23.1680.944" timestamp="1588567493522" />
-    <state width="1315" height="179" key="GridCell.Tab.0.bottom/0.23.1680.947@0.23.1680.947" timestamp="1588567335399" />
+    <state width="1390" height="322" key="GridCell.Tab.0.bottom/0.23.1680.947@0.23.1680.947" timestamp="1589147446828" />
     <state width="1315" height="322" key="GridCell.Tab.0.bottom/0.23.1680.949@0.23.1680.949" timestamp="1588829419211" />
     <state width="1315" height="322" key="GridCell.Tab.0.bottom/0.23.1680.952@0.23.1680.952" timestamp="1588822795361" />
-    <state width="1315" height="322" key="GridCell.Tab.0.center" timestamp="1588829419210">
-      <screen x="0" y="23" width="1680" height="949" />
+    <state width="1390" height="322" key="GridCell.Tab.0.center" timestamp="1589147446828">
+      <screen x="0" y="23" width="1680" height="947" />
     </state>
     <state width="1315" height="310" key="GridCell.Tab.0.center/0.23.1680.942@0.23.1680.942" timestamp="1588464566079" />
     <state width="1315" height="179" key="GridCell.Tab.0.center/0.23.1680.944@0.23.1680.944" timestamp="1588567493521" />
-    <state width="1315" height="179" key="GridCell.Tab.0.center/0.23.1680.947@0.23.1680.947" timestamp="1588567335398" />
+    <state width="1390" height="322" key="GridCell.Tab.0.center/0.23.1680.947@0.23.1680.947" timestamp="1589147446828" />
     <state width="1315" height="322" key="GridCell.Tab.0.center/0.23.1680.949@0.23.1680.949" timestamp="1588829419210" />
     <state width="1315" height="322" key="GridCell.Tab.0.center/0.23.1680.952@0.23.1680.952" timestamp="1588822795359" />
-    <state width="1315" height="322" key="GridCell.Tab.0.left" timestamp="1588829419210">
-      <screen x="0" y="23" width="1680" height="949" />
+    <state width="1390" height="322" key="GridCell.Tab.0.left" timestamp="1589147446827">
+      <screen x="0" y="23" width="1680" height="947" />
     </state>
     <state width="1315" height="310" key="GridCell.Tab.0.left/0.23.1680.942@0.23.1680.942" timestamp="1588464566078" />
     <state width="1315" height="179" key="GridCell.Tab.0.left/0.23.1680.944@0.23.1680.944" timestamp="1588567493520" />
-    <state width="1315" height="179" key="GridCell.Tab.0.left/0.23.1680.947@0.23.1680.947" timestamp="1588567335398" />
+    <state width="1390" height="322" key="GridCell.Tab.0.left/0.23.1680.947@0.23.1680.947" timestamp="1589147446827" />
     <state width="1315" height="322" key="GridCell.Tab.0.left/0.23.1680.949@0.23.1680.949" timestamp="1588829419210" />
     <state width="1315" height="322" key="GridCell.Tab.0.left/0.23.1680.952@0.23.1680.952" timestamp="1588822795358" />
-    <state width="1315" height="322" key="GridCell.Tab.0.right" timestamp="1588829419211">
-      <screen x="0" y="23" width="1680" height="949" />
+    <state width="1390" height="322" key="GridCell.Tab.0.right" timestamp="1589147446828">
+      <screen x="0" y="23" width="1680" height="947" />
     </state>
     <state width="1315" height="310" key="GridCell.Tab.0.right/0.23.1680.942@0.23.1680.942" timestamp="1588464566079" />
     <state width="1315" height="179" key="GridCell.Tab.0.right/0.23.1680.944@0.23.1680.944" timestamp="1588567493521" />
-    <state width="1315" height="179" key="GridCell.Tab.0.right/0.23.1680.947@0.23.1680.947" timestamp="1588567335398" />
+    <state width="1390" height="322" key="GridCell.Tab.0.right/0.23.1680.947@0.23.1680.947" timestamp="1589147446828" />
     <state width="1315" height="322" key="GridCell.Tab.0.right/0.23.1680.949@0.23.1680.949" timestamp="1588829419211" />
     <state width="1315" height="322" key="GridCell.Tab.0.right/0.23.1680.952@0.23.1680.952" timestamp="1588822795360" />
-    <state width="1315" height="322" key="GridCell.Tab.1.bottom" timestamp="1588829419212">
-      <screen x="0" y="23" width="1680" height="949" />
+    <state width="1390" height="322" key="GridCell.Tab.1.bottom" timestamp="1589147446829">
+      <screen x="0" y="23" width="1680" height="947" />
     </state>
     <state width="1315" height="310" key="GridCell.Tab.1.bottom/0.23.1680.942@0.23.1680.942" timestamp="1588464557169" />
     <state width="1315" height="193" key="GridCell.Tab.1.bottom/0.23.1680.944@0.23.1680.944" timestamp="1588567275076" />
-    <state width="1315" height="104" key="GridCell.Tab.1.bottom/0.23.1680.947@0.23.1680.947" timestamp="1588544012031" />
+    <state width="1390" height="322" key="GridCell.Tab.1.bottom/0.23.1680.947@0.23.1680.947" timestamp="1589147446829" />
     <state width="1315" height="322" key="GridCell.Tab.1.bottom/0.23.1680.949@0.23.1680.949" timestamp="1588829419212" />
     <state width="1315" height="322" key="GridCell.Tab.1.bottom/0.23.1680.952@0.23.1680.952" timestamp="1588822795363" />
-    <state width="1315" height="322" key="GridCell.Tab.1.center" timestamp="1588829419211">
-      <screen x="0" y="23" width="1680" height="949" />
+    <state width="1390" height="322" key="GridCell.Tab.1.center" timestamp="1589147446829">
+      <screen x="0" y="23" width="1680" height="947" />
     </state>
     <state width="1315" height="310" key="GridCell.Tab.1.center/0.23.1680.942@0.23.1680.942" timestamp="1588464557168" />
     <state width="1315" height="193" key="GridCell.Tab.1.center/0.23.1680.944@0.23.1680.944" timestamp="1588567275076" />
-    <state width="1315" height="104" key="GridCell.Tab.1.center/0.23.1680.947@0.23.1680.947" timestamp="1588544012030" />
+    <state width="1390" height="322" key="GridCell.Tab.1.center/0.23.1680.947@0.23.1680.947" timestamp="1589147446829" />
     <state width="1315" height="322" key="GridCell.Tab.1.center/0.23.1680.949@0.23.1680.949" timestamp="1588829419211" />
     <state width="1315" height="322" key="GridCell.Tab.1.center/0.23.1680.952@0.23.1680.952" timestamp="1588822795362" />
-    <state width="1315" height="322" key="GridCell.Tab.1.left" timestamp="1588829419211">
-      <screen x="0" y="23" width="1680" height="949" />
+    <state width="1390" height="322" key="GridCell.Tab.1.left" timestamp="1589147446828">
+      <screen x="0" y="23" width="1680" height="947" />
     </state>
     <state width="1315" height="310" key="GridCell.Tab.1.left/0.23.1680.942@0.23.1680.942" timestamp="1588464557159" />
     <state width="1315" height="193" key="GridCell.Tab.1.left/0.23.1680.944@0.23.1680.944" timestamp="1588567275075" />
-    <state width="1315" height="104" key="GridCell.Tab.1.left/0.23.1680.947@0.23.1680.947" timestamp="1588544012029" />
+    <state width="1390" height="322" key="GridCell.Tab.1.left/0.23.1680.947@0.23.1680.947" timestamp="1589147446828" />
     <state width="1315" height="322" key="GridCell.Tab.1.left/0.23.1680.949@0.23.1680.949" timestamp="1588829419211" />
     <state width="1315" height="322" key="GridCell.Tab.1.left/0.23.1680.952@0.23.1680.952" timestamp="1588822795361" />
-    <state width="1315" height="322" key="GridCell.Tab.1.right" timestamp="1588829419212">
-      <screen x="0" y="23" width="1680" height="949" />
+    <state width="1390" height="322" key="GridCell.Tab.1.right" timestamp="1589147446829">
+      <screen x="0" y="23" width="1680" height="947" />
     </state>
     <state width="1315" height="310" key="GridCell.Tab.1.right/0.23.1680.942@0.23.1680.942" timestamp="1588464557169" />
     <state width="1315" height="193" key="GridCell.Tab.1.right/0.23.1680.944@0.23.1680.944" timestamp="1588567275076" />
-    <state width="1315" height="104" key="GridCell.Tab.1.right/0.23.1680.947@0.23.1680.947" timestamp="1588544012030" />
+    <state width="1390" height="322" key="GridCell.Tab.1.right/0.23.1680.947@0.23.1680.947" timestamp="1589147446829" />
     <state width="1315" height="322" key="GridCell.Tab.1.right/0.23.1680.949@0.23.1680.949" timestamp="1588829419212" />
     <state width="1315" height="322" key="GridCell.Tab.1.right/0.23.1680.952@0.23.1680.952" timestamp="1588822795363" />
     <state x="420" y="130" key="SettingsEditor" timestamp="1587686595282">
@@ -264,11 +266,11 @@
       <screen x="0" y="23" width="1680" height="942" />
     </state>
     <state x="154" y="128" width="1136" height="738" key="dock-window-1/0.23.1680.942@0.23.1680.942" timestamp="1588185413708" />
-    <state x="815" y="226" width="670" height="672" key="search.everywhere.popup" timestamp="1589047118069">
-      <screen x="0" y="23" width="1680" height="942" />
+    <state x="815" y="227" width="670" height="676" key="search.everywhere.popup" timestamp="1589145890020">
+      <screen x="0" y="23" width="1680" height="947" />
     </state>
     <state x="815" y="226" width="670" height="672" key="search.everywhere.popup/0.23.1680.942@0.23.1680.942" timestamp="1589047118069" />
-    <state x="815" y="227" width="670" height="676" key="search.everywhere.popup/0.23.1680.947@0.23.1680.947" timestamp="1588363935323" />
+    <state x="815" y="227" width="670" height="676" key="search.everywhere.popup/0.23.1680.947@0.23.1680.947" timestamp="1589145890020" />
     <state x="815" y="228" width="670" height="676" key="search.everywhere.popup/0.23.1680.949@0.23.1680.949" timestamp="1588692212728" />
   </component>
 </project>
