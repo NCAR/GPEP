@@ -271,11 +271,9 @@ def weightmerge(data, weight):
             dataout[i] = np.sum(data[i, :] * weight[i, :]) / np.sum(weight[i, :])
     elif np.ndim(data) == 3:
         nrows, ncols, nmodel = np.shape(data)
-        dataout = np.zeros([nrows, ncols])
-        for r in range(nrows):
-            for c in range(ncols):
-                if not np.isnan(data[r, c, 0]):
-                    dataout[r, c] = np.nansum(data[r, c, :] * weight[r, c, :]) / np.nansum(weight[r, c, :])
+        for i in range(nmodel):
+            data[:,:,i] = data[:,:,i] * weight[:,:,i]
+        dataout = np.nansum(data,axis=2) / np.nansum(weight,axis=2)
     return dataout
 
 def m_DateList(year_start, year_end, mode):
@@ -581,14 +579,17 @@ else:
                 datarea[rr] = datatemp['data']
                 del datatemp
         for i in range(nday):
-            pass
-
+            datain = np.zeros([nrows,ncols,reanum])
+            for rr in range(reanum):
+                datain[:,:,rr] = datarea[rr][:,:,i]
+            merge_data[:,:,i]=weightmerge(datain, reamerge_weight_grid)
+        del datarea
 
 
         # error of the merged data
         error1 = extrapolation(stnlle[:, 0], stnlle[:, 1], reamerge_stn[:,indy] - stndata[:,indy], lattarm, lontarm, nearnum)
         error2 = [''] * reanum
-        errorfinal = np.zeros([nrows, ncols, nday])
+        merge_error = np.zeros([nrows, ncols, nday])
         for rr in range(reanum):
             error2[rr] = extrapolation(stnlle[:, 0], stnlle[:, 1], reacorr_stn[:,indy] - stndata[:,indy], lattarm, lontarm, nearnum)
 
@@ -597,11 +598,11 @@ else:
                 if not np.isnan(mask[r, c]):
                     chi = merge_choice[r, c]
                     if chi > 0:
-                        errorfinal[r, c, nday] = error2[chi - 1][r, c, :]
+                        merge_error[r, c, nday] = error2[chi - 1][r, c, :]
                     else:
-                        errorfinal[r, c, nday] = error1[r, c, :]
+                        merge_error[r, c, nday] = error1[r, c, :]
 
-        np.savez_compressed(filey, merge_error=errorfinal, latitude=lattar, longitude=lontar)
+        np.savez_compressed(filey, merge_data=merge_data, merge_error=merge_error, latitude=lattar, longitude=lontar)
 
 
 

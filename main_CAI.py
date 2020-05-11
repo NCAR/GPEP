@@ -60,7 +60,7 @@ ow_stn = 0
 # setting: output files
 datestr = str(date_cal_start) + '-' + str(date_cal_end)
 FileStnData = '/home/gut428/GMET/PyGMETout/stndata_' + datestr + '.npz'
-FileWeight = '/home/gut428/GMET/PyGMETout/weight_' + datestr + '.npz'
+FileWeight = '/home/gut428/GMET/PyGMETout/weight.npz'
 FileRegError_daily = '/home/gut428/GMET/PyGMETout/error_' + datestr + '.npz'  # regression error at station points
 FileRegression_daily = '/home/gut428/GMET/PyGMETout/output_' + datestr + '.npz'
 # FileStnData = '/Users/localuser/GMET/Example/station_data.npz'

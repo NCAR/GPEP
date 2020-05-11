@@ -5,7 +5,7 @@ clc;clear
 for y=1979:2018
     for m=1:12
         yyyymmim=y*100+m;
-        outfile=['./Sbatchscripts/Plato_',num2str(yyyymmim),'.sh'];
+        outfile=['Plato_',num2str(yyyymmim),'.sh'];
         fidout=fopen(outfile,'w');
         fprintf(fidout,'#!/bin/bash\n');
         fprintf(fidout,['#SBATCH --job-name=PG_',num2str(yyyymmim),'\n']);
