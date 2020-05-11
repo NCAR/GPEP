@@ -339,11 +339,6 @@ if corrmode == 'diff':
 gmet_stnfile = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'
 gmet_stndatafile = '/Users/localuser/GMET/pyGMET_NA/stndata_whole.npz' # to be saved. only process when absent
 
-# downscaled reanalysis data at station points
-# file_readownstn = ['/ERA5_downto_stn.npz',
-#                    '/MERRA2_downto_stn.npz',
-#                    '/JRA55_downto_stn.npz']
-file_readownstn = ['/Users/localuser/Research/Test/ERA5_downto_stn.npz', '','']
 
 # mask file
 # file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
@@ -352,6 +347,11 @@ file_mask = './DEM/NA_DEM_010deg_trim.mat'
 # downscaled reanalysis: gridded data
 path_readown = ['', '', '']
 prefix = ['ERA5_', 'MERAA2_', 'JRA55_']
+# downscaled reanalysis data at station points
+# file_readownstn = ['/ERA5_downto_stn.npz',
+#                    '/MERRA2_downto_stn.npz',
+#                    '/JRA55_downto_stn.npz']
+file_readownstn = ['/Users/localuser/Research/Test/ERA5_downto_stn.npz', '','']
 
 # output files
 # train and test index file
@@ -552,7 +552,7 @@ else:
                                                lattarm, lontarm, nearnum)
         reamerge_weight_grid[:, :, rr] = extrapolation(stnlle[:, 0], stnlle[:, 1], reamerge_weight_stn[:,rr],
                                                lattarm, lontarm, nearnum)
-    weight_rea_gridsum = np.sum(reamerge_weight_grid, axis=2)
+    reamerge_weight_gridsum = np.sum(reamerge_weight_grid, axis=2)
 
     # which is the best for each grid
     merge_choice = np.zeros([nrows, ncols])
@@ -566,12 +566,26 @@ else:
         filey = path_merge + 'mergedata_' + var + '_' + str(y) + '.npz'
         if os.path.isfile(filey):
             continue
-
-        # merged data
-
-        # error of the merged data
         indy = date_list['yyyy'] == y
         nday = np.sum(indy)
+
+        # merged reanalysis gridded data
+        merge_data = np.nan * np.zeros([nrows,ncols,nday], dtype=np.float32)
+        datarea = [''] * reanum
+        for rr in range(reanum):
+            if prefix[rr] == 'MERRA2_' and y == 1979:
+                datarea[rr] = np.nan * np.zeros([nrows,ncols,nday])
+            else:
+                filer = path_readown[rr] + '/' + prefix[rr] + var + '_' + str(y) + '.npz'
+                datatemp = np.load(filer)
+                datarea[rr] = datatemp['data']
+                del datatemp
+        for i in range(nday):
+            pass
+
+
+
+        # error of the merged data
         error1 = extrapolation(stnlle[:, 0], stnlle[:, 1], reamerge_stn[:,indy] - stndata[:,indy], lattarm, lontarm, nearnum)
         error2 = [''] * reanum
         errorfinal = np.zeros([nrows, ncols, nday])
@@ -587,7 +601,7 @@ else:
                     else:
                         errorfinal[r, c, nday] = error1[r, c, :]
 
-        np.savez_compressed(filey, error=errorfinal, latitude=lattar, longitude=lontar)
+        np.savez_compressed(filey, merge_error=errorfinal, latitude=lattar, longitude=lontar)
 
 
 

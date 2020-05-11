@@ -52,16 +52,13 @@ def readstnlist_nc(FileStnInfo):
 
 def distance(origin, destination):
     # distance from lat/lon to km
-    if np.ndim(destination) > 1:
-        num = np.shape(destination)[0]
-    else:
-        num = 1
     lat1, lon1 = origin[0], origin[1]
-    if num == 1:
-        # destination = destination[0]
-        lat2, lon2 = destination[0], destination[1]
-    else:
+    if np.ndim(destination) > 1:
         lat2, lon2 = destination[:, 0], destination[:, 1]
+    else:
+        destination = destination[0]
+        lat2, lon2 = destination[0], destination[1]
+
     radius = 6371  # km
     dlat = np.radians(lat2 - lat1)
     dlon = np.radians(lon2 - lon1)

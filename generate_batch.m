@@ -16,7 +16,7 @@ for y=1979:2018
 
         str1=num2str(y*10000+m*100+1);
         str2=num2str(y*10000+m*100+eomday(y,m));
-        fprintf(fidout,['srun python main_CAI.py ',str1,' ',str2,'\n']);
+        fprintf(fidout,['srun python -u main_CAI.py ',str1,' ',str2,'\n']);
 %         fprintf(fidout,'rm *.out\n');
         fclose(fidout);
     end
