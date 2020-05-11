@@ -604,11 +604,6 @@ else:
 
         np.savez_compressed(filey, merge_data=merge_data, merge_error=merge_error, latitude=lattar, longitude=lontar)
 
-
-
-
-
-
 ########################################################################################################################
 
 # the production of merged product
