@@ -1,7 +1,7 @@
 sbatch --array=2-40%39 Plato_readown.sh
 
 
-for (( y=1980; y<=2000; y++))
+for (( y=2001; y<=2018; y++))
 do
 for (( m=1; m<=12; m++ ))
 do
