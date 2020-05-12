@@ -10,8 +10,8 @@ import sys
 from scipy.interpolate import griddata
 
 ########################################################################################################################
-# date_cal_start = int(sys.argv[1]) # yyyymmdd
-# date_cal_end = int(sys.argv[2])
+date_cal_start = int(sys.argv[1]) # yyyymmdd
+date_cal_end = int(sys.argv[2])
 
 # 0. read/define configuration information
 # setting: file and path names of inputs
@@ -21,18 +21,18 @@ from scipy.interpolate import griddata
 # FileStnInfo = '/Users/localuser/GMET/Example_tgq/inputs/stnlist_example.txt'  # station basic information (lists)
 # FileGridInfo = '/Users/localuser/GMET/Example_tgq/inputs/gridinfo_example.nc'  # study area information
 # PathStn = '/Users/localuser/GMET/Example_tgq/StnDaily_train'  # original station data (prcp ...)
-FileStnInfo = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'  # station basic information (lists)
-FileGridInfo = '/Users/localuser/GMET/pyGMET_NA/gridinfo_whole.nc'  # study area information
-PathStn = '/Users/localuser/GMET/StnInput_daily'
+# FileStnInfo = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'  # station basic information (lists)
+# FileGridInfo = '/Users/localuser/GMET/pyGMET_NA/gridinfo_whole.nc'  # study area information
+# PathStn = '/Users/localuser/GMET/StnInput_daily'
 # Plato
-# FileStnInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'  # station basic information (lists)
-# FileGridInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/gridinfo_whole.nc'  # study area information
-# PathStn = '/home/gut428/GMET/StnInput_daily'
+FileStnInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'  # station basic information (lists)
+FileGridInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/gridinfo_whole.nc'  # study area information
+PathStn = '/home/gut428/GMET/StnInput_daily'
 
 # setting: start and end date
 # calculation start/end date:
-date_cal_start = 19900101  # yyyymmdd: start date
-date_cal_end = 19900131  # yyyymmdd: end date
+# date_cal_start = 19900101  # yyyymmdd: start date
+# date_cal_end = 19900131  # yyyymmdd: end date
 # station data (in PathStn) start/end date:
 date_stn_start = 19790101  # yyyymmdd: start date
 date_stn_end = 20181231  # yyyymmdd: end date
@@ -59,14 +59,14 @@ ow_stn = 0
 
 # setting: output files
 datestr = str(date_cal_start) + '-' + str(date_cal_end)
-# FileStnData = '/home/gut428/GMET/PyGMETout/stndata_' + datestr + '.npz'
-# FileWeight = '/home/gut428/GMET/PyGMETout/weight.npz'
-# FileRegError_daily = '/home/gut428/GMET/PyGMETout/error_' + datestr + '.npz'  # regression error at station points
-# FileRegression_daily = '/home/gut428/GMET/PyGMETout/output_' + datestr + '.npz'
-FileStnData = '/Users/localuser/Downloads/stndata_' + datestr + '.npz'
-FileWeight = '/Users/localuser/Downloads/weight.npz'
-FileRegError_daily = '/Users/localuser/Downloads/error_' + datestr + '.npz'  # regression error at station points
-FileRegression_daily = '/Users/localuser/Downloads/output_' + datestr + '.npz'
+FileStnData = '/home/gut428/GMET/PyGMETout/stndata_' + datestr + '.npz'
+FileWeight = '/home/gut428/GMET/PyGMETout/weight.npz'
+FileRegError_daily = '/home/gut428/GMET/PyGMETout/error_' + datestr + '.npz'  # regression error at station points
+FileRegression_daily = '/home/gut428/GMET/PyGMETout/output_' + datestr + '.npz'
+# FileStnData = '/Users/localuser/Downloads/stndata_' + datestr + '.npz'
+# FileWeight = '/Users/localuser/Downloads/weight.npz'
+# FileRegError_daily = '/Users/localuser/Downloads/error_' + datestr + '.npz'  # regression error at station points
+# FileRegression_daily = '/Users/localuser/Downloads/output_' + datestr + '.npz'
 # FileStnData = '/Users/localuser/GMET/pyGMET_NA/station_data.npz'
 # FileWeight = '/Users/localuser/GMET/pyGMET_NA/weight_nearstn.npz'
 # FileRegError_daily = '/Users/localuser/GMET/pyGMET_NA/regress_daily_error.npz'  # regression error at station points
