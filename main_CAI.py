@@ -309,7 +309,7 @@ if cai_mode == 0 or daily_flag == 1:
                            nearstn_min, nearstn_max, trans_exp_daily, trans_mode)
         np.savez_compressed(FileRegression_daily, pop=pop_daily, pcp=pcp_daily, tmean=tmean_daily, trange=trange_daily,
                             pcp_err=pcp_err_daily, tmean_err=tmean_err_daily, trange_err=trange_err_daily,
-                            y_max=y_max_daily)
+                            y_max=y_max_daily,mean_autocorr_daily=mean_autocorr_daily, mean_tp_corr_daily=mean_tp_corr_daily)
         # au.save_output_nc(FileRegression_daily, gridinfo, seconds, mean_autocorr_daily, mean_tp_corr_daily,
         #                   pop_daily, pcp_daily, tmean_daily, trange_daily,
         #                   pcp_err_daily, tmean_err_daily, trange_err_daily, y_max_daily)

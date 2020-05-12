@@ -74,7 +74,9 @@ def transform(data, texp, mode):
     # mode: box-cox; power-law
     if mode == 'box-cox':
         datat = (data ** (1 / texp) - 1) / (1 / texp)
-        datat[data == 0] = -3
+        ind0 = data == 0
+        if np.sum(ind0)>0:
+            datat[ind0] = -3
     elif mode == 'power-law':
         datat = data ** (1 / texp)
     elif mode == 'none':
