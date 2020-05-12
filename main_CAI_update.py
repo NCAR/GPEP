@@ -11,9 +11,11 @@ from scipy.interpolate import griddata
 import calendar
 
 ########################################################################################################################
-year = int(sys.argv[1]) # yyyy
+yearmm = int(sys.argv[1]) # yyyymm
+year = int(yearmm/100)
+mm = np.mod(yearmm,100)
 
-for mm in range(12):
+for mm in range(mm,mm+1):
     print('Year month:', year, mm+1)
     last_day_of_month = calendar.monthrange(year, mm+1)[1]
     date_cal_start = year*10000 + (mm+1)*100 + 1  # yyyymmdd: start date
@@ -71,6 +73,9 @@ for mm in range(12):
     FileRegression_daily = '/home/gut428/GMET/PyGMETout/output_' + datestr + '.npz'
     FileRegError_dailyold = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/error_' + datestr + '.npz'  # regression error at station points
     FileRegression_dailyold = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/output_' + datestr + '.npz'
+
+    if os.path.isfile(FileRegression_dailyold) and os.path.isfile(FileRegError_dailyold):
+        sys.exit('Output files exist')
 
     # FileStnData = '/Users/localuser/Downloads/old/stndata_' + datestr + '.npz'
     # FileWeight = '/Users/localuser/Downloads/old/weight.npz'

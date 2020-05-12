@@ -14,11 +14,10 @@ done
 done
 
 
-for (( y=2018; y<=2018; y++))
+for (( y=2005; y<=2016; y++))
 do
-mv output_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/
-mv stndata_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/
-mv error_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/
+mv output_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout_update
+mv error_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout_update
 done
 
 
