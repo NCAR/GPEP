@@ -13,7 +13,7 @@ import calendar
 ########################################################################################################################
 yearmm = int(sys.argv[1]) # yyyymm
 year = int(yearmm/100)
-mm = np.mod(yearmm,100)
+mm = np.mod(yearmm,100)-1
 
 for mm in range(mm,mm+1):
     print('Year month:', year, mm+1)
@@ -74,7 +74,7 @@ for mm in range(mm,mm+1):
     FileRegError_dailyold = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/error_' + datestr + '.npz'  # regression error at station points
     FileRegression_dailyold = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/output_' + datestr + '.npz'
 
-    if os.path.isfile(FileRegression_dailyold) and os.path.isfile(FileRegError_dailyold):
+    if os.path.isfile(FileRegression_daily) and os.path.isfile(FileRegError_daily):
         sys.exit('Output files exist')
 
     # FileStnData = '/Users/localuser/Downloads/old/stndata_' + datestr + '.npz'
