@@ -2,7 +2,7 @@
 clc;clear
 % mkdir('./Sbatchscripts')
 
-for y=2000:2004
+for y=2017:2018
     for m=1:12
         yyyymmim=y*100+m;
         outfile=['Plato_',num2str(yyyymmim),'.sh'];

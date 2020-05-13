@@ -77,7 +77,7 @@ def logistic_regression(x, tx, yp):
     return b
 
 
-def idw(data, weight):
+def weightedmean(data, weight):
     # inverse distance weighting interpolation
     dataout = np.nansum(data * weight) / np.nansum(weight)
     return dataout
@@ -572,6 +572,67 @@ def regressioncheck(datareg, datastn, weightstn, varname):
         sys.exit('Unknown variable name')
 
     if datareg > upb or datareg < lwb:
-        datareg = idw(datastn[0:10], weightstn[0:10])  # use the ten nearest stations
+        datareg = weightedmean(datastn[0:10], weightstn[0:10])  # use the ten nearest stations
 
     return datareg
+
+#
+# def residualcorrection(dres, dreg, nearloc, nearweight):
+#     # correct spatial interpolation estimates using the residuals estimated at station points
+#     # a simple IDW method is used to interpolate residuals
+#     if np.ndim(dres) == 1:
+#         dres = dres[:, np.newaxis]
+#         dreg = dreg[:, :, np.newaxis]
+#     nrows, ncols, ntimes = np.shape(dreg)
+#     dcorr = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
+#     for r in range(nrows):
+#         for c in range(ncols):
+#             if nearloc[r, c, 0] > -1:
+#                 locrc = nearloc[r, c, :]
+#                 weightrc = nearweight[r, c, :]
+#                 weightrc = weightrc[locrc > -1]
+#                 locrc = locrc[locrc > -1]
+#
+#                 dresrc = dres[locrc, :]
+#                 for t in range(ntimes):
+#                     dcorr[r, c, t] = weightedmean(dresrc, weightrc) + dreg[r, c, t]
+#     return dcorr
+
+
+def error_after_residualcorrection(data_ori, data_reg, nearloc, nearweight):
+    # data_ori: original observation
+    # data_reg: regression estimates
+    # data_res: regression residuals
+    nstn, ntimes = np.shape(data_ori)
+    res_after_corr = np.nan * np.zeros([nstn, ntimes])
+    for i in range(nstn):
+        if np.isnan(data_ori[i,0]):
+            continue
+        nearloci = nearloc[i,:]
+        nearweighti = nearweight[i, :]
+        induse = nearloci>-1
+        nearloci = nearloci[induse]
+        nearweighti = nearweighti[induse]
+        nearweighti = nearweighti / np.sum(nearweighti)
+        nearweighti2 = np.tile(nearweighti,(ntimes,1)).T
+
+        dtar_orii = data_ori[i,:]
+        dtar_regi = data_reg[i,:]
+        dtar_resi = dtar_regi - dtar_orii
+
+        dnear_orii = data_ori[nearloci,:]
+        dnear_regi = data_reg[nearloci, :]
+        dnear_resi = dnear_regi - dnear_orii
+
+        dtar_resi_corr = np.sum(dnear_resi * nearweighti2, axis=0)
+        dtar_regi_corr = dtar_regi + dtar_resi_corr
+
+        res_after_corri = dtar_regi_corr - dtar_orii
+        res_after_corr[i, :] = res_after_corri
+
+    return res_after_corr
+
+
+
+
+
