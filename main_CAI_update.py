@@ -205,8 +205,7 @@ for m in range(12):
         del datatemp
     else:
         print('Estimate daily regression error at station points')
-        pcp_err_stn_daily, tmean_err_stn_daily, trange_err_stn_daily = \
-            reg.station_error(prcp_stn_daily, stninfo, near_stn_prcpLoc, near_stn_prcpWeight,  nearstn_min)
+        pcp_err_stn_daily = reg.station_error(prcp_stn_daily, stninfo, near_stn_prcpLoc, near_stn_prcpWeight,  nearstn_min)
         np.savez_compressed(FileRegError_daily, pcp_err_stn=pcp_err_stn_daily, stninfo=stninfo)
 
     ########################################################################################################################
