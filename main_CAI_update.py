@@ -13,7 +13,7 @@ import calendar
 year = int(sys.argv[1])
 for m in range(12):
     date_cal_start = year*10000 + (m + 1)*100 + 1
-    date_cal_end = year*10000 + (m + 1)*100 + calendar.monthrange(year, m+1)
+    date_cal_end = year*10000 + (m + 1)*100 + calendar.monthrange(year, m+1)[1]
     print('Date',date_cal_start,date_cal_end)
 
     # 0. read/define configuration information
