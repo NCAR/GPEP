@@ -154,9 +154,9 @@ def station_error(prcp_stn, stninfo, near_stn_prcpLoc, near_stn_prcpWeight, near
 
 
 
-def regression(prcp_stn, tmean_stn, trange_stn, pcp_err_stn, tmean_err_stn, trange_err_stn, stninfo, gridinfo,
-               mask, near_grid_prcpLoc, near_grid_prcpWeight, near_grid_tempLoc, near_grid_tempWeight,
-               nearstn_min, nearstn_max, trans_exp, trans_mode):
+def regression(prcp_stn, pcp_err_stn, stninfo, gridinfo,
+               mask, near_grid_prcpLoc, near_grid_prcpWeight,
+               nearstn_min, nearstn_max):
     nstn, ntimes = np.shape(prcp_stn)
     nrows, ncols, nvars = np.shape(gridinfo)
 
@@ -164,12 +164,7 @@ def regression(prcp_stn, tmean_stn, trange_stn, pcp_err_stn, tmean_err_stn, tran
     tmp_weight_arr = np.eye(nearstn_max)
     y_max = -3 * np.ones([nrows, ncols, ntimes], dtype=np.float32)
     pcp = -3 * np.ones([nrows, ncols, ntimes], dtype=np.float32)
-    pop = np.zeros([nrows, ncols, ntimes], dtype=np.float32)
     pcp_err = np.zeros([nrows, ncols, ntimes], dtype=np.float32)
-    tmean = np.zeros([nrows, ncols, ntimes], dtype=np.float32)
-    trange = np.zeros([nrows, ncols, ntimes], dtype=np.float32)
-    tmean_err = np.zeros([nrows, ncols, ntimes], dtype=np.float32)
-    trange_err = np.zeros([nrows, ncols, ntimes], dtype=np.float32)
 
     # start regression ...
     # loop through time steps
@@ -177,9 +172,7 @@ def regression(prcp_stn, tmean_stn, trange_stn, pcp_err_stn, tmean_err_stn, tran
         print('Regression time step: ', t + 1, '---Total time steps: ', ntimes)
         # assign vectors of station alues for prcp_stn, temp, for current time step
         # transform prcp_stn to approximate normal distribution
-        y_prcp = au.transform(prcp_stn[:, t], trans_exp, trans_mode)
-        y_tmean = tmean_stn[:, t]
-        y_trange = trange_stn[:, t]
+        y_prcp = prcp_stn[:, t]
 
         # loop through grids (row, col)
         # for rr in range(nrows):
@@ -216,7 +209,6 @@ def regression(prcp_stn, tmean_stn, trange_stn, pcp_err_stn, tmean_err_stn, tran
                     # note: pcp_err is based on results from 6.1 and independent with gridded pop and pcp regression
                     if ndata == 0:
                         # nearby stations do not have positive prcp data (i.e., zero or missing)
-                        pop[rr, cc, t] = 0
                         pcp[rr, cc, t] = y_prcp_red[0]  # corresponding to zero precipitation
                         pcp_err[rr, cc, t] = 0
                     else:
@@ -240,13 +232,6 @@ def regression(prcp_stn, tmean_stn, trange_stn, pcp_err_stn, tmean_err_stn, tran
                         tx_red = np.transpose(x_red_use)
                         twx_red = np.matmul(tx_red, w_pcp_red)
 
-                        # calculate pop
-                        if nodata == 0:
-                            pop[rr, cc, t] = 1
-                        else:
-                            b = logistic_regression(x_red_use, twx_red, yp_red)
-                            zb = - np.dot(gridinfo_use, b)
-                            pop[rr, cc, t] = 1 / (1 + np.exp(zb))
 
                         # calculate pcp
                         b = least_squares(x_red_use, y_prcp_red, twx_red)
@@ -258,63 +243,7 @@ def regression(prcp_stn, tmean_stn, trange_stn, pcp_err_stn, tmean_err_stn, tran
                         err0 = pcp_err_stn[w_pcp_1d_loc, t]
                         pcp_err[rr, cc, t] = (np.sum((err0 ** 2) * w_pcp_1d) / np.sum(w_pcp_1d)) ** 0.5
 
-                ############################################################################################################
-
-                # 6.5 Temperature estimation (tmean and trange)
-                # reduced matrices for tmean_stn/trange_stn
-                nstn_temp = int(np.sum(near_grid_tempLoc[rr, cc, :] > -1))
-                if nstn_temp < nearstn_min:
-                    print('Temperature regression: current time step, row, and col are', t, rr, cc)
-                    sys.exit('Cannot find enough input stations for this grid cell')
-                else:
-                    # 6.5.1 reduced matrices for precipitation
-                    w_temp_red = np.zeros([nstn_temp, nstn_temp])
-                    for i in range(nstn_temp):
-                        w_temp_red[i, i] = near_grid_tempWeight[rr, cc, i]  # eye matrix: stn weight in one-one lien
-                    w_temp_1d = near_grid_tempWeight[rr, cc, 0:nstn_temp]  # stn weight
-                    w_temp_1d_loc = near_grid_tempLoc[rr, cc, 0:nstn_temp]  # stn ID number/location
-                    y_tmean_red = y_tmean[w_temp_1d_loc]  # transformed temp
-                    y_trange_red = y_trange[w_temp_1d_loc]  # transformed temp
-                    x_red_t = stninfo[w_temp_1d_loc, :]  # station lat/lon/ele/slope_ns/slope_we
-
-                    ndata_t = np.sum(y_tmean_red > -100)
-
-                    if ndata_t == 0:
-                        # This is not a problem for serially complete dataset (scd).
-                        # But even if inputs have missing data, the way in Fortran-based GMET (simple filling) is not
-                        # a good way. This problem should be solved when finding near stations.
-                        print('Temperature regression: current time step, row, and col are', t, rr, cc)
-                        sys.exit('Nearby stations do not have any valid temperature data')
-                    else:
-                        # 6.5.1 estimate tmean and its error
-                        if gridinfo[rr, cc, 1] < 74:
-                            gridinfo_use = gridinfo[rr, cc, 0:4]
-                            x_red_use = x_red_t[:, 0:4]  # do not use slope for temperature
-                        else:
-                            gridinfo_use = gridinfo[rr, cc, 0:3]
-                            x_red_use = x_red_t[:, 0:3]
-                        tx_red = np.transpose(x_red_use)
-                        twx_red = np.matmul(tx_red, w_temp_red)
-                        b = least_squares(x_red_use, y_tmean_red, twx_red)
-                        tmeanreg = np.dot(gridinfo_use, b)
-                        tmeanreg = regressioncheck(tmeanreg, y_tmean_red, w_temp_1d, 'tmean')
-                        tmean[rr, cc, t] = tmeanreg
-
-                        # error estimation
-                        err0 = tmean_err_stn[w_temp_1d_loc, t]
-                        tmean_err[rr, cc, t] = (np.sum((err0 ** 2) * w_temp_1d) / np.sum(w_temp_1d)) ** 0.5
-
-                        # 6.5.2 estimate trange and its error
-                        b = least_squares(x_red_use, y_trange_red, twx_red)
-                        trangereg = np.dot(gridinfo_use, b)
-                        trangereg = regressioncheck(trangereg, y_trange_red, w_temp_1d, 'trange')
-                        trange[rr, cc, t] = trangereg
-
-                        # error estimation
-                        err0 = trange_err_stn[w_temp_1d_loc, t]
-                        trange_err[rr, cc, t] = (np.sum((err0 ** 2) * w_temp_1d) / np.sum(w_temp_1d)) ** 0.5
-
-    return pop, pcp, tmean, trange, pcp_err, tmean_err, trange_err, y_max
+    return pcp, pcp_err, y_max
 
 
 def regressioncheck(datareg, datastn, weightstn, varname):
@@ -329,9 +258,8 @@ def regressioncheck(datareg, datastn, weightstn, varname):
     # for tmean: upper bound=max(tmean)+3, lower bound=min(tmean)+3 because 3 / 0.65 ~=4.6 km (lapse rate=0.65 degree/km)
     # while max_dem = 4.6 km in 0.1 degree in north america
     if varname == 'pcp':
-        datastn0 = au.retransform(datastn, 4, 'box-cox')
-        upb = au.transform(np.max(datastn0) * 1.5, 4, 'box-cox')
-        lwb = -3
+        upb = np.max(datastn) * 1.5
+        lwb = 0
     elif varname == 'tmean':
         upb = np.max(datastn) + 3
         lwb = np.min(datastn) - 3

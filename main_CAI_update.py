@@ -58,8 +58,8 @@ for m in range(12):
     FileStnData = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/stndata_' + datestr + '.npz'
     FileWeight = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/weight.npz'
     FileRegError_daily = '/home/gut428/GMET/PyGMETout/error_notrans_' + datestr + '.npz'  # regression error at station points
-    FileRegError_daily_corr = '/home/gut428/GMET/PyGMETout/error_rescorr' + datestr + '.npz'  # regression error after residual correction
-    FileRegression_daily = '/home/gut428/GMET/PyGMETout/output_' + datestr + '.npz'
+    # FileRegError_daily_corr = '/home/gut428/GMET/PyGMETout/error_rescorr' + datestr + '.npz'  # regression error after residual correction
+    FileRegression_daily = '/home/gut428/GMET/PyGMETout/output_notrans_' + datestr + '.npz'
     # FileStnData = '/Users/localuser/Downloads/old/stndata_' + datestr + '.npz'
     # FileWeight = '/Users/localuser/Downloads/old/weight.npz'
     # FileRegError_daily = '/Users/localuser/Downloads/old/error_' + datestr + '.npz'  # regression error at station points
@@ -236,18 +236,14 @@ for m in range(12):
 
     ########################################################################################################################
 
-    #
-    # # 6.3 regression for each grid cell
-    # if (not os.path.isfile(FileRegression_daily)) or ow_daily == 1:
-    #     print('Locally weighted regression of daily precipitation and temperature')
-    #     pop_daily, pcp_daily, tmean_daily, trange_daily, pcp_err_daily, tmean_err_daily, trange_err_daily, y_max_daily = \
-    #         reg.regression(prcp_stn_daily, tmean_stn_daily, trange_stn_daily, pcp_err_stn_daily, tmean_err_stn_daily,
-    #                        trange_err_stn_daily, stninfo, gridinfo, mask, near_grid_prcpLoc,
-    #                        near_grid_prcpWeight, near_grid_tempLoc, near_grid_tempWeight,
-    #                        nearstn_min, nearstn_max, trans_exp_daily, trans_mode)
-    #     np.savez_compressed(FileRegression_daily, pop=pop_daily, pcp=pcp_daily, tmean=tmean_daily, trange=trange_daily,
-    #                         pcp_err=pcp_err_daily, tmean_err=tmean_err_daily, trange_err=trange_err_daily,
-    #                         y_max=y_max_daily,mean_autocorr_daily=mean_autocorr_daily, mean_tp_corr_daily=mean_tp_corr_daily)
-    #     # au.save_output_nc(FileRegression_daily, gridinfo, seconds, mean_autocorr_daily, mean_tp_corr_daily,
-    #     #                   pop_daily, pcp_daily, tmean_daily, trange_daily,
-    #     #                   pcp_err_daily, tmean_err_daily, trange_err_daily, y_max_daily)
+
+    # 6.3 regression for each grid cell
+    if (not os.path.isfile(FileRegression_daily)) or ow_daily == 1:
+        print('Locally weighted regression of daily precipitation and temperature')
+        pcp_daily, pcp_err_daily, y_max_daily = \
+            reg.regression(prcp_stn_daily, pcp_err_stn_daily, stninfo, gridinfo, mask, near_grid_prcpLoc,
+                           near_grid_prcpWeight, nearstn_min, nearstn_max)
+        np.savez_compressed(FileRegression_daily, pcp=pcp_daily, pcp_err=pcp_err_daily, y_max=y_max_daily)
+        # au.save_output_nc(FileRegression_daily, gridinfo, seconds, mean_autocorr_daily, mean_tp_corr_daily,
+        #                   pop_daily, pcp_daily, tmean_daily, trange_daily,
+        #                   pcp_err_daily, tmean_err_daily, trange_err_daily, y_max_daily)

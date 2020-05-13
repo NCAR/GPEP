@@ -16,13 +16,12 @@ done
 
 for (( y=2017; y<=2017; y++))
 do
-mv stndata_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout_update
 mv output_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout_update
 mv error_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout_update
 done
 
 
-for (( y=2018; y<=2018; y++))
+for (( y=1980; y<=2018; y++))
 do
 sbatch Plato_${y}.sh
 done

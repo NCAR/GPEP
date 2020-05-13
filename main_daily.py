@@ -56,9 +56,9 @@ datestr = str(date_cal_start) + '-' + str(date_cal_end)
 # FileRegError_daily = '/home/gut428/GMET/PyGMETout/error_' + datestr + '.npz'  # regression error at station points
 # FileRegError_daily_corr = '/home/gut428/GMET/PyGMETout/error_rescorr' + datestr + '.npz'  # regression error after residual correction
 # FileRegression_daily = '/home/gut428/GMET/PyGMETout/output_' + datestr + '.npz'
-FileStnData = '/Users/localuser/Downloads/old/stndata_' + datestr + '.npz'
+FileStnData = '/Users/localuser/GMET/error_compare/stndata_' + datestr + '.npz'
 FileWeight = '/Users/localuser/Downloads/old/weight.npz'
-FileRegError_daily = '/Users/localuser/Downloads/old/error_' + datestr + '.npz'  # regression error at station points
+FileRegError_daily = '/Users/localuser/GMET/error_compare/error_notans_' + datestr + '.npz'  # regression error at station points
 FileRegError_daily_corr = '//Users/localuser/Downloads/error_rescorr' + datestr + '.npz'
 FileRegression_daily = '/Users/localuser/Downloads/output_' + datestr + '.npz'
 
