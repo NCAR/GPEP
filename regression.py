@@ -608,8 +608,8 @@ def error_after_residualcorrection(data_ori, data_reg, nearloc, nearweight):
     for i in range(nstn):
         if np.isnan(data_ori[i,0]):
             continue
-        nearloci = nearloc[i,:]
-        nearweighti = nearweight[i, :]
+        nearloci = nearloc[i,0:3]
+        nearweighti = nearweight[i, 0:3]
         induse = nearloci>-1
         nearloci = nearloci[induse]
         nearweighti = nearweighti[induse]
@@ -625,7 +625,7 @@ def error_after_residualcorrection(data_ori, data_reg, nearloc, nearweight):
         dnear_resi = dnear_regi - dnear_orii
 
         dtar_resi_corr = np.sum(dnear_resi * nearweighti2, axis=0)
-        dtar_regi_corr = dtar_regi + dtar_resi_corr
+        dtar_regi_corr = dtar_regi - dtar_resi_corr
 
         res_after_corri = dtar_regi_corr - dtar_orii
         res_after_corr[i, :] = res_after_corri

@@ -7,28 +7,17 @@ from matplotlib import pyplot as plt
 from scipy import io
 import os
 import sys
-from scipy.interpolate import griddata
 import calendar
 
 ########################################################################################################################
-yearmm = int(sys.argv[1]) # yyyymm
-year = int(yearmm/100)
-mm = np.mod(yearmm,100)-1
-
-for mm in range(mm,mm+1):
-    print('Year month:', year, mm+1)
-    last_day_of_month = calendar.monthrange(year, mm+1)[1]
-    date_cal_start = year*10000 + (mm+1)*100 + 1  # yyyymmdd: start date
-    date_cal_end = year*10000 + (mm+1)*100 + last_day_of_month  # yyyymmdd: end date
+year = int(sys.argv[1])
+for m in range(12):
+    date_cal_start = year*10000 + (m + 1)*100 + 1
+    date_cal_end = year*10000 + (m + 1)*100 + calendar.monthrange(year, m+1)
+    print('Date',date_cal_start,date_cal_end)
 
     # 0. read/define configuration information
     # setting: file and path names of inputs
-    # FileStnInfo = '/Users/localuser/GMET/pyGMET_exp/inputs/stnlist_example.txt'  # station basic information (lists)
-    # FileGridInfo = '/Users/localuser/GMET/pyGMET_exp/inputs/gridinfo_example.nc'  # study area information
-    # PathStn = '/Users/localuser/GMET/pyGMET_exp/StnDaily_train'  # original station data (prcp ...)
-    # FileStnInfo = '/Users/localuser/GMET/Example_tgq/inputs/stnlist_example.txt'  # station basic information (lists)
-    # FileGridInfo = '/Users/localuser/GMET/Example_tgq/inputs/gridinfo_example.nc'  # study area information
-    # PathStn = '/Users/localuser/GMET/Example_tgq/StnDaily_train'  # original station data (prcp ...)
     # FileStnInfo = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'  # station basic information (lists)
     # FileGridInfo = '/Users/localuser/GMET/pyGMET_NA/gridinfo_whole.nc'  # study area information
     # PathStn = '/Users/localuser/GMET/StnInput_daily'
@@ -55,7 +44,6 @@ for mm in range(mm,mm+1):
     search_radius = 400  # km. only search stations within this radius even nearstn_max cannot be reached
     max_dist = 100  # max_distance in distance-based weight calculation
 
-    # note: if cai_mode = 0, all *_climo and *_anom files won't work.
     # setting: parameters for transforming temp to approximate normal distribution
     trans_mode = 'box-cox'  # box-cox or power-law or none
     trans_exp_daily = 4
@@ -69,43 +57,14 @@ for mm in range(mm,mm+1):
     datestr = str(date_cal_start) + '-' + str(date_cal_end)
     FileStnData = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/stndata_' + datestr + '.npz'
     FileWeight = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/weight.npz'
-    FileRegError_daily = '/home/gut428/GMET/PyGMETout/error_' + datestr + '.npz'  # regression error at station points
+    FileRegError_daily = '/home/gut428/GMET/PyGMETout/error_notrans_' + datestr + '.npz'  # regression error at station points
+    FileRegError_daily_corr = '/home/gut428/GMET/PyGMETout/error_rescorr' + datestr + '.npz'  # regression error after residual correction
     FileRegression_daily = '/home/gut428/GMET/PyGMETout/output_' + datestr + '.npz'
-    FileRegError_dailyold = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/error_' + datestr + '.npz'  # regression error at station points
-    FileRegression_dailyold = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/output_' + datestr + '.npz'
-
-    if os.path.isfile(FileRegression_daily) and os.path.isfile(FileRegError_daily):
-        sys.exit('Output files exist')
-
     # FileStnData = '/Users/localuser/Downloads/old/stndata_' + datestr + '.npz'
     # FileWeight = '/Users/localuser/Downloads/old/weight.npz'
-    # FileRegError_daily = '/Users/localuser/Downloads/error_' + datestr + '.npz'  # regression error at station points
+    # FileRegError_daily = '/Users/localuser/Downloads/old/error_' + datestr + '.npz'  # regression error at station points
+    # FileRegError_daily_corr = '//Users/localuser/Downloads/error_rescorr' + datestr + '.npz'
     # FileRegression_daily = '/Users/localuser/Downloads/output_' + datestr + '.npz'
-    # FileRegError_dailyold = '/Users/localuser/Downloads/old/error_' + datestr + '.npz'  # regression error at station points
-    # FileRegression_dailyold = '/Users/localuser/Downloads/old/output_' + datestr + '.npz'
-
-
-    # setting: climatologically aided interpolation (CAI)
-    # CAI mode is not mature for now
-    cai_mode = 0  # 0: don't use CAI; 1: for each month; 2: calculate climatology using all months during the period
-    daily_flag = 1  # if cai_mode >0, then if daily_flag=1, do daily regression, else, do not do daily regression
-    ow_climo = 0
-    ow_anom = 0
-    trans_exp_anom = 3  # following fortran version. But I think if negative value occurs, just assign zero anomaly prcp
-    trans_exp_climo = 4
-    FileRegError_climo = '/Users/localuser/GMET/pyGMET_NA/regress_climo_error.npz'
-    FileRegression_climo = '/Users/localuser/GMET/pyGMET_NA/regress_climo_output.npz'
-    FileRegError_anom = '/Users/localuser/GMET/pyGMET_NA/regress_anom_error.npz'
-    FileRegression_anom = '/Users/localuser/GMET/pyGMET_NA/regress_anom_output.npz'
-
-    ########################################################################################################################
-
-    # check file status
-    # this part should be activated in operational application
-    # if os.path.isfile(FileRegression_daily) and ow_daily != 1:
-    #     print('Condition-1:', FileRegression_daily, 'exists')
-    #     print('Condition-2: ow_daily != 1')
-    #     sys.exit('Output files have been generated. Exit the program')
 
     ########################################################################################################################
 
@@ -183,38 +142,23 @@ for mm in range(mm,mm+1):
             tmean_stn_anom = datatemp['tmean_stn_anom']
             trange_stn_anom = datatemp['trange_stn_anom']
     else:
+        cai_mode = 0
         prcp_stn_daily, tmean_stn_daily, trange_stn_daily, \
         prcp_stn_climo, tmean_stn_climo, trange_stn_climo, \
         prcp_stn_anom, tmean_stn_anom, trange_stn_anom \
             = au.read_station(PathStn, stnID, loc_start, loc_end, cai_mode, yyyymm)
         np.savez_compressed(FileStnData,
-                            prcp_stn_daily=prcp_stn_daily, tmean_stn_daily=tmean_stn_daily, trange_stn_daily=trange_stn_daily,
-                            prcp_stn_climo=prcp_stn_climo, tmean_stn_climo=tmean_stn_climo, trange_stn_climo=trange_stn_climo,
-                            prcp_stn_anom=prcp_stn_anom, tmean_stn_anom=tmean_stn_anom, trange_stn_anom=trange_stn_anom)
-
-    if cai_mode == 0:
+                            prcp_stn_daily=prcp_stn_daily, tmean_stn_daily=tmean_stn_daily, trange_stn_daily=trange_stn_daily)
         del prcp_stn_climo, tmean_stn_climo, trange_stn_climo, prcp_stn_anom, tmean_stn_anom, trange_stn_anom
-    elif daily_flag != 1:
-        del prcp_stn_daily, tmean_stn_daily, trange_stn_daily
 
     ########################################################################################################################
 
     # 4. calculate auto_corr and t_p_corr
     print('Calculate correlation (auto_cc and t_p_cc)')
-    if cai_mode == 0 or daily_flag == 1:
-        mean_autocorr_daily, mean_tp_corr_daily = au.cc_calculate(windows, lag, prcp_stn_daily, tmean_stn_daily,
-                                                                  trange_stn_daily)
-        print('Tmean lag-1 daily autocorrelation: ', mean_autocorr_daily)
-        print('Trange-prcp daily correlation: ', mean_tp_corr_daily)
-
-    if cai_mode == 1:
-        mean_autocorr_climo, mean_tp_corr_climo = au.cc_calculate(1, lag, prcp_stn_climo, tmean_stn_climo, trange_stn_climo)
-        print('Tmean lag-1 climo autocorrelation: ', mean_autocorr_climo)
-        print('Trange-prcp climo correlation: ', mean_tp_corr_climo)
-
-        mean_autocorr_anom, mean_tp_corr_anom = au.cc_calculate(1, lag, prcp_stn_anom, tmean_stn_anom, trange_stn_anom)
-        print('Tmean lag-1 anom autocorrelation: ', mean_autocorr_anom)
-        print('Trange-prcp anom correlation: ', mean_tp_corr_anom)
+    mean_autocorr_daily, mean_tp_corr_daily = au.cc_calculate(windows, lag, prcp_stn_daily, tmean_stn_daily,
+                                                              trange_stn_daily)
+    print('Tmean lag-1 daily autocorrelation: ', mean_autocorr_daily)
+    print('Trange-prcp daily correlation: ', mean_tp_corr_daily)
 
     ########################################################################################################################
 
@@ -254,36 +198,57 @@ for mm in range(mm,mm+1):
     ########################################################################################################################
 
     # 6.1 estimate regression error at station points
-    # 6.1.1 daily mode
-    if cai_mode == 0 or daily_flag == 1:
-        if os.path.isfile(FileRegError_daily) and ow_daily != 1:
-            print('FileRegError_daily exists. loading ...')
-            with np.load(FileRegError_daily) as datatemp:
-                pcp_err_stn_daily = datatemp['pcp_err_stn']
-                tmean_err_stn_daily = datatemp['tmean_err_stn']
-                trange_err_stn_daily = datatemp['trange_err_stn']
-            del datatemp
-        else:
-            print('Estimate daily regression error at station points')
-            pcp_err_stn_daily, tmean_err_stn_daily, trange_err_stn_daily = \
-                reg.station_error(prcp_stn_daily, tmean_stn_daily, trange_stn_daily, stninfo, near_stn_prcpLoc,
-                                  near_stn_prcpWeight, near_stn_tempLoc, near_stn_tempWeight, trans_exp_daily,
-                                  trans_mode, nearstn_min, FileRegError_dailyold)
-            np.savez_compressed(FileRegError_daily, pcp_err_stn=pcp_err_stn_daily, tmean_err_stn=tmean_err_stn_daily,
-                                trange_err_stn=trange_err_stn_daily, stninfo=stninfo)
+    if os.path.isfile(FileRegError_daily) and ow_daily != 1:
+        print('FileRegError_daily exists. loading ...')
+        with np.load(FileRegError_daily) as datatemp:
+            pcp_err_stn_daily = datatemp['pcp_err_stn']
+        del datatemp
+    else:
+        print('Estimate daily regression error at station points')
+        pcp_err_stn_daily, tmean_err_stn_daily, trange_err_stn_daily = \
+            reg.station_error(prcp_stn_daily, stninfo, near_stn_prcpLoc, near_stn_prcpWeight,  nearstn_min)
+        np.savez_compressed(FileRegError_daily, pcp_err_stn=pcp_err_stn_daily, stninfo=stninfo)
+
+    ########################################################################################################################
+    #
+    # # 6.2 estimate new errors after carrying out residual correction (leave-one-out)
+    # # this does not work very well probably because prcp is regressed after transformation
+    # if os.path.isfile(FileRegError_daily_corr) and ow_daily != 1:
+    #     print('FileRegError_daily_corr exists. loading ...')
+    #     with np.load(FileRegError_daily) as datatemp:
+    #         pcp_err_stn_daily_corr = datatemp['pcp_err_stn']
+    #         tmean_err_stn_daily_corr = datatemp['tmean_err_stn']
+    #         trange_err_stn_daily_corr = datatemp['trange_err_stn']
+    #     del datatemp
+    # else:
+    #     print('Estimate daily regression error after residual correction at station points')
+    #     dori = au.transform(prcp_stn_daily,trans_exp_daily,trans_mode)
+    #     dreg = dori + pcp_err_stn_daily
+    #     pcp_err_stn_daily_corr = reg.error_after_residualcorrection(dori, dreg, near_stn_prcpLoc, near_stn_prcpWeight)
+    #     dori = tmean_stn_daily
+    #     dreg = dori + tmean_err_stn_daily
+    #     tmean_err_stn_daily_corr = reg.error_after_residualcorrection(dori, dreg, near_stn_tempLoc, near_stn_tempWeight)
+    #     dori = trange_stn_daily
+    #     dreg = dori + trange_err_stn_daily
+    #     trange_err_stn_daily_corr = reg.error_after_residualcorrection(dori, dreg, near_stn_tempLoc, near_stn_tempWeight)
+    #     del dori, dreg
+    #     np.savez_compressed(FileRegError_daily_corr, pcp_err_stn=pcp_err_stn_daily_corr, tmean_err_stn=tmean_err_stn_daily_corr,
+    #                         trange_err_stn=trange_err_stn_daily_corr, stninfo=stninfo)
 
     ########################################################################################################################
 
-    # 6.2 regression for each grid cell
-    # 6.2.1 daily mode
-    if cai_mode == 0 or daily_flag == 1:
-        if (not os.path.isfile(FileRegression_daily)) or ow_daily == 1:
-            print('Locally weighted regression of daily precipitation and temperature')
-            pop_daily, pcp_daily, tmean_daily, trange_daily, pcp_err_daily, tmean_err_daily, trange_err_daily, y_max_daily = \
-                reg.regression(prcp_stn_daily, tmean_stn_daily, trange_stn_daily, pcp_err_stn_daily, tmean_err_stn_daily,
-                               trange_err_stn_daily, stninfo, gridinfo, mask, near_grid_prcpLoc,
-                               near_grid_prcpWeight, near_grid_tempLoc, near_grid_tempWeight,
-                               nearstn_min, nearstn_max, trans_exp_daily, trans_mode,FileRegression_dailyold)
-            np.savez_compressed(FileRegression_daily, pop=pop_daily, pcp=pcp_daily, tmean=tmean_daily, trange=trange_daily,
-                                pcp_err=pcp_err_daily, tmean_err=tmean_err_daily, trange_err=trange_err_daily,
-                                y_max=y_max_daily,mean_autocorr_daily=mean_autocorr_daily, mean_tp_corr_daily=mean_tp_corr_daily)
+    #
+    # # 6.3 regression for each grid cell
+    # if (not os.path.isfile(FileRegression_daily)) or ow_daily == 1:
+    #     print('Locally weighted regression of daily precipitation and temperature')
+    #     pop_daily, pcp_daily, tmean_daily, trange_daily, pcp_err_daily, tmean_err_daily, trange_err_daily, y_max_daily = \
+    #         reg.regression(prcp_stn_daily, tmean_stn_daily, trange_stn_daily, pcp_err_stn_daily, tmean_err_stn_daily,
+    #                        trange_err_stn_daily, stninfo, gridinfo, mask, near_grid_prcpLoc,
+    #                        near_grid_prcpWeight, near_grid_tempLoc, near_grid_tempWeight,
+    #                        nearstn_min, nearstn_max, trans_exp_daily, trans_mode)
+    #     np.savez_compressed(FileRegression_daily, pop=pop_daily, pcp=pcp_daily, tmean=tmean_daily, trange=trange_daily,
+    #                         pcp_err=pcp_err_daily, tmean_err=tmean_err_daily, trange_err=trange_err_daily,
+    #                         y_max=y_max_daily,mean_autocorr_daily=mean_autocorr_daily, mean_tp_corr_daily=mean_tp_corr_daily)
+    #     # au.save_output_nc(FileRegression_daily, gridinfo, seconds, mean_autocorr_daily, mean_tp_corr_daily,
+    #     #                   pop_daily, pcp_daily, tmean_daily, trange_daily,
+    #     #                   pcp_err_daily, tmean_err_daily, trange_err_daily, y_max_daily)

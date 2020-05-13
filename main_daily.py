@@ -9,29 +9,23 @@ import os
 import sys
 
 ########################################################################################################################
-date_cal_start = int(sys.argv[1]) # yyyymmdd
-date_cal_end = int(sys.argv[2])
+# date_cal_start = int(sys.argv[1]) # yyyymmdd
+# date_cal_end = int(sys.argv[2])
 
 # 0. read/define configuration information
 # setting: file and path names of inputs
-# FileStnInfo = '/Users/localuser/GMET/pyGMET_exp/inputs/stnlist_example.txt'  # station basic information (lists)
-# FileGridInfo = '/Users/localuser/GMET/pyGMET_exp/inputs/gridinfo_example.nc'  # study area information
-# PathStn = '/Users/localuser/GMET/pyGMET_exp/StnDaily_train'  # original station data (prcp ...)
-# FileStnInfo = '/Users/localuser/GMET/Example_tgq/inputs/stnlist_example.txt'  # station basic information (lists)
-# FileGridInfo = '/Users/localuser/GMET/Example_tgq/inputs/gridinfo_example.nc'  # study area information
-# PathStn = '/Users/localuser/GMET/Example_tgq/StnDaily_train'  # original station data (prcp ...)
-# FileStnInfo = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'  # station basic information (lists)
-# FileGridInfo = '/Users/localuser/GMET/pyGMET_NA/gridinfo_whole.nc'  # study area information
-# PathStn = '/Users/localuser/GMET/StnInput_daily'
+FileStnInfo = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'  # station basic information (lists)
+FileGridInfo = '/Users/localuser/GMET/pyGMET_NA/gridinfo_whole.nc'  # study area information
+PathStn = '/Users/localuser/GMET/StnInput_daily'
 # Plato
-FileStnInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'  # station basic information (lists)
-FileGridInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/gridinfo_whole.nc'  # study area information
-PathStn = '/home/gut428/GMET/StnInput_daily'
+# FileStnInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'  # station basic information (lists)
+# FileGridInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/gridinfo_whole.nc'  # study area information
+# PathStn = '/home/gut428/GMET/StnInput_daily'
 
 # setting: start and end date
 # calculation start/end date:
-# date_cal_start = 19900101  # yyyymmdd: start date
-# date_cal_end = 19900131  # yyyymmdd: end date
+date_cal_start = 19900101  # yyyymmdd: start date
+date_cal_end = 19900131  # yyyymmdd: end date
 # station data (in PathStn) start/end date:
 date_stn_start = 19790101  # yyyymmdd: start date
 date_stn_end = 20181231  # yyyymmdd: end date
@@ -57,14 +51,16 @@ ow_stn = 0
 
 # setting: output files
 datestr = str(date_cal_start) + '-' + str(date_cal_end)
-FileStnData = '/home/gut428/GMET/PyGMETout/stndata_' + datestr + '.npz'
-FileWeight = '/home/gut428/GMET/PyGMETout/weight.npz'
-FileRegError_daily = '/home/gut428/GMET/PyGMETout/error_' + datestr + '.npz'  # regression error at station points
-FileRegression_daily = '/home/gut428/GMET/PyGMETout/output_' + datestr + '.npz'
-# FileStnData = '/Users/localuser/Downloads/stndata_' + datestr + '.npz'
-# FileWeight = '/Users/localuser/Downloads/weight.npz'
-# FileRegError_daily = '/Users/localuser/Downloads/error_' + datestr + '.npz'  # regression error at station points
-# FileRegression_daily = '/Users/localuser/Downloads/output_' + datestr + '.npz'
+# FileStnData = '/home/gut428/GMET/PyGMETout/stndata_' + datestr + '.npz'
+# FileWeight = '/home/gut428/GMET/PyGMETout/weight.npz'
+# FileRegError_daily = '/home/gut428/GMET/PyGMETout/error_' + datestr + '.npz'  # regression error at station points
+# FileRegError_daily_corr = '/home/gut428/GMET/PyGMETout/error_rescorr' + datestr + '.npz'  # regression error after residual correction
+# FileRegression_daily = '/home/gut428/GMET/PyGMETout/output_' + datestr + '.npz'
+FileStnData = '/Users/localuser/Downloads/old/stndata_' + datestr + '.npz'
+FileWeight = '/Users/localuser/Downloads/old/weight.npz'
+FileRegError_daily = '/Users/localuser/Downloads/old/error_' + datestr + '.npz'  # regression error at station points
+FileRegError_daily_corr = '//Users/localuser/Downloads/error_rescorr' + datestr + '.npz'
+FileRegression_daily = '/Users/localuser/Downloads/output_' + datestr + '.npz'
 
 ########################################################################################################################
 
@@ -216,16 +212,34 @@ else:
 
 ########################################################################################################################
 
-# 6.2 carry out residual correction and calculate new error estimation using leave-one-out
-
-
-
-
+# 6.2 estimate new errors after carrying out residual correction (leave-one-out)
+# this does not work very well probably because prcp is regressed after transformation
+# if os.path.isfile(FileRegError_daily_corr) and ow_daily != 1:
+#     print('FileRegError_daily_corr exists. loading ...')
+#     with np.load(FileRegError_daily) as datatemp:
+#         pcp_err_stn_daily_corr = datatemp['pcp_err_stn']
+#         tmean_err_stn_daily_corr = datatemp['tmean_err_stn']
+#         trange_err_stn_daily_corr = datatemp['trange_err_stn']
+#     del datatemp
+# else:
+#     print('Estimate daily regression error after residual correction at station points')
+#     dori = au.transform(prcp_stn_daily,trans_exp_daily,trans_mode)
+#     dreg = dori + pcp_err_stn_daily
+#     pcp_err_stn_daily_corr = reg.error_after_residualcorrection(dori, dreg, near_stn_prcpLoc, near_stn_prcpWeight)
+#     dori = tmean_stn_daily
+#     dreg = dori + tmean_err_stn_daily
+#     tmean_err_stn_daily_corr = reg.error_after_residualcorrection(dori, dreg, near_stn_tempLoc, near_stn_tempWeight)
+#     dori = trange_stn_daily
+#     dreg = dori + trange_err_stn_daily
+#     trange_err_stn_daily_corr = reg.error_after_residualcorrection(dori, dreg, near_stn_tempLoc, near_stn_tempWeight)
+#     del dori, dreg
+#     np.savez_compressed(FileRegError_daily_corr, pcp_err_stn=pcp_err_stn_daily_corr, tmean_err_stn=tmean_err_stn_daily_corr,
+#                         trange_err_stn=trange_err_stn_daily_corr, stninfo=stninfo)
 
 ########################################################################################################################
 
 
-# 6.2 regression for each grid cell
+# 6.3 regression for each grid cell
 if (not os.path.isfile(FileRegression_daily)) or ow_daily == 1:
     print('Locally weighted regression of daily precipitation and temperature')
     pop_daily, pcp_daily, tmean_daily, trange_daily, pcp_err_daily, tmean_err_daily, trange_err_daily, y_max_daily = \

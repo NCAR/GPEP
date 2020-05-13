@@ -1,9 +1,9 @@
 sbatch --array=2-40%39 Plato_readown.sh
 
 
-for (( y=2000; y<=2004; y++))
+for (( y=2017; y<=2017; y++))
 do
-for (( m=10; m<=12; m++ ))
+for (( m=1; m<=12; m++ ))
 do
 if ((m<10)); then
 sbatch Plato_"$y"0"$m".sh
@@ -14,8 +14,9 @@ done
 done
 
 
-for (( y=2005; y<=2016; y++))
+for (( y=2017; y<=2017; y++))
 do
+mv stndata_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout_update
 mv output_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout_update
 mv error_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout_update
 done

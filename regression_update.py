@@ -77,33 +77,21 @@ def logistic_regression(x, tx, yp):
     return b
 
 
-def idw(data, weight):
+def weightedmean(data, weight):
     # inverse distance weighting interpolation
     dataout = np.nansum(data * weight) / np.nansum(weight)
     return dataout
 
 
-def station_error(prcp_stn, tmean_stn, trange_stn, stninfo, near_stn_prcpLoc, near_stn_prcpWeight, near_stn_tempLoc,
-                  near_stn_tempWeight, trans_exp, trans_mode, nearstn_min, fileold):
-
+def station_error(prcp_stn, stninfo, near_stn_prcpLoc, near_stn_prcpWeight, nearstn_min):
     nstn, ntimes = np.shape(prcp_stn)
     pcp_err_stn = -999 * np.ones([nstn, ntimes], dtype=np.float32)
-    tmean_err_stn = -999 * np.ones([nstn, ntimes], dtype=np.float32)
-    trange_err_stn = -999 * np.ones([nstn, ntimes], dtype=np.float32)
-
-    datatemp = np.load(fileold)
-    pcp_err_stn_old = np.float32(datatemp['pcp_err_stn'])
-    tmean_err_stn_old = np.float32(datatemp['tmean_err_stn'])
-    trange_err_stn_old = np.float32(datatemp['trange_err_stn'])
-    del datatemp
 
     for t in range(ntimes):
         print('Current time:', t, 'Total times:', ntimes)
         # assign vectors of station alues for prcp_stn, temp, for current time step
         # transform prcp_stn to approximate normal distribution
-        y_prcp = au.transform(prcp_stn[:, t], trans_exp, trans_mode)
-        y_tmean = tmean_stn[:, t]
-        y_trange = trange_stn[:, t]
+        y_prcp = prcp_stn[:, t]
 
         for gg in range(nstn):
             if prcp_stn[gg, t] > -1:
@@ -134,87 +122,43 @@ def station_error(prcp_stn, tmean_stn, trange_stn, stninfo, near_stn_prcpLoc, ne
                     # nearby stations do not have positive prcp data
                     pcp_err_stn[gg, t] = 0
                 else:
+                    # tmp needs to be matmul(TX, X) where TX = TWX_red and X = X_red
+                    mat_test = np.matmul(np.transpose(x_red), w_pcp_red)
+                    tmp = np.matmul(mat_test, x_red)
+                    vv = np.max(np.abs(tmp), axis=1)
+
                     # decide if slope is to be used in regression
-                    if stninfo[gg, 1] >= 74:
+                    if stninfo[gg, 1] < 74:
+                        if np.any(vv == 0) or abs(stninfo[gg, 4]) < 3.6 or abs(stninfo[gg, 5]) < 3.6:
+                            slope_flag_pcp = 0
+                            x_red_use = x_red[:, 0:4]  # do not use slope in regression
+                            stninfo_use = stninfo[gg, 0:4]
+                        else:
+                            slope_flag_pcp = 1
+                            x_red_use = x_red
+                            stninfo_use = stninfo[gg, :]
+                    else:
                         x_red_use = x_red[:, 0:3]
                         stninfo_use = stninfo[gg, 0:3]
 
-                        tx_red = np.transpose(x_red_use)
-                        twx_red = np.matmul(tx_red, w_pcp_red)
+                    tx_red = np.transpose(x_red_use)
+                    twx_red = np.matmul(tx_red, w_pcp_red)
 
-                        # calculate pcp
-                        b = least_squares(x_red_use, y_prcp_red, twx_red)
-                        pcpgg = np.dot(stninfo_use, b)
-                        pcpgg = regressioncheck(pcpgg, y_prcp_red, w_pcp_1d, 'pcp')
-                        pcp_err_stn[gg, t] = pcpgg - y_prcp[gg]
-                    else:
-                        pcpgg = pcp_err_stn_old[gg, t] + y_prcp[gg]
-                        pcpgg = regressioncheck(pcpgg, y_prcp_red, w_pcp_1d, 'pcp')
-                        pcp_err_stn[gg, t] = pcpgg - y_prcp[gg]
+                    # calculate pcp
+                    b = least_squares(x_red_use, y_prcp_red, twx_red)
+                    pcpgg = np.dot(stninfo_use, b)
+                    pcpgg = regressioncheck(pcpgg, y_prcp_red, w_pcp_1d, 'pcp')
+                    pcp_err_stn[gg, t] = pcpgg - y_prcp[gg]
 
-            # tmean/trange processing
-            if y_tmean[gg] > -100:
-                # reduced matrices for tmean_stn/trange_stn
-                nstn_temp = int(np.sum(near_stn_tempLoc[gg, :] > -1))
-                if nstn_temp >= nearstn_min:
-                    w_temp_red = np.zeros([nstn_temp, nstn_temp])
-                    for i in range(nstn_temp):
-                        w_temp_red[i, i] = near_stn_tempWeight[gg, i]  # eye matrix: stn weight in one-one lien
-                    w_temp_1d = near_stn_tempWeight[gg, 0:nstn_temp]  # stn weight
-                    w_temp_1d_loc = near_stn_tempLoc[gg, 0:nstn_temp]  # stn ID number/location
-                    y_tmean_red = y_tmean[w_temp_1d_loc]  # transformed temp
-                    y_trange_red = y_trange[w_temp_1d_loc]  # transformed temp
-                    x_red_t = stninfo[w_temp_1d_loc, :]  # station lat/lon/ele/slope_ns/slope_we
+    return pcp_err_stn
 
-                    ndata_t = np.sum(y_tmean_red > -100)
-                    nodata_t = nstn_temp - ndata_t  # invalid temperature
-                else:
-                    x_red_t = 0  # not really necessary. just to stop warming from Pycharm
-                    w_temp_red = 0  # not really necessary. just to stop warming from Pycharm
-                    y_tmean_red = 0  # not really necessary. just to stop warming from Pycharm
-                    y_trange_red = 0  # not really necessary. just to stop warming from Pycharm
-                    ndata_t = 0
-                    nodata_t = 0
 
-                if ndata_t > 0:
-                    if stninfo[gg, 1] >= 74:
-                        stninfo_use = stninfo[gg, 0:3]
-                        x_red_use = x_red_t[:, 0:3]  # do not use slope for temperature
-                        tx_red = np.transpose(x_red_use)
-                        twx_red = np.matmul(tx_red, w_temp_red)
-
-                        b = least_squares(x_red_use, y_tmean_red, twx_red)
-                        tmeangg = np.dot(stninfo_use, b)
-                        tmeangg = regressioncheck(tmeangg, y_tmean_red, w_temp_1d, 'tmean')
-                        tmean_err_stn[gg, t] = tmeangg - y_tmean[gg]
-
-                        b = least_squares(x_red_use, y_trange_red, twx_red)
-                        trangegg = np.dot(stninfo_use, b)
-                        trangegg = regressioncheck(trangegg, y_trange_red, w_temp_1d, 'trange')
-                        trange_err_stn[gg, t] = trangegg - y_trange[gg]
-                    else:
-                        tmeangg = tmean_err_stn_old[gg, t] + y_tmean[gg]
-                        tmeangg = regressioncheck(tmeangg, y_tmean_red, w_temp_1d, 'tmean')
-                        tmean_err_stn[gg, t] = tmeangg - y_tmean[gg]
-
-                        trangegg = trange_err_stn_old[gg, t] + y_trange[gg]
-                        trangegg = regressioncheck(trangegg, y_trange_red, w_temp_1d, 'trange')
-                        trange_err_stn[gg, t] = trangegg - y_trange[gg]
-
-    return pcp_err_stn, tmean_err_stn, trange_err_stn
 
 def regression(prcp_stn, tmean_stn, trange_stn, pcp_err_stn, tmean_err_stn, trange_err_stn, stninfo, gridinfo,
                mask, near_grid_prcpLoc, near_grid_prcpWeight, near_grid_tempLoc, near_grid_tempWeight,
-               nearstn_min, nearstn_max, trans_exp, trans_mode, fileold):
+               nearstn_min, nearstn_max, trans_exp, trans_mode):
     nstn, ntimes = np.shape(prcp_stn)
     nrows, ncols, nvars = np.shape(gridinfo)
-
-    datatemp = np.load(fileold)
-    pop_old = np.float32(datatemp['pop'])
-    pcp_old = np.float32(datatemp['pcp'])
-    tmean_old = np.float32(datatemp['tmean'])
-    trange_old = np.float32(datatemp['trange'])
-    del datatemp
 
     # 6.2 initialization
     tmp_weight_arr = np.eye(nearstn_max)
@@ -277,34 +221,42 @@ def regression(prcp_stn, tmean_stn, trange_stn, pcp_err_stn, tmean_err_stn, tran
                         pcp_err[rr, cc, t] = 0
                     else:
                         # decide if slope is to be used in regression
-                        if gridinfo[rr, cc, 1] >= 74:
+                        # tmp needs to be matmul(TX, X) where TX = TWX_red and X = X_red
+                        mat_test = np.matmul(np.transpose(x_red), w_pcp_red)
+                        tmp = np.matmul(mat_test, x_red)
+                        vv = np.max(np.abs(tmp), axis=1)
+                        if gridinfo[rr, cc, 1] < 74:
+                            if np.any(vv == 0) or np.abs(gridinfo[rr, cc, 4]) < 3.6 or np.abs(
+                                    gridinfo[rr, cc, 5]) < 3.6:
+                                x_red_use = x_red[:, 0:4]  # do not use slope in regression
+                                gridinfo_use = gridinfo[rr, cc, 0:4]
+                            else:
+                                x_red_use = x_red
+                                gridinfo_use = gridinfo[rr, cc, :]
+                        else:
                             x_red_use = x_red[:, 0:3]  # do not use elevation in northern Canada
                             gridinfo_use = gridinfo[rr, cc, 0:3]
-                            tx_red = np.transpose(x_red_use)
-                            twx_red = np.matmul(tx_red, w_pcp_red)
 
-                            # calculate pop
-                            if nodata == 0:
-                                pop[rr, cc, t] = 1
-                            else:
-                                b = logistic_regression(x_red_use, twx_red, yp_red)
-                                zb = - np.dot(gridinfo_use, b)
-                                pop[rr, cc, t] = 1 / (1 + np.exp(zb))
+                        tx_red = np.transpose(x_red_use)
+                        twx_red = np.matmul(tx_red, w_pcp_red)
 
-                            # calculate pcp
-                            b = least_squares(x_red_use, y_prcp_red, twx_red)
-                            pcpreg = np.dot(gridinfo_use, b)
-                            pcpreg = regressioncheck(pcpreg, y_prcp_red, w_pcp_1d, 'pcp')
-                            pcp[rr, cc, t] = pcpreg
+                        # calculate pop
+                        if nodata == 0:
+                            pop[rr, cc, t] = 1
                         else:
-                            pop[rr, cc, t] = pop_old[rr, cc, t]
-                            pcpreg = regressioncheck(pcp_old[rr, cc, t], y_prcp_red, w_pcp_1d, 'pcp')
-                            pcp[rr, cc, t] = pcpreg
+                            b = logistic_regression(x_red_use, twx_red, yp_red)
+                            zb = - np.dot(gridinfo_use, b)
+                            pop[rr, cc, t] = 1 / (1 + np.exp(zb))
+
+                        # calculate pcp
+                        b = least_squares(x_red_use, y_prcp_red, twx_red)
+                        pcpreg = np.dot(gridinfo_use, b)
+                        pcpreg = regressioncheck(pcpreg, y_prcp_red, w_pcp_1d, 'pcp')
+                        pcp[rr, cc, t] = pcpreg
 
                         # 6.4.3 estimate pcp error
                         err0 = pcp_err_stn[w_pcp_1d_loc, t]
-                        # pcp_err[rr, cc, t] = (np.sum((err0 ** 2) * w_pcp_1d) / np.sum(w_pcp_1d)) ** 0.5
-                        pcp_err[rr, cc, t] = np.sum(err0 * w_pcp_1d) / np.sum(w_pcp_1d)
+                        pcp_err[rr, cc, t] = (np.sum((err0 ** 2) * w_pcp_1d) / np.sum(w_pcp_1d)) ** 0.5
 
                 ############################################################################################################
 
@@ -335,33 +287,32 @@ def regression(prcp_stn, tmean_stn, trange_stn, pcp_err_stn, tmean_err_stn, tran
                         sys.exit('Nearby stations do not have any valid temperature data')
                     else:
                         # 6.5.1 estimate tmean and its error
-                        if gridinfo[rr, cc, 1] >= 74:
+                        if gridinfo[rr, cc, 1] < 74:
+                            gridinfo_use = gridinfo[rr, cc, 0:4]
+                            x_red_use = x_red_t[:, 0:4]  # do not use slope for temperature
+                        else:
                             gridinfo_use = gridinfo[rr, cc, 0:3]
                             x_red_use = x_red_t[:, 0:3]
-                            tx_red = np.transpose(x_red_use)
-                            twx_red = np.matmul(tx_red, w_temp_red)
-                            b = least_squares(x_red_use, y_tmean_red, twx_red)
-                            tmeanreg = np.dot(gridinfo_use, b)
-                            tmeanreg = regressioncheck(tmeanreg, y_tmean_red, w_temp_1d, 'tmean')
-                            tmean[rr, cc, t] = tmeanreg
-
-                            b = least_squares(x_red_use, y_trange_red, twx_red)
-                            trangereg = np.dot(gridinfo_use, b)
-                            trangereg = regressioncheck(trangereg, y_trange_red, w_temp_1d, 'trange')
-                            trange[rr, cc, t] = trangereg
-
-                        else:
-                            tmeanreg = regressioncheck(tmean_old[rr, cc, t], y_tmean_red, w_temp_1d, 'tmean')
-                            tmean[rr, cc, t] = tmeanreg
-                            trangereg = regressioncheck(trange_old[rr, cc, t], y_trange_red, w_temp_1d, 'trange')
-                            trange[rr, cc, t] = trangereg
+                        tx_red = np.transpose(x_red_use)
+                        twx_red = np.matmul(tx_red, w_temp_red)
+                        b = least_squares(x_red_use, y_tmean_red, twx_red)
+                        tmeanreg = np.dot(gridinfo_use, b)
+                        tmeanreg = regressioncheck(tmeanreg, y_tmean_red, w_temp_1d, 'tmean')
+                        tmean[rr, cc, t] = tmeanreg
 
                         # error estimation
                         err0 = tmean_err_stn[w_temp_1d_loc, t]
-                        tmean_err[rr, cc, t] = np.sum(err0 * w_temp_1d) / np.sum(w_temp_1d)
+                        tmean_err[rr, cc, t] = (np.sum((err0 ** 2) * w_temp_1d) / np.sum(w_temp_1d)) ** 0.5
+
+                        # 6.5.2 estimate trange and its error
+                        b = least_squares(x_red_use, y_trange_red, twx_red)
+                        trangereg = np.dot(gridinfo_use, b)
+                        trangereg = regressioncheck(trangereg, y_trange_red, w_temp_1d, 'trange')
+                        trange[rr, cc, t] = trangereg
+
                         # error estimation
                         err0 = trange_err_stn[w_temp_1d_loc, t]
-                        trange_err[rr, cc, t] = np.sum(err0 * w_temp_1d) / np.sum(w_temp_1d)
+                        trange_err[rr, cc, t] = (np.sum((err0 ** 2) * w_temp_1d) / np.sum(w_temp_1d)) ** 0.5
 
     return pop, pcp, tmean, trange, pcp_err, tmean_err, trange_err, y_max
 
@@ -393,6 +344,62 @@ def regressioncheck(datareg, datastn, weightstn, varname):
         sys.exit('Unknown variable name')
 
     if datareg > upb or datareg < lwb:
-        datareg = idw(datastn[0:10], weightstn[0:10])  # use the ten nearest stations
+        datareg = weightedmean(datastn[0:10], weightstn[0:10])  # use the ten nearest stations
 
     return datareg
+
+#
+# def residualcorrection(dres, dreg, nearloc, nearweight):
+#     # correct spatial interpolation estimates using the residuals estimated at station points
+#     # a simple IDW method is used to interpolate residuals
+#     if np.ndim(dres) == 1:
+#         dres = dres[:, np.newaxis]
+#         dreg = dreg[:, :, np.newaxis]
+#     nrows, ncols, ntimes = np.shape(dreg)
+#     dcorr = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
+#     for r in range(nrows):
+#         for c in range(ncols):
+#             if nearloc[r, c, 0] > -1:
+#                 locrc = nearloc[r, c, :]
+#                 weightrc = nearweight[r, c, :]
+#                 weightrc = weightrc[locrc > -1]
+#                 locrc = locrc[locrc > -1]
+#
+#                 dresrc = dres[locrc, :]
+#                 for t in range(ntimes):
+#                     dcorr[r, c, t] = weightedmean(dresrc, weightrc) + dreg[r, c, t]
+#     return dcorr
+
+
+def error_after_residualcorrection(data_ori, data_reg, nearloc, nearweight):
+    # data_ori: original observation
+    # data_reg: regression estimates
+    # data_res: regression residuals
+    nstn, ntimes = np.shape(data_ori)
+    res_after_corr = np.nan * np.zeros([nstn, ntimes])
+    for i in range(nstn):
+        if np.isnan(data_ori[i,0]):
+            continue
+        nearloci = nearloc[i,0:3]
+        nearweighti = nearweight[i, 0:3]
+        induse = nearloci>-1
+        nearloci = nearloci[induse]
+        nearweighti = nearweighti[induse]
+        nearweighti = nearweighti / np.sum(nearweighti)
+        nearweighti2 = np.tile(nearweighti,(ntimes,1)).T
+
+        dtar_orii = data_ori[i,:]
+        dtar_regi = data_reg[i,:]
+        dtar_resi = dtar_regi - dtar_orii
+
+        dnear_orii = data_ori[nearloci,:]
+        dnear_regi = data_reg[nearloci, :]
+        dnear_resi = dnear_regi - dnear_orii
+
+        dtar_resi_corr = np.sum(dnear_resi * nearweighti2, axis=0)
+        dtar_regi_corr = dtar_regi - dtar_resi_corr
+
+        res_after_corri = dtar_regi_corr - dtar_orii
+        res_after_corr[i, :] = res_after_corri
+
+    return res_after_corr

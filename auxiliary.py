@@ -5,6 +5,7 @@ import os
 
 def distanceweight(dist,maxdist,exp):
     weight = (1 - (dist / maxdist) ** exp) ** exp
+    # weight = 1 / (dist**2)
     return weight
 
 def readstnlist(FileStnInfo):
@@ -676,3 +677,23 @@ def evaluate(pathind, prcp_stn, tmean_stn, trange_stn, # reference data (station
         metric_ind[2][i, :] = metric(trangeobs, est)
 
         return kge_stn, kge_grid, kge_ind, metric_stn, metric_grid, metric_ind
+
+def stn_to_grid(data, nearloc, nearweight):
+    if np.ndim(data) == 1:
+        data = data[:, np.newaxis]
+    nstn, ntimes = np.shape(data)
+    nrows, ncols, nearnum = np.shape(nearloc)
+    datagrid = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
+    for r in range(nrows):
+        for c in range(ncols):
+            if nearloc[r, c, 0] > -1:
+                locrc = nearloc[r, c, :]
+                weightrc = nearweight[r, c, :]
+                weightrc = weightrc[0:5]
+                weightrc = weightrc / np.sum(weightrc)
+                locrc = locrc[0:5]
+
+                weightrc = np.tile(weightrc, (ntimes, 1)).T
+                datarc = data[locrc, :]
+                datagrid[r, c, :] = np.nansum(datarc * weightrc, axis=0)
+    return datagrid
