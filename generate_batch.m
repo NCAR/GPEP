@@ -28,7 +28,7 @@ for y=1979:2018
     fidout=fopen(outfile,'w');
     fprintf(fidout,'#!/bin/bash\n');
     fprintf(fidout,['#SBATCH --job-name=PG_',num2str(y),'\n']);
-    fprintf(fidout,['#SBATCH --time=0-3:00:00\n']);
+    fprintf(fidout,['#SBATCH --time=1-0:00:00\n']);
     fprintf(fidout,'#SBATCH --mem=5G\n');
     fprintf(fidout,'module load python/3.7.4\n');
     
