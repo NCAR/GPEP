@@ -453,9 +453,9 @@ prefix = ['ERA5_', 'MERRA2_', 'JRA55_']
 # file_readownstn = ['/Users/localuser/Research/Test/ERA5_downto_stn.npz',
 #                    '/Users/localuser/Research/Test/MERRA2_downto_stn.npz',
 #                    '/Users/localuser/Research/Test/JRA55_downto_stn.npz']
-file_readownstn = ['/datastore/GLOBALWATER/CommonData/ERA5_day_ds/ERA5_downto_stn.npz',
-                   '/datastore/GLOBALWATER/CommonData/MERRA2_day_ds/MERRA2_downto_stn.npz',
-                   '/datastore/GLOBALWATER/CommonData/JRA55_day_ds/JRA55_downto_stn.npz']
+file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds/ERA5_downto_stn.npz',
+                   '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds/MERRA2_downto_stn.npz',
+                   '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_ds/JRA55_downto_stn.npz']
 
 # output files
 # train and test index file
