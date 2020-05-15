@@ -224,6 +224,7 @@ def calweight(obsall, preall, mode='RMSE', preprocess=True):
             sys.exit('Unknown inputs for calmetric')
 
     if mode == 'RMSE':
+        met[met==0] = 0.01
         weight = 1 / (met ** 2)
     elif mode == 'CC':
         met[met < 0] = 0
@@ -311,7 +312,7 @@ def m_DateList(year_start, year_end, mode):
     return date_list, date_number
 
 
-def merge_correction_stnerror(path_reastn_cv, stnlle, stndata, readata_stn, taintestindex, nearstn_locl1, nearstn_distl1,
+def merge_correction_stnerror(outpath, stnlle, stndata, readata_stn, taintestindex, nearstn_locl1, nearstn_distl1,
          nearstn_locl2, nearstn_distl2, dividenum, var, hwsize, corrmode, anombound, weightmode):
     # use 2-layer cross-validation to estimate the weight and independent data of merge/correction data
     # layer-1: aim to obtain correction and merged data at station points through cross-validation
@@ -338,7 +339,7 @@ def merge_correction_stnerror(path_reastn_cv, stnlle, stndata, readata_stn, tain
         stnlle_testl1 = stnlle[testindex1, :]
 
         # filename: save inputs for each layer-1
-        file_reacorrl1 = path_reastn_cv + 'reacorr_' + var + '_layer1_' + str(lay1 + 1) + '.npz'
+        file_reacorrl1 = outpath + '/' + var + '_layer_' + str(lay1 + 1) + '_' + weightmode + '.npz'
         if os.path.isfile(file_reacorrl1):
             datatemp = np.load(file_reacorrl1)
             reacorr_trainl1 = datatemp['reacorr']
@@ -351,7 +352,7 @@ def merge_correction_stnerror(path_reastn_cv, stnlle, stndata, readata_stn, tain
             weight_trainl1 = np.zeros([len(trainindex1), reanum], dtype=np.float32)
 
             for lay2 in range(dividenum):
-                print('Correction/Merging at station points. Layer-2:', lay2)
+                # print('Correction/Merging at station points. Layer-2:', lay2)
                 # extract train and test index for layer-2 (subsets of trainindex1)
                 trainindex2 = taintestindex[vari + '_trainindex2'][lay1, lay2, :]
                 testindex2 = taintestindex[vari + '_testindex2'][lay1, lay2, :]
@@ -361,7 +362,7 @@ def merge_correction_stnerror(path_reastn_cv, stnlle, stndata, readata_stn, tain
                 stnlle_testl2 = stnlle[testindex2, :]
 
                 for rr in range(reanum):
-                    print('Correction/Merging at station points. Reanalysis:', rr)
+                    # print('Correction/Merging at station points. Reanalysis:', rr)
                     readata_trainl2 = readata_stn[rr, trainindex2, :]
                     readata_testl2 = readata_stn[rr, testindex2, :]
 
@@ -425,13 +426,18 @@ def merge_correction_stnerror(path_reastn_cv, stnlle, stndata, readata_stn, tain
 
 ########################################################################################################################
 
+var = sys.argv[1]
+weightmode = sys.argv[2]
+
+########################################################################################################################
+
 # basic settings
 lontar = np.arange(-180 + 0.05, -50, 0.1)
 lattar = np.arange(85 - 0.05, 5, -0.1)
-var = 'prcp'  # ['prcp', 'tmean', 'trange']: this should be input from sbtach script
+# var = 'prcp'  # ['prcp', 'tmean', 'trange']: this should be input from sbtach script
 hwsize = 0  # define time window (2*hwsize+1) used to calculate ratio (as ratio for a specific day is too variable)
 nearnum = 8  # the number of nearby stations used to extrapolate points to grids (for correction and merging)
-weightmode = 'RMSE'  # (CC, RMSE, BMA). Weight = CC**2, or Weight = 1/RMSE**2, or Weight = BMA
+# weightmode = 'RMSE'  # (CC, RMSE, BMA). Weight = CC**2, or Weight = 1/RMSE**2, or Weight = BMA
 dividenum = 10  # divide the datasets into X parts, e.g. 10-fold cross-validation
 anombound = [0.2, 5]  # upper and lower bound when calculating the anomaly for correction
 year = [1979, 2018]  # year range for merging. note weight is calculated using all data not limited by year
@@ -460,7 +466,7 @@ file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds/ERA5_dow
 # output files
 # train and test index file
 # ttindexfile = '/Users/localuser/Research/Test/2layer_train_test_index.npz'
-ttindexfile = '/home/gut428/ReanalysisCorrMerge/2layer_train_test_index.npz'
+ttindexfile = '/home/gut428/ReanalysisCorrMerge/path_reastn_cv/2layer_train_test_index.npz'
 
 # near stations
 # near_stnfile = '/Users/localuser/Research/Test/near_stn.npz'
@@ -623,9 +629,13 @@ else:
     reacorr_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
     # for each month
     for m in range(12):
+        print('month', m+1)
+        outpathm = path_reastn_cv + '/month_' + str(m + 1)
+        if not os.path.isdir(outpathm):
+            os.mkdir(outpathm)
         indm = date_number['mm'] == (m + 1)
         reamerge_stnm, reamerge_weight_stnm, reacorr_stnm = \
-            merge_correction_stnerror(path_reastn_cv, stnlle, stndata[:,indm], readata_stn[:,:,indm], taintestindex,
+            merge_correction_stnerror(outpathm, stnlle, stndata[:,indm], readata_stn[:,:,indm], taintestindex,
                                       nearstn_locl1, nearstn_distl1, nearstn_locl2, nearstn_distl2,
                                       dividenum, var, hwsize, corrmode, anombound, weightmode)
         reamerge_stn[:, indm] = reamerge_stnm

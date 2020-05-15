@@ -23,16 +23,38 @@ clc;clear
 % end
 
 
-for y=1979:2018
-    outfile=['Plato_',num2str(y),'.sh'];
-    fidout=fopen(outfile,'w');
-    fprintf(fidout,'#!/bin/bash\n');
-    fprintf(fidout,['#SBATCH --job-name=PG_',num2str(y),'\n']);
-    fprintf(fidout,['#SBATCH --time=1-0:00:00\n']);
-    fprintf(fidout,'#SBATCH --mem=5G\n');
-    fprintf(fidout,'module load python/3.7.4\n');
-    
-    fprintf(fidout,['srun python -u main_CAI_update.py ',num2str(y),'\n']);
-    %         fprintf(fidout,'rm *.out\n');
-    fclose(fidout);
+% for y=1979:2018
+%     outfile=['Plato_',num2str(y),'.sh'];
+%     fidout=fopen(outfile,'w');
+%     fprintf(fidout,'#!/bin/bash\n');
+%     fprintf(fidout,['#SBATCH --job-name=PG_',num2str(y),'\n']);
+%     fprintf(fidout,['#SBATCH --time=1-0:00:00\n']);
+%     fprintf(fidout,'#SBATCH --mem=5G\n');
+%     fprintf(fidout,'module load python/3.7.4\n');
+%     
+%     fprintf(fidout,['srun python -u main_CAI_update.py ',num2str(y),'\n']);
+%     %         fprintf(fidout,'rm *.out\n');
+%     fclose(fidout);
+% end
+
+var={'prcp','tmean','trange'};
+mode={'RMSE','BMA'};
+
+flag=1;
+for i=1:3
+    for j=1:2
+        outfile=['Plato_mergecorr_',num2str(flag),'.sh'];
+        fidout=fopen(outfile,'w');
+        fprintf(fidout,'#!/bin/bash\n');
+        fprintf(fidout,['#SBATCH --job-name=mercorr',num2str(flag),'\n']);
+        fprintf(fidout,['#SBATCH --time=2-0:0:0\n']);
+        fprintf(fidout,'#SBATCH --mem=20G\n');
+        fprintf(fidout,'module load python/3.7.4\n');
+        fprintf(fidout,['srun python -u reanalysis_correction_merge.py ',var{i},' ',mode{j},'\n']);
+        %         fprintf(fidout,'rm *.out\n');
+        fclose(fidout);
+        
+        flag=flag+1;
+    end
 end
+
