@@ -585,7 +585,7 @@ file_mergechoice = path_merge + '/mergechoice_' + var + '_' +  weightmode + '.np
 ########################################################################################################################
 
 # basic processing
-
+print('start basic processing')
 # decide correction mode according to variables
 if var == 'prcp' or var == 'trange':
     corrmode = 'ratio'  # ratio or diff: mode for error correction
@@ -626,6 +626,7 @@ del datatemp
 # index1 extracts 90% stations for merging and 10% stations for validation
 # index2 divides the 90% from index1 into 90% and 10% again for error correction
 if not os.path.isfile(ttindexfile):
+    print('divide stations for 2-layer cross validation')
     prcp_trainindex1, prcp_testindex1, prcp_trainindex2, prcp_testindex2, \
     tmean_trainindex1, tmean_testindex1, tmean_trainindex2, tmean_testindex2 = \
         double_cvindex(gmet_stndatafile, dividenum, rndseed=123)
@@ -651,6 +652,7 @@ near_stnfile = near_path + '/near_stn_' + vari + '.npz'
 near_gridfile = near_path + '/near_grid_' + vari + '.npz'
 
 if os.path.isfile(near_stnfile):
+    print('load near station information for points')
     with np.load(near_stnfile) as datatemp:
         nearstn_locl1 = datatemp['nearstn_locl1']
         nearstn_distl1 = datatemp['nearstn_distl1']
@@ -658,7 +660,7 @@ if os.path.isfile(near_stnfile):
         nearstn_distl2 = datatemp['nearstn_distl2']
     del datatemp
 else:
-    print('find near stations')
+    print('find near stations for station points')
     # layer-1
     nstn_testl1 = np.shape(taintestindex[vari + '_testindex1'])[1]
     nearstn_locl1 = -1 * np.ones([dividenum, nstn_testl1, nearnum], dtype=int)
@@ -685,12 +687,30 @@ else:
                         nearstn_locl2=nearstn_locl2, nearstn_distl2=nearstn_distl2)
 
 if os.path.isfile(near_gridfile):
+    print('load near station information for grids')
     with np.load(near_gridfile) as datatemp:
         neargrid_loc = datatemp['neargrid_loc']
         neargrid_dist = datatemp['neargrid_dist']
 else:
+    print('find near stations for grids')
     neargrid_loc, neargrid_dist = findnearstn(stnlle[:, 0], stnlle[:, 1], lattarm, lontarm, nearnum, 0)
     np.savez_compressed(near_gridfile,neargrid_loc=neargrid_loc,neargrid_dist=neargrid_dist)
+
+########################################################################################################################
+
+# load downscaled reanalysis for all stations
+print('load downscaled reanalysis data at station points')
+readata_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
+for rr in range(reanum):
+    dr = np.load(file_readownstn[rr])
+    temp = dr[var + '_readown']
+    if prefix[rr] == 'MERRA2_':  # unify the time length of all data as MERRA2 lacks 1979
+        add = np.nan * np.zeros([nstn, 365])
+        temp = np.concatenate((add, temp), axis=1)
+    readata_stn[rr, :, :] = temp
+    del dr, temp
+if var == 'prcp':
+    readata_stn[readata_stn<0] = 0
 
 ########################################################################################################################
 
@@ -709,21 +729,9 @@ else:
 # 6. use indicators from 3.4 and 5, and select the best one among three reanalysis and merged datasets for each grid
 # 7. get the final merged dataset and its accuracy indicators from steo-6
 
-# load downscaled reanalysis for all stations
-readata_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
-for rr in range(reanum):
-    dr = np.load(file_readownstn[rr])
-    temp = dr[var + '_readown']
-    if prefix[rr] == 'MERRA2_':  # unify the time length of all data as MERRA2 lacks 1979
-        add = np.nan * np.zeros([nstn, 365])
-        temp = np.concatenate((add, temp), axis=1)
-    readata_stn[rr, :, :] = temp
-    del dr, temp
-if var == 'prcp':
-    readata_stn[readata_stn<0] = 0
-
 # get merged and corrected reanalysis data at all station points using two-layer cross-validation
 if os.path.isfile(file_corrmerge_stn):
+    print('load independent merged/corrected data at station points')
     datatemp = np.load(file_corrmerge_stn)
     reamerge_stn = datatemp['reamerge_stn']
     reamerge_weight_stn = datatemp['reamerge_weight_stn']
@@ -753,12 +761,14 @@ else:
 
 ########################################################################################################################
 
-# obtain the final merged data and the error for each grid cell
+# which is the best for each grid (all reanalysis and the merged reanalysis)
 if os.path.isfile(file_mergechoice):
+    print('load merge choice file')
     datatemp = np.load(file_mergechoice)
     merge_choice = datatemp['merge_choice']
     del datatemp
 else:
+    print('determine the best data choice for each grid cell')
     merge_choice = -1 * np.zeros([12,nrows,ncols], dtype=int)
     for m in range(12):
         print('month', m+1)
@@ -769,7 +779,7 @@ else:
         met_corr_stn = np.nan * np.zeros([nstn, reanum])
         for rr in range(reanum):
             met_corr_stn[:, rr] = calmetric(reacorr_stn[rr, :, indm], stndata[:, indm], metname='RMSE')
-        # which is the best for each grid (all reanalysis and the merged reanalysis)
+
         metric_all = np.zeros([nrows, ncols, reanum + 1])
         met_merge_grid = extrapolation(met_merge_stn, neargrid_loc, neargrid_dist)
         met_corr_grid = extrapolation(met_corr_stn, neargrid_loc, neargrid_dist)
@@ -787,6 +797,7 @@ else:
 
 # use the same weight with GMET estimation?
 if useGMET == True:
+    print('use near station information from GMET regression')
     del neargrid_loc, neargrid_dist
     datatemp = np.load(near_file_GMET)
     if var == 'prcp':
@@ -804,7 +815,7 @@ for y in range(year[0], year[1] + 1):
     filemerge = path_merge + 'mergedata_' + var + '_' + str(y) + '.npz'
     filecorr = path_reacorr + 'reacorrdata_' + var + '_' + str(y) + '.npz'
     if os.path.isfile(filemerge) and os.path.isfile(filecorr):
-        print('file exists ...')
+        print('file exists ... continue')
         continue
 
     # initilization
