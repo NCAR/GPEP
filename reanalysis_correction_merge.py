@@ -388,7 +388,9 @@ def merge_correction_stnerror(outpath, stnlle, stndata, readata_stn, taintestind
                     drea = reacorr_trainl1[:, i, :].T
                     if var == 'prcp':
                         # exclude zero precipitation and carry out box-cox transformation
-                        datatemp = np.concatenate((dobs,drea), axis=1)
+                        datatemp = np.zeros([ntimes,reanum+1])
+                        datatemp[:,0] = dobs
+                        datatemp[:,1:] = drea
                         ind0 = np.sum(datatemp>=0.01, axis=1) == (reanum+1) # positive hit events
                         if np.sum(ind0) < 10:
                             weight_trainl1[i, :] = np.ones(reanum)/reanum
