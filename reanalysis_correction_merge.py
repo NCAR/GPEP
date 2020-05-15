@@ -263,8 +263,7 @@ def ismember(a, b):
 
 def weightmerge(data, weight):
     if np.ndim(data) == 2:
-        num, nmodel = np.shape(data)
-        weight2 = np.tile(weight,(num,1))
+        weight2 = weight.copy()
         weight2[np.isnan(data)] = np.nan
         dataout = np.nansum(data * weight2, axis=1) / np.nansum(weight2, axis=1)
     elif np.ndim(data) == 3:
