@@ -264,14 +264,13 @@ def ismember(a, b):
 def weightmerge(data, weight):
     if np.ndim(data) == 2:
         num, nmodel = np.shape(data)
-        dataout = np.zeros(num)
-        for i in range(num):
-            dataout[i] = np.sum(data[i, :] * weight[i, :]) / np.sum(weight[i, :])
+        weight2 = np.tile(weight,(num,1))
+        weight2[np.isnan(data)] = np.nan
+        dataout = np.nansum(data * weight2, axis=1) / np.nansum(weight2, axis=1)
     elif np.ndim(data) == 3:
-        nrows, ncols, nmodel = np.shape(data)
-        for i in range(nmodel):
-            data[:, :, i] = data[:, :, i] * weight[:, :, i]
-        dataout = np.nansum(data, axis=2) / np.nansum(weight, axis=2)
+        weight2 = weight.copy()
+        weight2[np.isnan(data)] = np.nan
+        dataout = np.nansum(data * weight2, axis=2) / np.nansum(weight2, axis=2)
     return dataout
 
 
@@ -311,6 +310,13 @@ def m_DateList(year_start, year_end, mode):
 
     return date_list, date_number
 
+def box_cox_transform(data, exp=0.25):
+    return (data ** exp - 1) / exp
+
+def box_cox_recover(data, exp=0.25):
+    dataout = (data * exp + 1) ** (1/exp)
+    dataout[data < -1/exp] = 0
+    return dataout
 
 def merge_correction_stnerror(outpath, stnlle, stndata, readata_stn, taintestindex, nearstn_locl1, nearstn_distl1,
          nearstn_locl2, nearstn_distl2, dividenum, var, hwsize, corrmode, anombound, weightmode):
@@ -342,7 +348,6 @@ def merge_correction_stnerror(outpath, stnlle, stndata, readata_stn, taintestind
         file_reacorrl1 = outpath + '/' + var + '_layer_' + str(lay1 + 1) + '_' + weightmode + '.npz'
         if os.path.isfile(file_reacorrl1):
             datatemp = np.load(file_reacorrl1)
-            reacorr_trainl1 = datatemp['reacorr']
             weight_trainl1 = datatemp['reaweight']
             del datatemp
         else:
@@ -380,7 +385,17 @@ def merge_correction_stnerror(outpath, stnlle, stndata, readata_stn, taintestind
             if weightmode == 'BMA':
                 for i in range(len(trainindex1)):
                     dobs = stndata_trainl1[i, :]
-                    drea = reacorr_trainl1[:,i,:].T
+                    drea = reacorr_trainl1[:, i, :].T
+                    if var == 'prcp':
+                        # exclude zero precipitation and carry out box-cox transformation
+                        datatemp = np.concatenate((dobs,drea), axis=1)
+                        ind0 = np.sum(datatemp>=0.01, axis=1) == (reanum+1) # positive hit events
+                        if np.sum(ind0) < 10:
+                            weight_trainl1[i, :] = np.ones(reanum)/reanum
+                            continue
+                        else:
+                            dobs = box_cox_transform(dobs[ind0])
+                            drea = box_cox_transform(drea[ind0,:])
                     w, sigma, sigma_s = bma(drea, dobs)
                     weight_trainl1[i, :] = w
             else:
@@ -414,7 +429,11 @@ def merge_correction_stnerror(outpath, stnlle, stndata, readata_stn, taintestind
             datain = np.zeros([nstn_testl1, reanum], dtype=np.float32)
             for rr in range(reanum):
                 datain[:, rr] = reacorr_stn[rr, testindex1, i]
+            if var == 'prcp':
+                datain = box_cox_transform(datain)
             dataout = weightmerge(datain, weight_testl1)
+            if var == 'prcp':
+                dataout = box_cox_recover(dataout)
             mergedata_testl1[:, i] = dataout
         reamerge_stn[testindex1, :] = mergedata_testl1
 
@@ -557,6 +576,7 @@ if os.path.isfile(near_stnfile):
         nearstn_distl2 = datatemp['nearstn_distl2']
     del datatemp
 else:
+    print('find near stations')
     # layer-1
     nstn_testl1 = np.shape(taintestindex[vari + '_testindex1'])[1]
     nearstn_locl1 = -1 * np.ones([dividenum, nstn_testl1, nearnum], dtype=int)
@@ -617,6 +637,8 @@ for rr in range(reanum):
         temp = np.concatenate((add, temp), axis=1)
     readata_stn[rr, :, :] = temp
     del dr, temp
+if var == 'prcp':
+    readata_stn[readata_stn<0] = 0
 
 # get merged and corrected reanalysis data at all station points using two-layer cross-validation
 if os.path.isfile(file_corrmerge_stn):
