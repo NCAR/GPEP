@@ -623,7 +623,7 @@ else:
     reacorr_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
     # for each month
     for m in range(12):
-        indm = date_list['mm'] == (m + 1)
+        indm = date_number['mm'] == (m + 1)
         reamerge_stnm, reamerge_weight_stnm, reacorr_stnm = \
             merge_correction_stnerror(path_reastn_cv, stnlle, stndata[:,indm], readata_stn[:,:,indm], taintestindex,
                                       nearstn_locl1, nearstn_distl1, nearstn_locl2, nearstn_distl2,
