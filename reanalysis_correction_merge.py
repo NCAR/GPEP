@@ -466,7 +466,7 @@ file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds/ERA5_dow
 # output files
 # train and test index file
 # ttindexfile = '/Users/localuser/Research/Test/2layer_train_test_index.npz'
-ttindexfile = '/home/gut428/ReanalysisCorrMerge/path_reastn_cv/2layer_train_test_index.npz'
+ttindexfile = '/home/gut428/ReanalysisCorrMerge/CrossValidate_2layer/2layer_train_test_index.npz'
 
 # near stations
 # near_stnfile = '/Users/localuser/Research/Test/near_stn.npz'
