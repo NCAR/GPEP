@@ -341,6 +341,7 @@ tmean_stn0 = datatemp['tmean_stn'][:, 0]
 del datatemp
 
 if not os.path.isfile(file_readownstn):
+    # ndays should minus 365 for MERRA2
     prcp_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
     tmean_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
     trange_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
