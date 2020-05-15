@@ -812,7 +812,7 @@ if useGMET == True:
 # start ...
 for y in range(year[0], year[1] + 1):
     print('Correction and Merge: year',y)
-    filemerge = path_merge + 'mergedata_' + var + '_' + str(y) + '.npz'
+    filemerge = path_merge + 'mergedata_' + var + '_' + str(y) + weightmode + '.npz'
     filecorr = path_reacorr + 'reacorrdata_' + var + '_' + str(y) + '.npz'
     if os.path.isfile(filemerge) and os.path.isfile(filecorr):
         print('file exists ... continue')
