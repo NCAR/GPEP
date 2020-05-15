@@ -469,10 +469,9 @@ file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds/ERA5_dow
 ttindexfile = '/home/gut428/ReanalysisCorrMerge/CrossValidate_2layer/2layer_train_test_index.npz'
 
 # near stations
+near_path = '/home/gut428/ReanalysisCorrMerge'
 # near_stnfile = '/Users/localuser/Research/Test/near_stn.npz'
 # near_gridfile = '/Users/localuser/Research/Test/near_grid.npz'
-near_stnfile = '/home/gut428/ReanalysisCorrMerge/near_stn.npz'
-near_gridfile = '/home/gut428/ReanalysisCorrMerge/near_grid.npz'
 
 # error and merging at station level
 path_reastn_cv = '/home/gut428/ReanalysisCorrMerge/CrossValidate_2layer'
@@ -546,6 +545,9 @@ if var == 'trange':
     vari = 'tmean'  # trange and tmean have the same index
 else:
     vari = var
+
+near_stnfile = near_path + '/near_stn_' + vari + '.npz'
+near_gridfile = near_path + '/near_grid_' + vari + '.npz'
 
 if os.path.isfile(near_stnfile):
     with np.load(near_stnfile) as datatemp:
