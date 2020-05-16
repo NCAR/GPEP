@@ -1,14 +1,9 @@
 import numpy as np
-import netCDF4 as nc
 import auxiliary as au
-import regression as reg
-import datetime as dt
 from matplotlib import pyplot as plt
 from scipy import io
-from scipy.interpolate import interp2d
 import os
 import sys
-from scipy.interpolate import griddata
 import h5py
 import time
 import random
