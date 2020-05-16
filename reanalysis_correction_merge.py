@@ -477,7 +477,7 @@ def correct_merge(stndata, readata_raw, readata_stn, reacorr_stn, reamerge_stn, 
         corr_data[rr, :, :, :] = error_correction(readata_raw[rr,:,:,:], anom_ext, mode=corrmode)
 
     # first error estimation
-    corr_error = np.nan * np.zeros([reanum, nrows, ncols, nday])
+    corr_error = np.nan * np.zeros([reanum, nrows, ncols, nday], dtype=np.float32)
     for rr in range(reanum):
         corr_error[rr, :, :, :] = extrapolation(reacorr_stn[rr, :, :] - stndata, neargrid_loc, neargrid_dist)
     merge_error0 = extrapolation(reamerge_stn - stndata, neargrid_loc, neargrid_dist)
@@ -489,7 +489,7 @@ def correct_merge(stndata, readata_raw, readata_stn, reacorr_stn, reamerge_stn, 
         reacorr_stn = box_cox_transform(reacorr_stn)
 
         # correction error in normal space (box-cox)
-        corr_error_bc = np.nan * np.zeros([reanum, nrows, ncols, nday])
+        corr_error_bc = np.nan * np.zeros([reanum, nrows, ncols, nday], dtype=np.float32)
         for rr in range(reanum):
             corr_error_bc[rr, :, :, :] = extrapolation(reacorr_stn[rr, :, :] - stndata, neargrid_loc, neargrid_dist)
         merge_error0_bc = extrapolation(reamerge_stn - stndata, neargrid_loc, neargrid_dist)
@@ -841,20 +841,6 @@ if useGMET == True:
 # start ...
 for y in range(year[0], year[1] + 1):
     print('Correction and Merge: year',y)
-    filemerge = path_merge + 'mergedata_' + var + '_' + str(y) + weightmode + '.npz'
-    filecorr = path_reacorr + 'reacorrdata_' + var + '_' + str(y) + '.npz'
-    if os.path.isfile(filemerge) and os.path.isfile(filecorr):
-        print('file exists ... continue')
-        continue
-
-    # initilization
-    nday = np.sum(date_number['yyyy'] == y)
-    corr_data = np.nan * np.zeros([reanum, nrows, ncols, nday], dtype=np.float32)
-    corr_error = np.nan * np.zeros([reanum, nrows, ncols, nday], dtype=np.float32)
-    merge_data = np.nan * np.zeros([nrows, ncols, nday], dtype=np.float32)
-    merge_error = np.nan * np.zeros([nrows, ncols, nday], dtype=np.float32)
-    if var == 'prcp' and weightmode == 'BMA':
-        merge_error_bc = np.nan * np.zeros([nrows, ncols, nday], dtype=np.float32) # error in normal space (box-cox)
 
     # read raw gridded reanalysis data
     readata_raw = np.nan * np.zeros([reanum, nrows, ncols, nday], dtype=np.float32)
@@ -868,26 +854,34 @@ for y in range(year[0], year[1] + 1):
     # process for each month
     for m in range(12):
         print('Correction and Merge: month', m+1)
+
+        filemerge = path_merge + 'mergedata_' + var + '_' + str(y*100+m+1) + weightmode + '.npz'
+        filecorr = path_reacorr + 'reacorrdata_' + var + '_' + str(y*100+m+1) + '.npz'
+        if os.path.isfile(filemerge) and os.path.isfile(filecorr):
+            print('file exists ... continue')
+            continue
+
         indym = (date_number['yyyy'] == y) & (date_number['mm'] == m+1)
         ym = date_number['mm'][date_number['yyyy'] == y]
         indm = ym == m+1
 
-        corr_datam, corr_errorm, merge_datam, merge_errorm = \
+        corr_data, corr_error, merge_data, merge_error = \
             correct_merge(stndata[:, indym], readata_raw[:,:,:,indm], readata_stn[:, :, indym], reacorr_stn[:, :, indym],
                           reamerge_stn[:, indym], reamerge_weight_stn[m, :, :], neargrid_loc, neargrid_dist,
                           merge_choice[m, :, :], mask, hwsize, corrmode, anombound, var, weightmode)
-        corr_data[:,:,:,indm] = corr_datam
-        corr_error[:, :, :, indm] = corr_errorm
-        merge_data[:, :, indm] = merge_datam
-        merge_error[:, :, indm] = merge_errorm[0]
         if var == 'prcp' and weightmode == 'BMA':
-            merge_error_bc[:, :, indm] = merge_errorm[1]
+            merge_error_bc= merge_error[1]
+            merge_error_raw = merge_error[0]
+        else:
+            merge_error_raw = merge_error[0]
 
-    np.savez_compressed(filecorr, corr_data=corr_data, corr_error=corr_error,
-                        reaname=prefix, latitude=lattar, longitude=lontar)
-    if var == 'prcp' and weightmode == 'BMA':
-        np.savez_compressed(filemerge, merge_data=merge_data, merge_error=merge_error, merge_error_bc=merge_error_bc,
-                            latitude=lattar, longitude=lontar, reaname=prefix)
-    else:
-        np.savez_compressed(filemerge, merge_data=merge_data, merge_error=merge_error,
-                            latitude=lattar, longitude=lontar, reaname=prefix)
+        if not os.path.isfile(filecorr):
+            np.savez_compressed(filecorr, corr_data=corr_data, corr_error=corr_error,
+                                reaname=prefix, latitude=lattar, longitude=lontar)
+
+        if var == 'prcp' and weightmode == 'BMA':
+            np.savez_compressed(filemerge, merge_data=merge_data, merge_error_raw=merge_error_raw,
+                                merge_error_bc=merge_error_bc, latitude=lattar, longitude=lontar, reaname=prefix)
+        else:
+            np.savez_compressed(filemerge, merge_data=merge_data, merge_error_raw=merge_error_raw,
+                                latitude=lattar, longitude=lontar, reaname=prefix)

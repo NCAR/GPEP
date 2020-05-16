@@ -152,7 +152,7 @@ def station_error(prcp_stn, tmean_stn, trange_stn, stninfo, near_stn_prcpLoc, ne
                     # calculate pcp
                     b = least_squares(x_red_use, y_prcp_red, twx_red)
                     pcpgg = np.dot(stninfo_use, b)
-                    pcpgg = regressioncheck(pcpgg, y_prcp_red, w_pcp_1d, 'pcp',transmode=trans_mode)
+                    pcpgg = regressioncheck(pcpgg, y_prcp_red, w_pcp_1d, 'pcp', transmode=trans_mode)
                     pcp_err_stn[gg, t] = pcpgg - y_prcp[gg]
 
             # tmean/trange processing
@@ -191,12 +191,12 @@ def station_error(prcp_stn, tmean_stn, trange_stn, stninfo, near_stn_prcpLoc, ne
 
                     b = least_squares(x_red_use, y_tmean_red, twx_red)
                     tmeangg = np.dot(stninfo_use, b)
-                    tmeangg = regressioncheck(tmeangg, y_tmean_red, w_temp_1d, 'tmean',transmode='None')
+                    tmeangg = regressioncheck(tmeangg, y_tmean_red, w_temp_1d, 'tmean', transmode='None')
                     tmean_err_stn[gg, t] = tmeangg - y_tmean[gg]
 
                     b = least_squares(x_red_use, y_trange_red, twx_red)
                     trangegg = np.dot(stninfo_use, b)
-                    trangegg = regressioncheck(trangegg, y_trange_red, w_temp_1d, 'trange',transmode='None')
+                    trangegg = regressioncheck(trangegg, y_trange_red, w_temp_1d, 'trange', transmode='None')
                     trange_err_stn[gg, t] = trangegg - y_trange[gg]
 
     return pcp_err_stn, tmean_err_stn, trange_err_stn
@@ -479,7 +479,7 @@ def regression(prcp_stn, tmean_stn, trange_stn, pcp_err_stn, tmean_err_stn, tran
                         # calculate pcp
                         b = least_squares(x_red_use, y_prcp_red, twx_red)
                         pcpreg = np.dot(gridinfo_use, b)
-                        pcpreg = regressioncheck(pcpreg, y_prcp_red, w_pcp_1d, 'pcp',transmode=trans_mode)
+                        pcpreg = regressioncheck(pcpreg, y_prcp_red, w_pcp_1d, 'pcp', transmode=trans_mode)
                         pcp[rr, cc, t] = pcpreg
 
                         # 6.4.3 estimate pcp error
@@ -525,7 +525,7 @@ def regression(prcp_stn, tmean_stn, trange_stn, pcp_err_stn, tmean_err_stn, tran
                         twx_red = np.matmul(tx_red, w_temp_red)
                         b = least_squares(x_red_use, y_tmean_red, twx_red)
                         tmeanreg = np.dot(gridinfo_use, b)
-                        tmeanreg = regressioncheck(tmeanreg, y_tmean_red, w_temp_1d, 'tmean',transmode='None')
+                        tmeanreg = regressioncheck(tmeanreg, y_tmean_red, w_temp_1d, 'tmean', transmode='None')
                         tmean[rr, cc, t] = tmeanreg
 
                         # error estimation
@@ -535,7 +535,7 @@ def regression(prcp_stn, tmean_stn, trange_stn, pcp_err_stn, tmean_err_stn, tran
                         # 6.5.2 estimate trange and its error
                         b = least_squares(x_red_use, y_trange_red, twx_red)
                         trangereg = np.dot(gridinfo_use, b)
-                        trangereg = regressioncheck(trangereg, y_trange_red, w_temp_1d, 'trange',transmode='None')
+                        trangereg = regressioncheck(trangereg, y_trange_red, w_temp_1d, 'trange', transmode='None')
                         trange[rr, cc, t] = trangereg
 
                         # error estimation
@@ -582,6 +582,7 @@ def regressioncheck(datareg, datastn, weightstn, varname, transmode='None'):
 
     return datareg
 
+
 #
 # def residualcorrection(dres, dreg, nearloc, nearweight):
 #     # correct spatial interpolation estimates using the residuals estimated at station points
@@ -612,21 +613,21 @@ def error_after_residualcorrection(data_ori, data_reg, nearloc, nearweight):
     nstn, ntimes = np.shape(data_ori)
     res_after_corr = np.nan * np.zeros([nstn, ntimes])
     for i in range(nstn):
-        if np.isnan(data_ori[i,0]):
+        if np.isnan(data_ori[i, 0]):
             continue
-        nearloci = nearloc[i,0:3]
-        nearweighti = nearweight[i, 0:3]
-        induse = nearloci>-1
+        nearloci = nearloc[i, :]
+        nearweighti = nearweight[i, :]
+        induse = nearloci > -1
         nearloci = nearloci[induse]
         nearweighti = nearweighti[induse]
         nearweighti = nearweighti / np.sum(nearweighti)
-        nearweighti2 = np.tile(nearweighti,(ntimes,1)).T
+        nearweighti2 = np.tile(nearweighti, (ntimes, 1)).T
 
-        dtar_orii = data_ori[i,:]
-        dtar_regi = data_reg[i,:]
+        dtar_orii = data_ori[i, :]
+        dtar_regi = data_reg[i, :]
         dtar_resi = dtar_regi - dtar_orii
 
-        dnear_orii = data_ori[nearloci,:]
+        dnear_orii = data_ori[nearloci, :]
         dnear_regi = data_reg[nearloci, :]
         dnear_resi = dnear_regi - dnear_orii
 
@@ -637,8 +638,3 @@ def error_after_residualcorrection(data_ori, data_reg, nearloc, nearweight):
         res_after_corr[i, :] = res_after_corri
 
     return res_after_corr
-
-
-
-
-

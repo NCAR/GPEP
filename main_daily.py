@@ -41,7 +41,7 @@ search_radius = 400  # km. only search stations within this radius even nearstn_
 max_dist = 100  # max_distance in distance-based weight calculation
 
 # setting: parameters for transforming temp to approximate normal distribution
-trans_mode = 'box-cox'  # box-cox or power-law or none
+trans_mode = 'none'  # box-cox or power-law or none
 trans_exp_daily = 4
 
 # setting: overwrite flags. -1:don't save files; 0: don't overwrite files; 1 is to overwrite existing files;
@@ -58,7 +58,7 @@ datestr = str(date_cal_start) + '-' + str(date_cal_end)
 # FileRegression_daily = '/home/gut428/GMET/PyGMETout/output_' + datestr + '.npz'
 FileStnData = '/Users/localuser/GMET/error_compare/stndata_' + datestr + '.npz'
 FileWeight = '/Users/localuser/Downloads/old/weight.npz'
-FileRegError_daily = '/Users/localuser/GMET/error_compare/error_notans_' + datestr + '.npz'  # regression error at station points
+FileRegError_daily = '/Users/localuser/GMET/error_compare/error_notrans_' + datestr + '.npz'  # regression error at station points
 FileRegError_daily_corr = '//Users/localuser/Downloads/error_rescorr' + datestr + '.npz'
 FileRegression_daily = '/Users/localuser/Downloads/output_' + datestr + '.npz'
 
@@ -213,7 +213,8 @@ else:
 ########################################################################################################################
 
 # 6.2 estimate new errors after carrying out residual correction (leave-one-out)
-# this does not work very well probably because prcp is regressed after transformation
+# this does not work very well. prcp has a slightly larger error after correction, probably because the way of calculating
+# error residual is simply weighted mean
 # if os.path.isfile(FileRegError_daily_corr) and ow_daily != 1:
 #     print('FileRegError_daily_corr exists. loading ...')
 #     with np.load(FileRegError_daily) as datatemp:
