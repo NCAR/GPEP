@@ -841,7 +841,10 @@ if useGMET == True:
 # start ...
 for y in range(year[0], year[1] + 1):
     print('Correction and Merge: year',y)
-
+    if (np.mod(y,4)==0 and np.mod(y,100)!=0) or np.mod(y,400)==0:
+        nday=366
+    else:
+        nday=365
     # read raw gridded reanalysis data
     readata_raw = np.nan * np.zeros([reanum, nrows, ncols, nday], dtype=np.float32)
     for rr in range(reanum):
