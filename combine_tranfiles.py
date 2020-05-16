@@ -29,8 +29,8 @@ for y in range(year[0],year[1]+1):
             trange = d1['trange']
             tmean_err = d1['tmean_err']
             trange_err = d1['trange_err']
-            mean_autocorr = d1['mean_autocorr']
-            mean_tp_corr = d1['mean_tp_corr']
+            mean_autocorr_daily = d1['mean_autocorr_daily']
+            mean_tp_corr_daily = d1['mean_tp_corr_daily']
             pcp_raw = d2['pcp']
             pcp_err_raw = d2['pcp_err']
             y_max_raw = d2['y_max']
@@ -38,7 +38,7 @@ for y in range(year[0],year[1]+1):
             np.savez_compressed(fileoout, pop=pop, pcp_bc=pcp_bc, pcp_err_bc=pcp_err_bc, y_max_bc=y_max_bc,
                                 pcp_raw=pcp_raw, pcp_err_raw=pcp_err_raw, y_max_raw=y_max_raw,
                                 tmean=tmean, trange=trange, tmean_err=tmean_err, trange_err=trange_err,
-                                mean_autocorr=mean_autocorr, mean_tp_corr=mean_tp_corr)
+                                mean_autocorr_daily=mean_autocorr_daily, mean_tp_corr_daily=mean_tp_corr_daily)
 
         # combine two error files
         filee1 = path_trans + '/error_' + datestr + '.npz'
