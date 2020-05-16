@@ -858,8 +858,8 @@ for y in range(year[0], year[1] + 1):
     for m in range(12):
         print('Correction and Merge: month', m+1)
 
-        filemerge = path_merge + 'mergedata_' + var + '_' + str(y*100+m+1) + weightmode + '.npz'
-        filecorr = path_reacorr + 'reacorrdata_' + var + '_' + str(y*100+m+1) + '.npz'
+        filemerge = path_merge + '/mergedata_' + var + '_' + str(y*100+m+1) + weightmode + '.npz'
+        filecorr = path_reacorr + '/reacorrdata_' + var + '_' + str(y*100+m+1) + '.npz'
         if os.path.isfile(filemerge) and os.path.isfile(filecorr):
             print('file exists ... continue')
             continue
