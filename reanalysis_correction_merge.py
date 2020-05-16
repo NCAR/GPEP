@@ -833,7 +833,7 @@ if useGMET == True:
         neargrid_loc = datatemp['near_grid_prcpLoc']
         neargrid_dist = datatemp['near_grid_prcpDist']
     else:
-        neargrid_loc = datatemp['near_grid_tempDist']
+        neargrid_loc = datatemp['near_grid_tempLoc']
         neargrid_dist = datatemp['near_grid_tempDist']
     neargrid_loc = np.flipud(neargrid_loc)
     neargrid_dist = np.flipud(neargrid_dist)
