@@ -39,7 +39,7 @@ for m in range(12):
     # setting: output files
     datestr = str(date_cal_start) + '-' + str(date_cal_end)
     FileWeight = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/weight.npz'
-    FileRegError_daily = '/datastore/GLOBALWATER/CommonData/EMDN/PyGMETout/error_' + datestr + '.npz'  # regression error at station points
+    FileRegError_daily = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/error_' + datestr + '.npz'  # regression error at station points
     # FileRegError_daily_corr = '/home/gut428/GMET/PyGMETout/error_rescorr' + datestr + '.npz'  # regression error after residual correction
     FileRegression_daily = '/home/gut428/GMET/PyGMETout/output_realerror_' + datestr + '.npz'
 

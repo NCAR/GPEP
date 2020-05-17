@@ -3,22 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/Main_test-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/Main_test-checkpoint.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Main_test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Main_test.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_2010.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_2010.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_2011.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_2011.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_2012.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_2012.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_2013.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_2013.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_2014.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_2014.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_2015.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_2015.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_2016.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_2016.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_2017.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_2017.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_2018.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_2018.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_commands" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_commands" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/generate_batch.m" beforeDir="false" afterPath="$PROJECT_DIR$/generate_batch.m" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main_CAI_update.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_CAI_update.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/observation_reanalysis_merge.py" beforeDir="false" afterPath="$PROJECT_DIR$/observation_reanalysis_merge.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimal_interpolation.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimal_interpolation.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
