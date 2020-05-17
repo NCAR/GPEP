@@ -888,3 +888,5 @@ for y in range(year[0], year[1] + 1):
         else:
             np.savez_compressed(filemerge, merge_data=merge_data, merge_error_raw=merge_error_raw,
                                 latitude=lattar, longitude=lontar, reaname=prefix)
+
+        del corr_data, corr_error, merge_data, merge_error
