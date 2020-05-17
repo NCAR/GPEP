@@ -66,6 +66,12 @@ for m in range(12):
     # FileRegError_daily_corr = '//Users/localuser/Downloads/error_rescorr' + datestr + '.npz'
     # FileRegression_daily = '/Users/localuser/Downloads/output_' + datestr + '.npz'
 
+    FileRegError_daily2 = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout_notrans/error_notrans_' + datestr + '.npz'
+    FileRegression_daily2 = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout_notrans/output_notrans_' + datestr + '.npz'
+    if os.path.isfile(FileRegError_daily2) and os.path.isfile(FileRegression_daily2):
+        print('files exist in datastore')
+        continue
+
     ########################################################################################################################
 
     # 1. basic information
