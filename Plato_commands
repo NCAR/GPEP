@@ -26,7 +26,7 @@ do
 sbatch Plato_${y}.sh
 done
 
-for y in {1979..2015..4}
+for y in {1983..2015..4}
 do
 sbatch Plato_prcp_BMA_${y}.sh
 sbatch Plato_tmean_BMA_${y}.sh
