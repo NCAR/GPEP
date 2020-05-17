@@ -18,7 +18,8 @@ for y in range(year[0],year[1]+1):
         fileo1 = path_trans + '/output_' + datestr + '.npz'
         fileo2 = path_notrans + '/output_notrans_' + datestr + '.npz'
         fileoout = path_out + '/output_' + datestr + '.npz'
-        if not os.path.isfile(fileoout):
+        fileoout2 = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout_tran_notran/output_' + datestr + '.npz'
+        if (not os.path.isfile(fileoout)) and (not os.path.isfile(fileoout2)):
             d1 = np.load(fileo1)
             d2 = np.load(fileo2)
             pop = d1['pop']
@@ -44,7 +45,8 @@ for y in range(year[0],year[1]+1):
         filee1 = path_trans + '/error_' + datestr + '.npz'
         filee2 = path_notrans + '/error_notrans_' + datestr + '.npz'
         fileeout = path_out + '/error_' + datestr + '.npz'
-        if not os.path.isfile(fileeout):
+        fileeout2 = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout_tran_notran/error_' + datestr + '.npz'
+        if (not os.path.isfile(fileeout)) and (not os.path.isfile(fileeout2)):
             d1 = np.load(filee1)
             d2 = np.load(filee2)
             pcp_err_stn_bc = d1['pcp_err_stn']

@@ -25,3 +25,41 @@ for (( y=1979; y<=2018; y++))
 do
 sbatch Plato_${y}.sh
 done
+
+for y in {1979..2015..4}
+do
+sbatch Plato_prcp_BMA_${y}.sh
+sbatch Plato_tmean_BMA_${y}.sh
+sbatch Plato_trange_BMA_${y}.sh
+done
+
+
+
+for y in {1979..2018..1}
+do
+FILE=/home/gut428/ReanalysisCorrMerge/Reanalysis_corr/reacorrdata_prcp_${y}12.npz
+if test -f "$FILE"; then
+mv "$FILE" /datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/Reanalysis_corr/
+fi
+done
+
+FILE=/etc/resolv.conf
+if test -f "$FILE"; then
+    echo "$FILE exist"
+fi
+
+
+for y in 1980 1983 1987 1991 1995 1999 2003 2007 2011 2017
+do
+mv reacorrdata_prcp_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/Reanalysis_corr/
+done
+
+for y in 1981 1984 1988 1992 1996 2000 2004 2008 2012 2016
+do
+mv reacorrdata_trange_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/Reanalysis_corr/
+done
+
+for y in 1980 1983 1987 1991 1995 1999 2003 2007 2011 2017
+do
+mv mergedata_prcp_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/Reanalysis_merge/
+done
