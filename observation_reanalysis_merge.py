@@ -74,6 +74,7 @@ for y in range(year[0], year[1] + 1):
             print('variable', var)
             file_bac = path_bac + '/mergedata_' + var + '_' + str(y * 100 + m + 1) + weightmode + '.npz'
             file_obs = path_obs + '/output_' + datestr + '.npz'
+            file_obserr = path_obs + '/output_realerror_' + datestr + '.npz'
 
             # load background data (value and error)
             datatemp = np.load(file_bac)
@@ -98,16 +99,20 @@ for y in range(year[0], year[1] + 1):
 
             # load observation data (value and error)
             datatemp = np.load(file_obs)
+            datatemp2 = np.load(file_obserr)
             if var == 'tmean' or var == 'trange':
                 v_obs = datatemp[var]
-                e_obs = datatemp[var + '_err']
+                # e_obs = datatemp[var + '_err']
+                e_obs = datatemp2[var + '_realerr']
             elif var == 'prcp':
                 if prcp_space == 'Actual':
                     v_obs = datatemp['pcp_raw']
-                    e_obs = datatemp['pcp_err_raw']
+                    # e_obs = datatemp['pcp_err_raw']
+                    e_obs = datatemp2['pcp_realerr_raw']
                 elif prcp_space == 'Gaussian':
                     v_obs = datatemp['pcp_bc']
-                    e_obs = datatemp['pcp_err_bc']
+                    # e_obs = datatemp['pcp_err_bc']
+                    e_obs = datatemp['pcp_realerr_bc']
             else:
                 sys.exit('Unknown variable')
             del datatemp
@@ -118,7 +123,10 @@ for y in range(year[0], year[1] + 1):
 
             # produce OI merged estimateds
             oimerge_data[var] = np.nan * np.zeros(np.shape(v_bac), dtype=np.float32)
+            weightsum = np.nan * np.zeros([nrows,ncols], dtype=np.float32)
             for r in range(nrows):
+                if np.mod(r,50)==0:
+                    print(r)
                 for c in range(ncols):
                     if mask[r, c] != 1:
                         continue
@@ -140,7 +148,7 @@ for y in range(year[0], year[1] + 1):
                     near_err_o = e_obs[rse[0]:rse[1], cse[0]:cse[1], :]
                     near_err_b = np.reshape(near_err_b, [snum, ntimes])
                     near_err_o = np.reshape(near_err_o, [snum, ntimes])
-                    indnan = np.isnan(near_err_o[:, 0]) or np.isnan(near_err_b[:, 0])
+                    indnan = np.isnan(near_err_o[:, 0]) | np.isnan(near_err_b[:, 0])
                     near_err_b = near_err_b[~indnan, :]
                     near_err_o = near_err_o[~indnan, :]
 
@@ -153,6 +161,7 @@ for y in range(year[0], year[1] + 1):
                         merge_est[i] = merge_est[i] + np.dot(weight, diff[:, i])
 
                     oimerge_data[var][r, c, :] = merge_est
+                    weightsum[r,c] = np.sum(weight)
         if var == 'prcp' and prcp_space == 'Gaussian':
             oimerge_data[var] = box_cox_recover(oimerge_data[var])
     np.savez_compressed(filemerge, pcp=oimerge_data['prcp'], tmean=oimerge_data['tmean'], trange=oimerge_data['trange'])

@@ -12,6 +12,7 @@ def OImerge(tar_err_b, near_err_b, near_err_o):
     # covariance matrix of errors
     Cb = np.cov(near_err_b)
     Co = np.cov(near_err_o)
+    Co = np.eye(mnum) * Co # independence assumption
     Cb0 = np.zeros(mnum)
     for i in range(mnum):
         Cb0[i] = cov1d(tar_err_b, near_err_b[i,:])
