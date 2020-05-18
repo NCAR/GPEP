@@ -860,6 +860,7 @@ for y in range(year[0], year[1] + 1):
 
         filemerge = path_merge + '/mergedata_' + var + '_' + str(y*100+m+1) + weightmode + '.npz'
         filecorr = path_reacorr + '/reacorrdata_' + var + '_' + str(y*100+m+1) + '.npz'
+        filecorr2 = '/datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/Reanalysis_corr/reacorrdata_' + var + '_' + str(y * 100 + m + 1) + '.npz'
         if os.path.isfile(filemerge):
             print('file exists ... continue')
             continue
