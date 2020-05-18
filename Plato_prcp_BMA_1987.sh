@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=mercorr
-#SBATCH --time=0-10:0:0
+#SBATCH --time=0-8:0:0
 #SBATCH --mem=30G
 module load python/3.7.4
-srun python -u reanalysis_correction_merge.py prcp BMA 1987 1990
+srun python -u main_CAI_update.py prcp BMA 1987 1988

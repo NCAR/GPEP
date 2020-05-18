@@ -530,6 +530,7 @@ def correct_merge(stndata, readata_raw, readata_stn, reacorr_stn, reamerge_stn, 
         merge_error_out[0] = merge_error
         merge_error_out[1] = merge_error_bc
         merge_data = box_cox_recover(merge_data)
+        corr_data = box_cox_recover(corr_data)
     else:
         merge_error_out = ['']
         merge_error_out[0] = merge_error
@@ -814,7 +815,7 @@ else:
         met_corr_grid = extrapolation(met_corr_stn, neargrid_loc, neargrid_dist)
         metric_all[:, :, 0] = met_merge_grid
         metric_all[:, :, 1:] = met_corr_grid
-        merge_choicem = np.argmax(metric_all, axis=2)  # 0: merge, 1 to N: corresponding corrected reanalysis
+        merge_choicem = np.argmin(metric_all, axis=2)  # 0: merge, 1 to N: corresponding corrected reanalysis
         merge_choicem[mask != 1] = -1
         merge_choice[m, :, :] = merge_choicem
         del metric_all, met_merge_grid, met_corr_grid
