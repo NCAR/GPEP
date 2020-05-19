@@ -536,6 +536,44 @@ def correct_merge(stndata, readata_raw, readata_stn, reacorr_stn, reamerge_stn, 
         merge_error_out[0] = merge_error
     return corr_data, corr_error, merge_data, merge_error_out
 
+
+def mse_error(stndata, readata_stn, reacorr_stn, reamerge_stn, neargrid_loc, neargrid_dist, merge_choice, mask, var):
+
+    nrows, ncols, nearnum = np.shape(neargrid_loc)
+    reanum, nstn, nday = np.shape(readata_stn)
+
+    neargrid_loc = neargrid_loc.copy()
+    neargrid_dist = neargrid_dist.copy()
+    mask2 = np.tile(mask[:,:,np.newaxis], (1,1,nearnum))
+    neargrid_loc[mask2 != 1] = -1
+    neargrid_dist[mask2 != 1] = np.nan
+    del mask2
+
+    if var == 'prcp':
+        stndata = box_cox_transform(stndata)
+        reamerge_stn = box_cox_transform(reamerge_stn)
+        reacorr_stn = box_cox_transform(reacorr_stn)
+
+    corr_error = np.nan * np.zeros([reanum, nrows, ncols, nday], dtype=np.float32)
+    for rr in range(reanum):
+        corr_error[rr, :, :, :] = extrapolation((reacorr_stn[rr, :, :] - stndata) ** 2, neargrid_loc, neargrid_dist)
+    corr_error = corr_error ** 0.5
+    merge_error0 = extrapolation((reamerge_stn - stndata) ** 2, neargrid_loc, neargrid_dist)
+    merge_error0 = merge_error0 ** 0.5
+
+    mse_error = np.nan * np.zeros([nrows, ncols, nday], dtype=np.float32)
+    for r in range(nrows):
+        for c in range(ncols):
+            if not np.isnan(mask[r, c]):
+                chi = merge_choice[r, c]
+                if chi > 0:
+                    mse_error[r, c, :] = corr_error[chi - 1, r, c, :]
+                else:
+                    mse_error[r, c, :] = merge_error0[r, c, :]
+
+    return mse_error
+
+
 ########################################################################################################################
 
 var = sys.argv[1]
@@ -892,3 +930,24 @@ for y in range(year[0], year[1] + 1):
                                 latitude=lattar, longitude=lontar, reaname=prefix)
 
         del corr_data, corr_error, merge_data, merge_error
+
+# produce the mean square error of each grid from nearby stations in normal space
+# to support the production of final probabilistic estimation
+for y in range(year[0], year[1] + 1):
+    print('estimate mse: year',y)
+    # process for each month
+    for m in range(12):
+        print('Correction and Merge: month', m+1)
+        filemse = path_merge + '/mserror_' + var + '_' + str(y*100+m+1) + weightmode + '.npz'
+        if os.path.isfile(filemse):
+            print('file exists ... continue')
+            continue
+
+        indym = (date_number['yyyy'] == y) & (date_number['mm'] == m+1)
+        ym = date_number['mm'][date_number['yyyy'] == y]
+        indm = ym == m+1
+
+        mse_error = mse_error(stndata[:, indym], readata_stn[:, :, indym],  reacorr_stn[:, :, indym],
+                              reamerge_stn[:, indym], neargrid_loc, neargrid_dist, merge_choice, mask, var)
+
+        np.savez_compressed(filemse, mse_error=mse_error)

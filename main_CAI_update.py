@@ -454,7 +454,7 @@ def merge_correction_stnerror(outpath, stnlle, stndata, readata_stn, taintestind
 
 
 def correct_merge(stndata, readata_raw, readata_stn, reacorr_stn, reamerge_stn, reamerge_weight_stn, neargrid_loc,
-         neargrid_dist, merge_choice, mask, hwsize, corrmode, anombound, var, weightmode, corr_data, corr_error):
+         neargrid_dist, merge_choice, mask, hwsize, corrmode, anombound, var, weightmode):
 
     nrows, ncols, nearnum = np.shape(neargrid_loc)
     reanum, nstn, nday = np.shape(readata_stn)
@@ -467,6 +467,19 @@ def correct_merge(stndata, readata_raw, readata_stn, reacorr_stn, reamerge_stn, 
     del mask2
 
 
+    # correct raw gridded reanalysis data using all stations
+    corr_data = np.nan * np.zeros([reanum, nrows, ncols, nday], dtype=np.float32)
+    for rr in range(reanum):
+        # calculate correction ratio at all station point
+        anom_ori = calculate_anomaly(readata_stn[rr, :, :], stndata[:, :],
+                                     hwsize, corrmode, upbound=anombound[1], lowbound=anombound[0])
+        anom_ext = extrapolation(anom_ori, neargrid_loc, neargrid_dist)
+        corr_data[rr, :, :, :] = error_correction(readata_raw[rr,:,:,:], anom_ext, mode=corrmode)
+
+    # first error estimation
+    corr_error = np.nan * np.zeros([reanum, nrows, ncols, nday], dtype=np.float32)
+    for rr in range(reanum):
+        corr_error[rr, :, :, :] = extrapolation(reacorr_stn[rr, :, :] - stndata, neargrid_loc, neargrid_dist)
     merge_error0 = extrapolation(reamerge_stn - stndata, neargrid_loc, neargrid_dist)
 
     if var == 'prcp' and weightmode == 'BMA':
@@ -516,10 +529,50 @@ def correct_merge(stndata, readata_raw, readata_stn, reacorr_stn, reamerge_stn, 
         merge_error_out = [''] * 2
         merge_error_out[0] = merge_error
         merge_error_out[1] = merge_error_bc
+        merge_data = box_cox_recover(merge_data)
+        corr_data = box_cox_recover(corr_data)
     else:
         merge_error_out = ['']
         merge_error_out[0] = merge_error
-    return merge_data, merge_error_out
+    return corr_data, corr_error, merge_data, merge_error_out
+
+
+def mse_error(stndata, readata_stn, reacorr_stn, reamerge_stn, neargrid_loc, neargrid_dist, merge_choice, mask, var):
+
+    nrows, ncols, nearnum = np.shape(neargrid_loc)
+    reanum, nstn, nday = np.shape(readata_stn)
+
+    neargrid_loc = neargrid_loc.copy()
+    neargrid_dist = neargrid_dist.copy()
+    mask2 = np.tile(mask[:,:,np.newaxis], (1,1,nearnum))
+    neargrid_loc[mask2 != 1] = -1
+    neargrid_dist[mask2 != 1] = np.nan
+    del mask2
+
+    if var == 'prcp':
+        stndata = box_cox_transform(stndata)
+        reamerge_stn = box_cox_transform(reamerge_stn)
+        reacorr_stn = box_cox_transform(reacorr_stn)
+
+    corr_error = np.nan * np.zeros([reanum, nrows, ncols, nday], dtype=np.float32)
+    for rr in range(reanum):
+        corr_error[rr, :, :, :] = extrapolation((reacorr_stn[rr, :, :] - stndata) ** 2, neargrid_loc, neargrid_dist)
+    corr_error = corr_error ** 0.5
+    merge_error0 = extrapolation((reamerge_stn - stndata) ** 2, neargrid_loc, neargrid_dist)
+    merge_error0 = merge_error0 ** 0.5
+
+    mse_error = np.nan * np.zeros([nrows, ncols, nday], dtype=np.float32)
+    for r in range(nrows):
+        for c in range(ncols):
+            if not np.isnan(mask[r, c]):
+                chi = merge_choice[r, c]
+                if chi > 0:
+                    mse_error[r, c, :] = corr_error[chi - 1, r, c, :]
+                else:
+                    mse_error[r, c, :] = merge_error0[r, c, :]
+
+    return mse_error
+
 
 ########################################################################################################################
 
@@ -593,7 +646,8 @@ file_corrmerge_stn = path_reastn_cv + '/mergecorr_' + var + '_' + weightmode + '
 # path_merge = '/Users/localuser/Research/Test'
 path_reacorr = '/home/gut428/ReanalysisCorrMerge/Reanalysis_corr'
 path_merge = '/home/gut428/ReanalysisCorrMerge/Reanalysis_merge'
-file_mergechoice = path_merge + '/mergechoice_' + var + '_' +  weightmode + '.npz'
+file_mergechoice = '/datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/Reanalysis_merge/mergechoice_' + \
+                   var + '_' +  weightmode + '.npz'
 
 ########################################################################################################################
 
@@ -824,29 +878,15 @@ if useGMET == True:
     neargrid_loc = np.flipud(neargrid_loc)
     neargrid_dist = np.flipud(neargrid_dist)
 
-# start ...
+# produce the mean square error of each grid from nearby stations in normal space
+# to support the production of final probabilistic estimation
 for y in range(year[0], year[1] + 1):
-    print('Correction and Merge: year',y)
-    if (np.mod(y,4)==0 and np.mod(y,100)!=0) or np.mod(y,400)==0:
-        nday=366
-    else:
-        nday=365
-    # read raw gridded reanalysis data
-    readata_raw = np.nan * np.zeros([reanum, nrows, ncols, nday], dtype=np.float32)
-    for rr in range(reanum):
-        if not (prefix[rr] == 'MERRA2_' and y == 1979):
-            filer = path_readowngrid[rr] + '/' + prefix[rr] + var + '_' + str(y) + '.npz'
-            d = np.load(filer)
-            readata_raw[rr, :, :, :] = d['data']
-            del d
-
+    print('estimate mse: year',y)
     # process for each month
     for m in range(12):
         print('Correction and Merge: month', m+1)
-
-        filemerge = path_merge + '/mergedata_' + var + '_' + str(y*100+m+1) + weightmode + '.npz'
-        filecorr2 = '/datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/Reanalysis_corr/reacorrdata_' + var + '_' + str(y * 100 + m + 1) + '.npz'
-        if os.path.isfile(filemerge):
+        filemse = path_merge + '/mserror_' + var + '_' + str(y*100+m+1) + weightmode + '.npz'
+        if os.path.isfile(filemse):
             print('file exists ... continue')
             continue
 
@@ -854,29 +894,7 @@ for y in range(year[0], year[1] + 1):
         ym = date_number['mm'][date_number['yyyy'] == y]
         indm = ym == m+1
 
+        mse_error = mse_error(stndata[:, indym], readata_stn[:, :, indym],  reacorr_stn[:, :, indym],
+                              reamerge_stn[:, indym], neargrid_loc, neargrid_dist, merge_choice, mask, var)
 
-        # load error data
-        datatemp = np.load(filecorr2)
-        corr_data = datatemp['corr_data']
-        corr_error = datatemp['corr_error']
-        del datatemp
-
-        merge_data, merge_error = \
-             correct_merge(stndata[:, indym], readata_raw[:,:,:,indm], readata_stn[:, :, indym], reacorr_stn[:, :, indym],
-                           reamerge_stn[:, indym], reamerge_weight_stn[m, :, :], neargrid_loc, neargrid_dist,
-                           merge_choice[m, :, :], mask, hwsize, corrmode, anombound, var, weightmode, corr_data, corr_error)
-
-        if var == 'prcp' and weightmode == 'BMA':
-            merge_error_bc= merge_error[1]
-            merge_error_raw = merge_error[0]
-        else:
-            merge_error_raw = merge_error[0]
-
-        if var == 'prcp' and weightmode == 'BMA':
-            np.savez_compressed(filemerge, merge_data=merge_data, merge_error_raw=merge_error_raw,
-                                merge_error_bc=merge_error_bc, latitude=lattar, longitude=lontar, reaname=prefix)
-        else:
-            np.savez_compressed(filemerge, merge_data=merge_data, merge_error_raw=merge_error_raw,
-                                latitude=lattar, longitude=lontar, reaname=prefix)
-
-        del corr_data, corr_error, merge_data, merge_error
+        np.savez_compressed(filemse, mse_error=mse_error)

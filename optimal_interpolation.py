@@ -16,8 +16,16 @@ def OImerge(tar_err_b, near_err_b, near_err_o):
     Cb0 = np.zeros(mnum)
     for i in range(mnum):
         Cb0[i] = cov1d(tar_err_b, near_err_b[i,:])
-    cbot = np.linalg.inv(Cb+Co)
-    W = np.dot(Cb0, cbot)
+
+    try:
+        cbot = np.linalg.inv(Cb+Co)
+        W = np.dot(Cb0, cbot)
+    except:
+        # singular matrix
+        W = np.ones(mnum) / mnum
+
+    
+
     return W
 
 def cov1d(a, b):
