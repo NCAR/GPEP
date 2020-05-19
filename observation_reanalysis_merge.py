@@ -7,7 +7,7 @@ import os
 import sys
 from optimal_interpolation import OImerge
 import calendar
-from reanalysis_correction_merge import m_DateList, calmetric, box_cox_transform, box_cox_recover
+from auxiliary_merge import *
 
 
 ########################################################################################################################
