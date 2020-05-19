@@ -438,10 +438,10 @@ def merge_correction_stnerror(outpath, stnlle, stndata, readata_stn, taintestind
             datain = np.zeros([nstn_testl1, reanum], dtype=np.float32)
             for rr in range(reanum):
                 datain[:, rr] = reacorr_stn[rr, testindex1, i]
-            if var == 'prcp':
+            if var == 'prcp' and weightmode == 'BMA':
                 datain = box_cox_transform(datain)
             dataout = weightmerge(datain, weight_testl1)
-            if var == 'prcp':
+            if var == 'prcp' and weightmode == 'BMA':
                 dataout = box_cox_recover(dataout)
             mergedata_testl1[:, i] = dataout
         reamerge_stn[testindex1, :] = mergedata_testl1
@@ -561,17 +561,17 @@ def mse_error(stndata, readata_stn, reacorr_stn, reamerge_stn, neargrid_loc, nea
     merge_error0 = extrapolation((reamerge_stn - stndata) ** 2, neargrid_loc, neargrid_dist)
     merge_error0 = merge_error0 ** 0.5
 
-    mse_error = np.nan * np.zeros([nrows, ncols, nday], dtype=np.float32)
+    mserror = np.nan * np.zeros([nrows, ncols, nday], dtype=np.float32)
     for r in range(nrows):
         for c in range(ncols):
             if not np.isnan(mask[r, c]):
                 chi = merge_choice[r, c]
                 if chi > 0:
-                    mse_error[r, c, :] = corr_error[chi - 1, r, c, :]
+                    mserror[r, c, :] = corr_error[chi - 1, r, c, :]
                 else:
-                    mse_error[r, c, :] = merge_error0[r, c, :]
+                    mserror[r, c, :] = merge_error0[r, c, :]
 
-    return mse_error
+    return mserror
 
 
 ########################################################################################################################
@@ -894,7 +894,7 @@ for y in range(year[0], year[1] + 1):
         ym = date_number['mm'][date_number['yyyy'] == y]
         indm = ym == m+1
 
-        mse_error = mse_error(stndata[:, indym], readata_stn[:, :, indym],  reacorr_stn[:, :, indym],
+        mserror = mse_error(stndata[:, indym], readata_stn[:, :, indym],  reacorr_stn[:, :, indym],
                               reamerge_stn[:, indym], neargrid_loc, neargrid_dist, merge_choice, mask, var)
 
-        np.savez_compressed(filemse, mse_error=mse_error)
+        np.savez_compressed(filemse, mse_error=mserror)

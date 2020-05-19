@@ -438,10 +438,10 @@ def merge_correction_stnerror(outpath, stnlle, stndata, readata_stn, taintestind
             datain = np.zeros([nstn_testl1, reanum], dtype=np.float32)
             for rr in range(reanum):
                 datain[:, rr] = reacorr_stn[rr, testindex1, i]
-            if var == 'prcp':
+            if var == 'prcp' and weightmode == 'BMA':
                 datain = box_cox_transform(datain)
             dataout = weightmerge(datain, weight_testl1)
-            if var == 'prcp':
+            if var == 'prcp' and weightmode == 'BMA':
                 dataout = box_cox_recover(dataout)
             mergedata_testl1[:, i] = dataout
         reamerge_stn[testindex1, :] = mergedata_testl1
