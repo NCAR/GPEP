@@ -895,6 +895,6 @@ for y in range(year[0], year[1] + 1):
         indm = ym == m+1
 
         mserror = mse_error(stndata[:, indym], readata_stn[:, :, indym],  reacorr_stn[:, :, indym],
-                              reamerge_stn[:, indym], neargrid_loc, neargrid_dist, merge_choice, mask, var)
+                              reamerge_stn[:, indym], neargrid_loc, neargrid_dist, merge_choice[m, :, :], mask, var)
 
         np.savez_compressed(filemse, mse_error=mserror)

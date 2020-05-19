@@ -22,10 +22,7 @@ def OImerge(tar_err_b, near_err_b, near_err_o):
         W = np.dot(Cb0, cbot)
     except:
         # singular matrix
-        W = np.ones(mnum) / mnum
-
-    
-
+        W = np.nan * np.ones(mnum)
     return W
 
 def cov1d(a, b):

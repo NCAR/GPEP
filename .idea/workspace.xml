@@ -4,7 +4,8 @@
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main_CAI_update.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_CAI_update.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_correction_merge.py" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_correction_merge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/observation_reanalysis_merge.py" beforeDir="false" afterPath="$PROJECT_DIR$/observation_reanalysis_merge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/optimal_interpolation.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimal_interpolation.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

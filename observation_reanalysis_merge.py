@@ -153,6 +153,10 @@ for y in range(year[0], year[1] + 1):
                     near_err_o = near_err_o[~indnan, :]
 
                     weight = OImerge(tar_err_b, near_err_b, near_err_o)
+                    # check the effectiveness of the weight since weight is not correct for very few cases
+                    if np.isnan(weight[0]) or np.any(abs(weight)>2):
+                        pass
+
                     diff = v_obs[rse[0]:rse[1], cse[0]:cse[1], :] - v_bac[rse[0]:rse[1], cse[0]:cse[1], :]
                     diff = np.reshape(diff, [snum, ntimes])
                     diff = diff[~indnan, :]
