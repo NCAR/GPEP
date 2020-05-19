@@ -107,7 +107,7 @@ for v in range(len(vars)):
             datatemp2 = np.load(file2)
             observation_stn = datatemp1[vars[v] + '_stn_daily']
             if vars[v] == 'prcp':
-                regression_stn = observation_stn + datatemp2['pcp' + '_err_stn']
+                regression_stn = observation_stn + datatemp2['pcp' + '_err_stn_raw']
             else:
                 regression_stn = observation_stn + datatemp2[vars[v] + '_err_stn']
             del datatemp1, datatemp2
