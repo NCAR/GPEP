@@ -537,10 +537,10 @@ def correct_merge(stndata, readata_raw, readata_stn, reacorr_stn, reamerge_stn, 
     return corr_data, corr_error, merge_data, merge_error_out
 
 
-def mse_error(stndata, readata_stn, reacorr_stn, reamerge_stn, neargrid_loc, neargrid_dist, merge_choice, mask, var):
+def mse_error(stndata, reacorr_stn, reamerge_stn, neargrid_loc, neargrid_dist, merge_choice, mask, var):
 
     nrows, ncols, nearnum = np.shape(neargrid_loc)
-    reanum, nstn, nday = np.shape(readata_stn)
+    reanum, nstn, nday = np.shape(reacorr_stn)
 
     neargrid_loc = neargrid_loc.copy()
     neargrid_dist = neargrid_dist.copy()
@@ -894,7 +894,7 @@ for y in range(year[0], year[1] + 1):
         ym = date_number['mm'][date_number['yyyy'] == y]
         indm = ym == m+1
 
-        mserror = mse_error(stndata[:, indym], readata_stn[:, :, indym],  reacorr_stn[:, :, indym],
+        mserror = mse_error(stndata[:, indym],  reacorr_stn[:, :, indym],
                               reamerge_stn[:, indym], neargrid_loc, neargrid_dist, merge_choice[m, :, :], mask, var)
 
         np.savez_compressed(filemse, mse_error=mserror)
