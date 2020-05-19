@@ -8,13 +8,13 @@ def OImerge(tar_err_b, near_err_b, near_err_o):
     # calculate weight (W) using: W(Cb + Co)=Cb0
     if np.ndim(near_err_b)==1:
         near_err_b=near_err_b[np.newaxis,:]
-    mnum, ntimes = np.shape(near_err_b)
+    nstn, ntimes = np.shape(near_err_b)
     # covariance matrix of errors
     Cb = np.cov(near_err_b)
     Co = np.cov(near_err_o)
-    Co = np.eye(mnum) * Co # independence assumption
-    Cb0 = np.zeros(mnum)
-    for i in range(mnum):
+    Co = np.eye(nstn) * Co # independence assumption
+    Cb0 = np.zeros(nstn)
+    for i in range(nstn):
         Cb0[i] = cov1d(tar_err_b, near_err_b[i,:])
 
     try:
@@ -22,7 +22,7 @@ def OImerge(tar_err_b, near_err_b, near_err_o):
         W = np.dot(Cb0, cbot)
     except:
         # singular matrix
-        W = np.nan * np.ones(mnum)
+        W = np.nan * np.ones(nstn)
     return W
 
 def cov1d(a, b):

@@ -537,7 +537,7 @@ def correct_merge(stndata, readata_raw, readata_stn, reacorr_stn, reamerge_stn, 
     return corr_data, corr_error, merge_data, merge_error_out
 
 
-def mse_error(stndata, reacorr_stn, reamerge_stn, neargrid_loc, neargrid_dist, merge_choice, mask, var):
+def mse_error(stndata, reacorr_stn, reamerge_stn, neargrid_loc, neargrid_dist, merge_choice, mask, var, pcptrans = False):
 
     nrows, ncols, nearnum = np.shape(neargrid_loc)
     reanum, nstn, nday = np.shape(reacorr_stn)
@@ -549,7 +549,7 @@ def mse_error(stndata, reacorr_stn, reamerge_stn, neargrid_loc, neargrid_dist, m
     neargrid_dist[mask2 != 1] = np.nan
     del mask2
 
-    if var == 'prcp':
+    if var == 'prcp' and pcptrans == True:
         stndata = box_cox_transform(stndata)
         reamerge_stn = box_cox_transform(reamerge_stn)
         reacorr_stn = box_cox_transform(reacorr_stn)
@@ -582,7 +582,7 @@ def mse_error(stndata, reacorr_stn, reamerge_stn, neargrid_loc, neargrid_dist, m
 # y2 = int(sys.argv[4])
 # year = [y1, y2]
 var='prcp'
-weightmode = 'RMSE'
+weightmode = 'BMA'
 y1=2000
 y2=2000
 year = [y1,y2]
@@ -940,6 +940,8 @@ if useGMET == True:
 
 ########################################################################################################################
 
+pcptrans = True
+
 # produce the mean square error of each grid from nearby stations in normal space
 # to support the production of final probabilistic estimation
 for y in range(year[0], year[1] + 1):
@@ -957,6 +959,6 @@ for y in range(year[0], year[1] + 1):
         indm = ym == m+1
 
         mse_error = mse_error(stndata[:, indym], reacorr_stn[:, :, indym],
-                              reamerge_stn[:, indym], neargrid_loc, neargrid_dist, merge_choice[m,:,:], mask, var)
+                              reamerge_stn[:, indym], neargrid_loc, neargrid_dist, merge_choice[m,:,:], mask, var, pcptrans)
 
         np.savez_compressed(filemse, mse_error=mse_error)
