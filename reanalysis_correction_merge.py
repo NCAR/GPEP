@@ -734,7 +734,7 @@ else:
         met_merge_stn = calmetric(reamerge_stn[:, indm], stndata[:, indm], metname='RMSE')
         met_corr_stn = np.nan * np.zeros([nstn, reanum])
         for rr in range(reanum):
-            met_corr_stn[:, rr] = calmetric(reacorr_stn[rr, :, indm], stndata[:, indm], metname='RMSE')
+            met_corr_stn[:, rr] = calmetric(reacorr_stn[rr, :, indm].T, stndata[:, indm], metname='RMSE')
 
         metric_all = np.zeros([nrows, ncols, reanum + 1])
         met_merge_grid = extrapolation(met_merge_stn, neargrid_loc, neargrid_dist)
