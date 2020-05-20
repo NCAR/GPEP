@@ -29,29 +29,29 @@ lontar = np.arange(-180 + 0.05, -50, 0.1)
 lattar = np.arange(85 - 0.05, 5, -0.1)
 
 # output path of OImerged data
-path_oimerge = '/Users/localuser/GMET/merge'
-# path_oimerge = '/home/gut428/OImerge'
+# path_oimerge = '/Users/localuser/GMET/merge'
+path_oimerge = '/home/gut428/OImerge'
 
 # path of merged reanalysis data
-path_bac = '/Users/localuser/GMET/merge'
-path_bac_stn = '/Users/localuser/Research/Test'
-# path_bac = '/datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/Reanalysis_merge'
-# path_bac_stn = '/datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/CrossValidate_2layer'
+# path_bac = '/Users/localuser/GMET/merge'
+# path_bac_stn = '/Users/localuser/Research/Test'
+path_bac = '/datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/Reanalysis_merge'
+path_bac_stn = '/datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/CrossValidate_2layer'
 file_corrmerge_stn = [''] * len(vars)
 for i in range(len(vars)):
     file_corrmerge_stn[i] = path_bac_stn + '/mergecorr_' + vars[i] + '_' + weightmode + '.npz'
 
 # path of regressed observations
-# path_obs = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout'
-path_obs = '/Users/localuser/GMET/merge'
+path_obs = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout'
+# path_obs = '/Users/localuser/GMET/merge'
 
 # the near stations of each station
-# near_file_GMET = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/weight.npz'
-near_file_GMET = '/Users/localuser/GMET/pyGMET_NA/weight_nearstn.npz'
+near_file_GMET = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/weight.npz'
+# near_file_GMET = '/Users/localuser/GMET/pyGMET_NA/weight_nearstn.npz'
 
 # mask file
-# file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
-file_mask = './DEM/NA_DEM_010deg_trim.mat'
+file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
+# file_mask = './DEM/NA_DEM_010deg_trim.mat'
 
 ########################################################################################################################
 
