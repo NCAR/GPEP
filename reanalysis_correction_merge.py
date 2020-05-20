@@ -458,16 +458,16 @@ def mse_error(stndata, reacorr_stn, reamerge_stn, neargrid_loc, neargrid_dist, m
 
 ########################################################################################################################
 
-# var = sys.argv[1]
-# weightmode = sys.argv[2]
-# y1 = int(sys.argv[3])
-# y2 = int(sys.argv[4])
-# year = [y1, y2]
-var='prcp'
-weightmode = 'BMA'
-y1=2000
-y2=2000
-year = [y1,y2]
+var = sys.argv[1]
+weightmode = sys.argv[2]
+y1 = int(sys.argv[3])
+y2 = int(sys.argv[4])
+year = [y1, y2]
+# var='prcp'
+# weightmode = 'BMA'
+# y1=2000
+# y2=2000
+# year = [y1,y2]
 print('var is ',var)
 print('weightmode is ',weightmode)
 print('years are ',y1,y2)
@@ -486,53 +486,54 @@ anombound = [0.2, 5]  # upper and lower bound when calculating the anomaly for c
 
 # input files
 # station list and data
-# gmet_stnfile = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'
-# gmet_stndatafile = '/home/gut428/stndata_whole.npz'
-gmet_stnfile = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'
-gmet_stndatafile = '/Users/localuser/GMET/pyGMET_NA/stndata_whole.npz'  # to be saved. only process when absent
+gmet_stnfile = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'
+gmet_stndatafile = '/home/gut428/stndata_whole.npz'
+# gmet_stnfile = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'
+# gmet_stndatafile = '/Users/localuser/GMET/pyGMET_NA/stndata_whole.npz'  # to be saved. only process when absent
 
 # mask file
-# file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
-file_mask = './DEM/NA_DEM_010deg_trim.mat'
+file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
+# file_mask = './DEM/NA_DEM_010deg_trim.mat'
 
 # downscaled reanalysis: gridded data
 prefix = ['ERA5_', 'MERRA2_', 'JRA55_']
 # downscaled reanalysis data at station points
-# path_readowngrid = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds',
-#                    '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds',
-#                    '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_ds']
-# file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds/ERA5_downto_stn.npz',
-#                    '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds/MERRA2_downto_stn.npz',
-#                    '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_ds/JRA55_downto_stn.npz']
-path_readowngrid = ['/Users/localuser/Research/Test',
-                   '/Users/localuser/Research/Test',
-                   '/Users/localuser/Research/Test']
-file_readownstn = ['/Users/localuser/Research/Test/ERA5_downto_stn.npz',
-                   '/Users/localuser/Research/Test/MERRA2_downto_stn.npz',
-                   '/Users/localuser/Research/Test/JRA55_downto_stn.npz']
+path_readowngrid = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds',
+                   '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds',
+                   '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_ds']
+file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds/ERA5_downto_stn.npz',
+                   '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds/MERRA2_downto_stn.npz',
+                   '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_ds/JRA55_downto_stn.npz']
+# path_readowngrid = ['/Users/localuser/Research/Test',
+#                    '/Users/localuser/Research/Test',
+#                    '/Users/localuser/Research/Test']
+# file_readownstn = ['/Users/localuser/Research/Test/ERA5_downto_stn.npz',
+#                    '/Users/localuser/Research/Test/MERRA2_downto_stn.npz',
+#                    '/Users/localuser/Research/Test/JRA55_downto_stn.npz']
 
 # output files
 # train and test index file
-ttindexfile = '/Users/localuser/Research/Test/2layer_train_test_index.npz'
-# ttindexfile = '/datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/CrossValidate_2layer/2layer_train_test_index.npz'
+# ttindexfile = '/Users/localuser/Research/Test/2layer_train_test_index.npz'
+ttindexfile = '/datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/CrossValidate_2layer/2layer_train_test_index.npz'
 
 # near stations
-near_path = '/Users/localuser/Research/Test'
-near_file_GMET = '/Users/localuser/GMET/pyGMET_NA/weight_nearstn.npz'
-# near_path = '/home/gut428/ReanalysisCorrMerge'
-# near_file_GMET = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/weight.npz'
+# near_path = '/Users/localuser/Research/Test'
+# near_file_GMET = '/Users/localuser/GMET/pyGMET_NA/weight_nearstn.npz'
+near_path = '/home/gut428/ReanalysisCorrMerge'
+near_file_GMET = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/weight.npz'
 useGMET = True
 
 # error and merging at station level
-path_reastn_cv = '/Users/localuser/Research/Test'
+# path_reastn_cv = '/Users/localuser/Research/Test'
 # path_reastn_cv = '/datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/CrossValidate_2layer'
+path_reastn_cv = '/home/gut428/ReanalysisCorrMerge/CrossValidate_2layer'
 file_corrmerge_stn = path_reastn_cv + '/mergecorr_' + var + '_' + weightmode + '.npz'
 
 # output corrected and merged data
-path_reacorr = '/Users/localuser/Research/Test'
-path_merge = '/Users/localuser/Research/Test'
-# path_reacorr = '/home/gut428/ReanalysisCorrMerge/Reanalysis_corr'
-# path_merge = '/home/gut428/ReanalysisCorrMerge/Reanalysis_merge'
+# path_reacorr = '/Users/localuser/Research/Test'
+# path_merge = '/Users/localuser/Research/Test'
+path_reacorr = '/home/gut428/ReanalysisCorrMerge/Reanalysis_corr'
+path_merge = '/home/gut428/ReanalysisCorrMerge/Reanalysis_merge'
 file_mergechoice = path_merge + '/mergechoice_' + var + '_' +  weightmode + '.npz'
 
 ########################################################################################################################
@@ -540,9 +541,9 @@ file_mergechoice = path_merge + '/mergechoice_' + var + '_' +  weightmode + '.np
 # basic processing
 print('start basic processing')
 # decide correction mode according to variables
-if var == 'prcp' or var == 'trange':
+if var == 'prcp':
     corrmode = 'ratio'  # ratio or diff: mode for error correction
-elif var == 'tmean':
+elif var == 'tmean' or var == 'trange':
     corrmode = 'diff'
 else:
     sys.exit('Unknown correction mode')
@@ -767,72 +768,28 @@ if useGMET == True:
 ########################################################################################################################
 
 # start ...
-# for y in range(year[0], year[1] + 1):
-#     print('Correction and Merge: year',y)
-#     if (np.mod(y,4)==0 and np.mod(y,100)!=0) or np.mod(y,400)==0:
-#         nday=366
-#     else:
-#         nday=365
-#     # read raw gridded reanalysis data
-#     readata_raw = np.nan * np.zeros([reanum, nrows, ncols, nday], dtype=np.float32)
-#     for rr in range(reanum):
-#         if not (prefix[rr] == 'MERRA2_' and y == 1979):
-#             filer = path_readowngrid[rr] + '/' + prefix[rr] + var + '_' + str(y) + '.npz'
-#             d = np.load(filer)
-#             readata_raw[rr, :, :, :] = d['data']
-#             del d
-#
-#     # process for each month
-#     for m in range(12):
-#         print('Correction and Merge: month', m+1)
-#
-#         filemerge = path_merge + '/mergedata_' + var + '_' + str(y*100+m+1) + weightmode + '.npz'
-#         filecorr = path_reacorr + '/reacorrdata_' + var + '_' + str(y*100+m+1) + '.npz'
-#         filecorr2 = '/datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/Reanalysis_corr/reacorrdata_' + var + '_' + str(y * 100 + m + 1) + '.npz'
-#         if os.path.isfile(filemerge):
-#             print('file exists ... continue')
-#             continue
-#
-#         indym = (date_number['yyyy'] == y) & (date_number['mm'] == m+1)
-#         ym = date_number['mm'][date_number['yyyy'] == y]
-#         indm = ym == m+1
-#
-#         corr_data, corr_error, merge_data, merge_error = \
-#             correct_merge(stndata[:, indym], readata_raw[:,:,:,indm], readata_stn[:, :, indym], reacorr_stn[:, :, indym],
-#                           reamerge_stn[:, indym], reamerge_weight_stn[m, :, :], neargrid_loc, neargrid_dist,
-#                           merge_choice[m, :, :], mask, hwsize, corrmode, anombound, var, weightmode)
-#         if var == 'prcp' and weightmode == 'BMA':
-#             merge_error_bc= merge_error[1]
-#             merge_error_raw = merge_error[0]
-#         else:
-#             merge_error_raw = merge_error[0]
-#
-#         if (not os.path.isfile(filecorr)) and (not os.path.isfile(filecorr2)):
-#             np.savez_compressed(filecorr, corr_data=corr_data, corr_error=corr_error,
-#                                 reaname=prefix, latitude=lattar, longitude=lontar)
-#
-#         if var == 'prcp' and weightmode == 'BMA':
-#             np.savez_compressed(filemerge, merge_data=merge_data, merge_error_raw=merge_error_raw,
-#                                 merge_error_bc=merge_error_bc, latitude=lattar, longitude=lontar, reaname=prefix)
-#         else:
-#             np.savez_compressed(filemerge, merge_data=merge_data, merge_error_raw=merge_error_raw,
-#                                 latitude=lattar, longitude=lontar, reaname=prefix)
-#
-#         del corr_data, corr_error, merge_data, merge_error
-
-########################################################################################################################
-
-pcptrans = True
-
-# produce the mean square error of each grid from nearby stations in normal space
-# to support the production of final probabilistic estimation
 for y in range(year[0], year[1] + 1):
-    print('estimate mse: year',y)
+    print('Correction and Merge: year',y)
+    if (np.mod(y,4)==0 and np.mod(y,100)!=0) or np.mod(y,400)==0:
+        nday=366
+    else:
+        nday=365
+    # read raw gridded reanalysis data
+    readata_raw = np.nan * np.zeros([reanum, nrows, ncols, nday], dtype=np.float32)
+    for rr in range(reanum):
+        if not (prefix[rr] == 'MERRA2_' and y == 1979):
+            filer = path_readowngrid[rr] + '/' + prefix[rr] + var + '_' + str(y) + '.npz'
+            d = np.load(filer)
+            readata_raw[rr, :, :, :] = d['data']
+            del d
+
     # process for each month
     for m in range(12):
         print('Correction and Merge: month', m+1)
-        filemse = path_merge + '/mserror_' + var + '_' + str(y*100+m+1) + weightmode + '.npz'
-        if os.path.isfile(filemse):
+
+        filemerge = path_merge + '/mergedata_' + var + '_' + str(y*100+m+1) + weightmode + '.npz'
+        filecorr = path_reacorr + '/reacorrdata_' + var + '_' + str(y*100+m+1) + '.npz'
+        if os.path.isfile(filemerge) and os.path.isfile(filecorr):
             print('file exists ... continue')
             continue
 
@@ -840,7 +797,50 @@ for y in range(year[0], year[1] + 1):
         ym = date_number['mm'][date_number['yyyy'] == y]
         indm = ym == m+1
 
-        mse_error = mse_error(stndata[:, indym], reacorr_stn[:, :, indym],
-                              reamerge_stn[:, indym], neargrid_loc, neargrid_dist, merge_choice[m,:,:], mask, var, pcptrans)
+        corr_data, corr_error, merge_data, merge_error = \
+            correct_merge(stndata[:, indym], readata_raw[:,:,:,indm], readata_stn[:, :, indym], reacorr_stn[:, :, indym],
+                          reamerge_stn[:, indym], reamerge_weight_stn[m, :, :], neargrid_loc, neargrid_dist,
+                          merge_choice[m, :, :], mask, hwsize, corrmode, anombound, var, weightmode)
+        if var == 'prcp' and weightmode == 'BMA':
+            merge_error_bc= merge_error[1]
+            merge_error_raw = merge_error[0]
+        else:
+            merge_error_raw = merge_error[0]
 
-        np.savez_compressed(filemse, mse_error=mse_error)
+        if (not os.path.isfile(filecorr)):
+            np.savez_compressed(filecorr, corr_data=corr_data, corr_error=corr_error,
+                                reaname=prefix, latitude=lattar, longitude=lontar)
+
+        if var == 'prcp' and weightmode == 'BMA':
+            np.savez_compressed(filemerge, merge_data=merge_data, merge_error_raw=merge_error_raw,
+                                merge_error_bc=merge_error_bc, latitude=lattar, longitude=lontar, reaname=prefix)
+        else:
+            np.savez_compressed(filemerge, merge_data=merge_data, merge_error_raw=merge_error_raw,
+                                latitude=lattar, longitude=lontar, reaname=prefix)
+
+        del corr_data, corr_error, merge_data, merge_error
+
+########################################################################################################################
+
+# pcptrans = True
+#
+# # produce the mean square error of each grid from nearby stations in normal space
+# # to support the production of final probabilistic estimation
+# for y in range(year[0], year[1] + 1):
+#     print('estimate mse: year',y)
+#     # process for each month
+#     for m in range(12):
+#         print('Correction and Merge: month', m+1)
+#         filemse = path_merge + '/mserror_' + var + '_' + str(y*100+m+1) + weightmode + '.npz'
+#         if os.path.isfile(filemse):
+#             print('file exists ... continue')
+#             continue
+#
+#         indym = (date_number['yyyy'] == y) & (date_number['mm'] == m+1)
+#         ym = date_number['mm'][date_number['yyyy'] == y]
+#         indm = ym == m+1
+#
+#         mse_error = mse_error(stndata[:, indym], reacorr_stn[:, :, indym],
+#                               reamerge_stn[:, indym], neargrid_loc, neargrid_dist, merge_choice[m,:,:], mask, var, pcptrans)
+#
+#         np.savez_compressed(filemse, mse_error=mse_error)
