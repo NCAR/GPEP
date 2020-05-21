@@ -31,8 +31,8 @@ for y in range(1979, 2019):
         d2 = np.load(file2)
 
         temp = d2['prcp_stn_daily']
-        prcp[:, indym] = temp + d1['prcp_err_stn_raw']
-        prcp_bc[:, indym] = au.retransform(au.transform(temp, 4, 'box-cox') + d1['prcp_err_stn_bc'], 4, 'box-cox')
+        prcp[:, indym] = temp + d1['pcp_err_stn_raw']
+        prcp_bc[:, indym] = au.retransform(au.transform(temp, 4, 'box-cox') + d1['pcp_err_stn_bc'], 4, 'box-cox')
         tmean[:, indym] = d2['tmean_stn_daily'] + d1['tmean_err_stn']
         trange[:, indym] = d2['trange_stn_daily'] + d1['trange_err_stn']
 
