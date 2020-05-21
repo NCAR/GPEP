@@ -807,9 +807,9 @@ for y in range(year[0], year[1] + 1):
         else:
             merge_error_raw = merge_error[0]
 
-        if (not os.path.isfile(filecorr)):
-            np.savez_compressed(filecorr, corr_data=corr_data, corr_error=corr_error,
-                                reaname=prefix, latitude=lattar, longitude=lontar)
+        # if (not os.path.isfile(filecorr)):
+        #     np.savez_compressed(filecorr, corr_data=corr_data, corr_error=corr_error,
+        #                         reaname=prefix, latitude=lattar, longitude=lontar)
 
         if var == 'prcp' and weightmode == 'BMA':
             np.savez_compressed(filemerge, merge_data=merge_data, merge_error_raw=merge_error_raw,
