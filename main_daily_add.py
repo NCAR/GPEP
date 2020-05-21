@@ -25,8 +25,8 @@ for y in range(1979, 2019):
         date_cal_start = y * 10000 + m * 100 + 1
         date_cal_end = y * 10000 + m * 100 + calendar.monthrange(y, m)[1]
         datestr = str(date_cal_start) + '-' + str(date_cal_end)
-        file1 = path + '/error_' + 'datestr' + '.npz'
-        file2 = path + '/stndata_' + 'datestr' + '.npz'
+        file1 = path + '/error_' + datestr + '.npz'
+        file2 = path + '/stndata_' + datestr + '.npz'
         d1 = np.load(file1)
         d2 = np.load(file2)
 
