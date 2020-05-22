@@ -187,7 +187,7 @@ for i in range(nstn):
 # start
 for v in range(len(vars)):
     print('OI merge at stations:', vars[v])
-    filemerge_stn = path_oimerge + '/OImerge_stn_' + vars[v] + '.npz'
+    filemerge_stn = path_oimerge + '/OImerge_stn_' + vars[v] + '_neargrid.npz'
     if os.path.isfile(filemerge_stn):
         continue
 

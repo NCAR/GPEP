@@ -318,7 +318,7 @@ if not os.path.isfile(file_reanearstn):
         dayy = np.shape(dataori)[2]
 
         if y == 1979:
-            nearrowcol = np.zeros([nstn, 2])
+            nearrowcol = np.zeros([nstn, 2], dtype=int)
             for i in range(nstn):
                 rowi = np.argmin(abs(latori - stn_lle[i, 0]))
                 coli = np.argmin(abs(lonori - stn_lle[i, 1]))
