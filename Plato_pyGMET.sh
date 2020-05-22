@@ -14,7 +14,7 @@
 module load python/3.7.4
 
 # run the application
-srun python main_CAI.py 19790101 19790131
+srun main_CAI_update.py
 
 
 

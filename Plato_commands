@@ -28,7 +28,7 @@ done
 
 for y in {1980..2018..1}
 do
-sbatch Plato_trange_RMSE_${y}.sh
+sbatch Plato_trange_BMA_${y}.sh
 done
 
 
@@ -57,7 +57,7 @@ do
 mv reacorrdata_trange_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/Reanalysis_corr/
 done
 
-for y in 1980 1983 1987 1991 1995 1999 2003 2007 2011 2017
+for m in {1..12..1}
 do
-mv mergedata_prcp_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/Reanalysis_merge/
+mv month_${m}/* /datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/CrossValidate_2layer/month_${m}
 done

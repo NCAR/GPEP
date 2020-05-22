@@ -5,7 +5,90 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/Evaluation-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/Evaluation-checkpoint.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Evaluation.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Evaluation.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_correction_merge.py" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_correction_merge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_commands" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_commands" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pyGMET.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_pyGMET.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1979.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1980.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1981.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1982.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1983.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1984.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1985.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1986.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1987.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1988.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1989.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1990.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1991.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1992.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1993.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1994.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1995.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1996.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1997.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1998.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_1999.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2000.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2001.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2002.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2003.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2004.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2005.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2006.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2007.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2008.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2009.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2010.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2011.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2012.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2013.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2014.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2015.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2016.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2017.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_BMA_2018.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1979.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1980.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1981.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1982.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1983.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1984.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1985.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1986.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1987.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1988.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1989.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1990.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1991.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1992.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1993.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1994.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1995.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1996.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1997.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1998.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_1999.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2000.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2001.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2002.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2003.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2004.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2005.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2006.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2007.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2008.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2009.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2010.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2011.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2012.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2013.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2014.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2015.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2016.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2017.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_trange_RMSE_2018.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_CAI_update.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_CAI_update.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/observation_reanalysis_merge.py" beforeDir="false" afterPath="$PROJECT_DIR$/observation_reanalysis_merge.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
