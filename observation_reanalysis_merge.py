@@ -285,14 +285,14 @@ for v in range(len(vars)):
                     b_tar = reafinal_stn[i, :]
                     tar_err_b = b_tar - observation_stn[i, :]
 
-                    b_near = v_bac[nearrowcol[i, 0]-hwsize:nearrowcol[i, 0]+hwsize,
-                             nearrowcol[i, 1]-hwsize:nearrowcol[i, 1]+hwsize, :]
-                    o_near = v_obs[nearrowcol[i, 0]-hwsize:nearrowcol[i, 0]+hwsize,
-                             nearrowcol[i, 1]-hwsize:nearrowcol[i, 1]+hwsize, :]
-                    near_err_b = e_bac[nearrowcol[i, 0]-hwsize:nearrowcol[i, 0]+hwsize,
-                             nearrowcol[i, 1]-hwsize:nearrowcol[i, 1]+hwsize, :]
-                    near_err_o = e_obs[nearrowcol[i, 0]-hwsize:nearrowcol[i, 0]+hwsize,
-                             nearrowcol[i, 1]-hwsize:nearrowcol[i, 1]+hwsize, :]
+                    b_near = v_bac[nearrowcol[i, 0]-hwsize:nearrowcol[i, 0]+hwsize+1,
+                             nearrowcol[i, 1]-hwsize:nearrowcol[i, 1]+hwsize+1, :]
+                    o_near = v_obs[nearrowcol[i, 0]-hwsize:nearrowcol[i, 0]+hwsize+1,
+                             nearrowcol[i, 1]-hwsize:nearrowcol[i, 1]+hwsize+1, :]
+                    near_err_b = e_bac[nearrowcol[i, 0]-hwsize:nearrowcol[i, 0]+hwsize+1,
+                             nearrowcol[i, 1]-hwsize:nearrowcol[i, 1]+hwsize+1, :]
+                    near_err_o = e_obs[nearrowcol[i, 0]-hwsize:nearrowcol[i, 0]+hwsize+1,
+                             nearrowcol[i, 1]-hwsize:nearrowcol[i, 1]+hwsize+1, :]
                     b_near[hwsize, hwsize, :] = np.nan
                     o_near[hwsize, hwsize, :] = np.nan
                     near_err_b[hwsize, hwsize, :] = np.nan
