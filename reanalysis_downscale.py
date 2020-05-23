@@ -376,13 +376,10 @@ tmean_stn0 = datatemp['tmean_stn'][:, 0]
 del datatemp
 
 if not os.path.isfile(file_readownstn):
-    # ndays should minus 365 for MERRA2
-    # prcp_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
-    # tmean_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
-    # trange_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
-    prcp_readown = np.float32(np.nan * np.zeros([nstn, ndays-365]))
-    tmean_readown = np.float32(np.nan * np.zeros([nstn, ndays-365]))
-    trange_readown = np.float32(np.nan * np.zeros([nstn, ndays-365]))
+
+    prcp_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
+    tmean_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
+    trange_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
 
     # load nearby grid information
     datatemp = io.loadmat(filenear)
@@ -391,7 +388,7 @@ if not os.path.isfile(file_readownstn):
     weight = datatemp['weight']
     demori = datatemp['demori']
 
-    flag = 0
+    flag = 365 # should start from 365 for MERRA2
     for y in range(1980, 2019):
         print('Downscale to station: year', y)
         # prcp downscaling
