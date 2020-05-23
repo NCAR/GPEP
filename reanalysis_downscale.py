@@ -377,9 +377,12 @@ del datatemp
 
 if not os.path.isfile(file_readownstn):
     # ndays should minus 365 for MERRA2
-    prcp_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
-    tmean_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
-    trange_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
+    # prcp_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
+    # tmean_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
+    # trange_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
+    prcp_readown = np.float32(np.nan * np.zeros([nstn, ndays-365]))
+    tmean_readown = np.float32(np.nan * np.zeros([nstn, ndays-365]))
+    trange_readown = np.float32(np.nan * np.zeros([nstn, ndays-365]))
 
     # load nearby grid information
     datatemp = io.loadmat(filenear)
