@@ -876,7 +876,7 @@ def threshold_for_occurrence(dref, dtar):
     return threshold
 
 
-def index_contingency(Obs, Pre, Tre=0.1):
+def cal_csi(Obs, Pre, Tre=0):
     # Tre: rain/no rain threshold
     # POD(Probability of Detection),FOH(frequency of hit)
     # FAR(False Alarm Ratio), CSI(Critical Success Index)
@@ -885,41 +885,74 @@ def index_contingency(Obs, Pre, Tre=0.1):
         n11 = np.sum((Obs > Tre) & (Pre > Tre))
         n10 = np.sum((Obs <= Tre) & (Pre > Tre))
         n01 = np.sum((Obs > Tre) & (Pre <= Tre))
-        n00 = np.sum((Obs <= Tre) & (Pre <= Tre))
-    try:
-        POD = n11 / (n11 + n01)
-    except:
-        POD = np.nan
-    try:
-        FOH = n11 / (n11 + n10)
-        FAR = n10 / (n11 + n10)
-    except:
-        FOH = np.nan
-        FAR = np.nan
+        # n00 = np.sum((Obs <= Tre) & (Pre <= Tre))
+    # try:
+    #     POD = n11 / (n11 + n01)
+    # except:
+    #     POD = np.nan
+    # try:
+    #     FOH = n11 / (n11 + n10)
+    #     FAR = n10 / (n11 + n10)
+    # except:
+    #     FOH = np.nan
+    #     FAR = np.nan
     try:
         CSI = n11 / (n11 + n01 + n10)
     except:
         CSI = np.nan
-    try:
-        HSS = 2 * (n11 * n00 - n10 * n01) / ((n11 + n01) *
-                                             (n01 + n00) + (n11 + n10) * (n10 + n00))
-    except:
-        HSS = np.nan
+    # try:
+    #     HSS = 2 * (n11 * n00 - n10 * n01) / ((n11 + n01) *
+    #                                          (n01 + n00) + (n11 + n10) * (n10 + n00))
+    # except:
+    #     HSS = np.nan
+    #
+    # contingency_group = {'POD': POD, 'FOH': FOH, 'FAR': FAR,
+    #                      'CSI': CSI, 'HSS': HSS}
+    return CSI
 
-    contingency_group = {'POD': POD, 'FOH': FOH, 'FAR': FAR,
-                         'CSI': CSI, 'HSS': HSS}
-    return contingency_group
-
-def pop_merge(stndata,readata):
+def pop_estimate(stndata,readata):
     reanum, nstn, ntimes = np.shape(readata)
     # 1. get threshold for precipitation occurrence
     rea_threshold = np.nan * np.zeros([nstn, reanum])
     for r in range(reanum):
         for i in range(nstn):
-            rea_threshold[i, r] = threshold_for_occurrence(stndata[i,:], readata[r, i, :])
+            if not np.isnan(stndata[i, 0]):
+                rea_threshold[i, r] = threshold_for_occurrence(stndata[i,:], readata[r, i, :])
 
     # 2. calculate CSI
-    rea_csi = np.nan()
+    rea_csi = np.nan * np.zeros([nstn, reanum])
+    for r in range(reanum):
+        for i in range(nstn):
+            if not np.isnan(stndata[i, 0]):
+                dobs = stndata[i, :]
+                drea = readata[r, i, :].copy()
+                drea[drea < rea_threshold[i, r]] = 0
+                rea_csi[i, r] = cal_csi(dobs, drea)
+
+    # 3. estimate pop by merging reanalysis at station points
+    pop_reamerge = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)
+    for i in range(nstn):
+        if not np.isnan(stndata[i, 0]):
+            csii = rea_csi[i, :]
+            weighti = csii ** 2 # weight formulation
+            weighti = np.tile(weighti, (ntimes,1)).T
+            popi = np.zeros([reanum, ntimes], dtype=int)
+            for r in range(reanum):
+                pr = readata[r, i, :].copy()
+                pr[pr < rea_threshold[i, r]] = 0
+                pr[pr >= rea_threshold[i, r]] = 0
+                popi[r, :] = pr
+            weighti[np.isnan(popi)] = 0 # MERRA2 does not have data for 1979
+            popi2 = np.sum(weighti * popi, axis=0) / np.sum(weighti, axis=0)
+            pop_reamerge[i, :] = popi2
+
+    return rea_threshold, rea_csi, pop_reamerge
+
+
+
+
+
+
 
 
 
