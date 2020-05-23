@@ -26,7 +26,7 @@ do
 sbatch Plato_${y}.sh
 done
 
-for y in {1980..2018..1}
+for y in {1981..2017..2}
 do
 sbatch Plato_${y}.sh
 done
