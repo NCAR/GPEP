@@ -122,7 +122,7 @@ def readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse,
 
                     b = reg.least_squares(nearinfo, datanear, twx_red)
                     datatemp = np.dot(tarinfo, b)
-                    if np.all(b == 0) or datatemp > upbound or datatemp < lowbound:
+                    if np.all(b == 0) or datatemp > upbound or datatemp < lowbound or np.isnan(datatemp):
                         # use nearest neighbor interpolation
                         weightnear = weight[rr, cc, 0:nnum]
                         mloc = np.argmax(weightnear)
@@ -133,13 +133,13 @@ def readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse,
 
 
 def readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight, stn_row, stn_col,
-                       data0, method):
+                       data0, method, stn_lle):
     nstn = len(stn_row)
     ntimes = np.shape(dataori)[2]
     datatar = np.nan * np.zeros([nstn, ntimes])
 
     if method == 'linear' or method == 'nearest':
-        xynew = np.vstack((lontar, lattar)).T
+        xynew = stn_lle[:,[1, 0]]
         for i in range(ntimes):
             print('Time step:',i,ntimes)
             rg = RegularGridInterpolator((lonori, latori), dataori[:, :, i], method=method)
@@ -177,9 +177,9 @@ def readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, 
 
             tarinfo = np.zeros(4)
             tarinfo[0] = 1
-            tarinfo[1] = lattar[rr]
-            tarinfo[2] = lontar[cc]
-            tarinfo[3] = demtar[rr, cc]
+            tarinfo[1] = stn_lle[gg, 0]
+            tarinfo[2] = stn_lle[gg, 1]
+            tarinfo[3] = stn_lle[gg, 2]
 
             tx_red = np.transpose(nearinfo)
             twx_red = np.matmul(tx_red, weightnear)
@@ -195,7 +195,7 @@ def readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, 
 
                 b = reg.least_squares(nearinfo, datanear, twx_red)
                 datatemp = np.dot(tarinfo, b)
-                if np.all(b == 0) or datatemp > upbound or datatemp < lowbound:
+                if np.all(b == 0) or datatemp > upbound or datatemp < lowbound or np.isnan(datatemp):
                     # use nearest neighbor interpolation
                     weightnear = weight[rr, cc, 0:nnum]
                     mloc = np.argmax(weightnear)
@@ -341,7 +341,7 @@ if not os.path.isfile(file_readownstn):
         del datatemp
         f.close()
         prcptar = readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight,
-                                     stn_row, stn_col, prcp_stn0, downtostn_method)
+                                     stn_row, stn_col, prcp_stn0, downtostn_method, stn_lle)
         prcptar = np.float32(prcptar)
 
         # tmin downscaling
@@ -357,7 +357,7 @@ if not os.path.isfile(file_readownstn):
         del datatemp
         f.close()
         tmintar = readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight,
-                                     stn_row, stn_col, tmean_stn0, downtostn_method)
+                                     stn_row, stn_col, tmean_stn0, downtostn_method, stn_lle)
         tmintar = np.float32(tmintar)
 
         # tmax downscaling
@@ -373,7 +373,7 @@ if not os.path.isfile(file_readownstn):
         del datatemp
         f.close()
         tmaxtar = readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight,
-                                     stn_row, stn_col, tmean_stn0, downtostn_method)
+                                     stn_row, stn_col, tmean_stn0, downtostn_method, stn_lle)
         tmaxtar = np.float32(tmaxtar)
 
         # merge
