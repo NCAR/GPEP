@@ -8,6 +8,7 @@ from scipy import io
 from scipy.interpolate import interp2d
 import os
 import sys
+from scipy.interpolate import RegularGridInterpolator
 from scipy.interpolate import griddata
 import h5py
 
@@ -132,67 +133,77 @@ def readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse,
 
 
 def readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight, stn_row, stn_col,
-                       data0):
+                       data0, method):
     nstn = len(stn_row)
     ntimes = np.shape(dataori)[2]
-    lonori, latori = np.meshgrid(lonori, latori)
     datatar = np.nan * np.zeros([nstn, ntimes])
 
-    for gg in range(nstn):
-        if np.mod(gg, 5000) == 0:
-            print('station', gg, nstn)
+    if method == 'linear' or method == 'nearest':
+        xynew = np.vstack((lontar, lattar)).T
+        for i in range(ntimes):
+            print('Time step:',i,ntimes)
+            rg = RegularGridInterpolator((lonori, latori), dataori[:, :, i], method=method)
+            datatar[:, i] = rg(xynew)
 
-        if np.isnan(data0[gg]):
-            continue  # station does not have observations, thus does not need downscaling
+    elif method == 'GWR':
+        lonori, latori = np.meshgrid(lonori, latori)
+        for gg in range(nstn):
+            if np.mod(gg, 5000) == 0:
+                print('station', gg, nstn)
 
-        rr = stn_row[gg]
-        cc = stn_col[gg]
-        rloc = rowse[rr, cc, :]
-        cloc = colse[rr, cc, :]
-        latnear = latori[rloc[0]:rloc[1] + 1, cloc[0]:cloc[1] + 1]
-        lonnear = lonori[rloc[0]:rloc[1] + 1, cloc[0]:cloc[1] + 1]
-        demnear = demori[rloc[0]:rloc[1] + 1, cloc[0]:cloc[1] + 1]
-        nnum = np.size(latnear)
-        latnear = np.reshape(latnear, nnum)
-        lonnear = np.reshape(lonnear, nnum)
-        demnear = np.reshape(demnear, nnum)
-        weightnear = np.zeros([nnum, nnum])
-        for i in range(nnum):
-            weightnear[i, i] = weight[rr, cc, i]
+            if np.isnan(data0[gg]):
+                continue  # station does not have observations, thus does not need downscaling
 
-        nearinfo = np.zeros([nnum, 4])
-        nearinfo[:, 0] = 1
-        nearinfo[:, 1] = latnear
-        nearinfo[:, 2] = lonnear
-        nearinfo[:, 3] = demnear
+            rr = stn_row[gg]
+            cc = stn_col[gg]
+            rloc = rowse[rr, cc, :]
+            cloc = colse[rr, cc, :]
+            latnear = latori[rloc[0]:rloc[1] + 1, cloc[0]:cloc[1] + 1]
+            lonnear = lonori[rloc[0]:rloc[1] + 1, cloc[0]:cloc[1] + 1]
+            demnear = demori[rloc[0]:rloc[1] + 1, cloc[0]:cloc[1] + 1]
+            nnum = np.size(latnear)
+            latnear = np.reshape(latnear, nnum)
+            lonnear = np.reshape(lonnear, nnum)
+            demnear = np.reshape(demnear, nnum)
+            weightnear = np.zeros([nnum, nnum])
+            for i in range(nnum):
+                weightnear[i, i] = weight[rr, cc, i]
 
-        tarinfo = np.zeros(4)
-        tarinfo[0] = 1
-        tarinfo[1] = lattar[rr]
-        tarinfo[2] = lontar[cc]
-        tarinfo[3] = demtar[rr, cc]
+            nearinfo = np.zeros([nnum, 4])
+            nearinfo[:, 0] = 1
+            nearinfo[:, 1] = latnear
+            nearinfo[:, 2] = lonnear
+            nearinfo[:, 3] = demnear
 
-        tx_red = np.transpose(nearinfo)
-        twx_red = np.matmul(tx_red, weightnear)
+            tarinfo = np.zeros(4)
+            tarinfo[0] = 1
+            tarinfo[1] = lattar[rr]
+            tarinfo[2] = lontar[cc]
+            tarinfo[3] = demtar[rr, cc]
 
-        for tt in range(ntimes):
-            datanear = dataori[rloc[0]:rloc[1] + 1, cloc[0]:cloc[1] + 1, tt]
-            datanear = np.reshape(datanear, nnum)
+            tx_red = np.transpose(nearinfo)
+            twx_red = np.matmul(tx_red, weightnear)
 
-            # upper and lower boundary for the downscaled data
-            # this is a conservative limitation
-            lowbound = np.min(datanear)
-            upbound = np.max(datanear)
+            for tt in range(ntimes):
+                datanear = dataori[rloc[0]:rloc[1] + 1, cloc[0]:cloc[1] + 1, tt]
+                datanear = np.reshape(datanear, nnum)
 
-            b = reg.least_squares(nearinfo, datanear, twx_red)
-            datatemp = np.dot(tarinfo, b)
-            if np.all(b == 0) or datatemp > upbound or datatemp < lowbound:
-                # use nearest neighbor interpolation
-                weightnear = weight[rr, cc, 0:nnum]
-                mloc = np.argmax(weightnear)
-                datatar[gg, tt] = datanear[mloc]
-            else:
-                datatar[gg, tt] = datatemp
+                # upper and lower boundary for the downscaled data
+                # this is a conservative limitation
+                lowbound = np.min(datanear)
+                upbound = np.max(datanear)
+
+                b = reg.least_squares(nearinfo, datanear, twx_red)
+                datatemp = np.dot(tarinfo, b)
+                if np.all(b == 0) or datatemp > upbound or datatemp < lowbound:
+                    # use nearest neighbor interpolation
+                    weightnear = weight[rr, cc, 0:nnum]
+                    mloc = np.argmax(weightnear)
+                    datatar[gg, tt] = datanear[mloc]
+                else:
+                    datatar[gg, tt] = datatemp
+    else:
+        sys.exit('Unknown downscaling method')
     return datatar
 
 
@@ -225,12 +236,12 @@ def readstndata(inpath, stnID, ndays):
 ########################################################################################################################
 # time periods: inside or outside
 # outside
-a = int(sys.argv[1])
-b = int(sys.argv[2])
-year = [a, b]
+# a = int(sys.argv[1])
+# b = int(sys.argv[2])
+# year = [a, b]
 # inside
 # year = [1979, 2018]
-print('start/end year', year)
+# print('start/end year', year)
 ########################################################################################################################
 
 # basic information: be set before running
@@ -242,6 +253,8 @@ vars = ['prcp', 'tmin', 'tmax']
 lontar = np.arange(-180 + 0.05, -50, 0.1)
 lattar = np.arange(85 - 0.05, 5, -0.1)
 hwsize = 2  # use (2*2+1)**2 grids to perform regression
+downtostn_method = 'nearest' # method choices: "GWR", "nearest", "linear"
+
 
 # station information
 # mac
@@ -261,9 +274,9 @@ gmet_stndatafile = '/home/gut428/stndata_whole.npz'  # to be saved. only process
 # plato
 filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/JRA55_DEM2.mat'
 inpath = '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_raw'  # downscale to 0.1 degree
-outpath = '/home/gut428/JRA55_day_ds'
-file_readownstn = outpath + '/JRA55_downto_stn.npz'  # downscale to station points (1979-2018)
-filenear = outpath + '/weight_dem.npz'
+outpath = '/home/gut428'
+file_readownstn = outpath + '/JRA55_downto_stn_' + downtostn_method + '.npz'  # downscale to station points (1979-2018)
+filenear = '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_ds/weight_dem.npz'
 
 ########################################################################################################################
 
@@ -290,47 +303,6 @@ if not os.path.isfile(gmet_stndatafile):
     np.savez_compressed(gmet_stndatafile, prcp_stn=prcp_stn, tmean_stn=tmean_stn, trange_stn=trange_stn,
                         stn_ID=stn_ID, stn_lle=stn_lle, stn_row=stn_row, stn_col=stn_col)
 
-########################################################################################################################
-
-# downscale reanalysis to 0.1 degree
-for y in range(year[0], year[1] + 1):
-    for v in range(len(vars)):
-        print('year--var:', y, vars[v])
-        infile = inpath + '/JRA55_' + vars[v] + '_' + str(y) + '.mat'
-        outfile_grid = outpath + '/JRA55_' + vars[v] + '_' + str(y) + '.npz'
-        if os.path.isfile(outfile_grid):
-            continue
-
-        # load original daily reanalysis data
-        datatemp = {}
-        f = h5py.File(infile, 'r')
-        for k, v in f.items():
-            datatemp[k] = np.array(v)
-        latori = datatemp['latitude'][0]
-        lonori = datatemp['longitude'][0]
-        dataori = datatemp['data']
-        dataori = np.transpose(dataori, [2, 1, 0])
-        del datatemp
-        f.close()
-
-        # read location information
-        if not os.path.isfile(filenear):
-            rowse, colse, weight = neargrid(lattar, lontar, latori, lonori, hwsize)
-            # extract ori dem
-            demori = demread(filedem_era, latori, lonori)
-            io.savemat(filenear, {'rowse': rowse, 'colse': colse, 'weight': weight, 'demori': demori})
-        else:
-            datatemp = io.loadmat(filenear)
-            rowse = datatemp['rowse']
-            colse = datatemp['colse']
-            weight = datatemp['weight']
-            demori = datatemp['demori']
-            del datatemp
-
-        # downscale the reanalysis to 0.1 degree
-        datatar = readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight, mask)
-        datatar = np.float32(datatar)
-        np.savez_compressed(outfile_grid, data=datatar, latitude=lattar, longitude=lontar)
 
 ########################################################################################################################
 # downscale to station points
@@ -356,7 +328,7 @@ if not os.path.isfile(file_readownstn):
     flag = 0
     for y in range(1979, 2019):
         print('Downscale to station: year', y)
-        # prcp
+        # prcp downscaling
         infile = inpath + '/JRA55_prcp_' + str(y) + '.mat'
         datatemp = {}
         f = h5py.File(infile, 'r')
@@ -369,10 +341,10 @@ if not os.path.isfile(file_readownstn):
         del datatemp
         f.close()
         prcptar = readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight,
-                                     stn_row, stn_col, prcp_stn0)
+                                     stn_row, stn_col, prcp_stn0, downtostn_method)
         prcptar = np.float32(prcptar)
 
-        # tmin
+        # tmin downscaling
         infile = inpath + '/JRA55_tmin_' + str(y) + '.mat'
         datatemp = {}
         f = h5py.File(infile, 'r')
@@ -385,10 +357,10 @@ if not os.path.isfile(file_readownstn):
         del datatemp
         f.close()
         tmintar = readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight,
-                                     stn_row, stn_col, tmean_stn0)
+                                     stn_row, stn_col, tmean_stn0, downtostn_method)
         tmintar = np.float32(tmintar)
 
-        # tmax
+        # tmax downscaling
         infile = inpath + '/JRA55_tmax_' + str(y) + '.mat'
         datatemp = {}
         f = h5py.File(infile, 'r')
@@ -401,7 +373,7 @@ if not os.path.isfile(file_readownstn):
         del datatemp
         f.close()
         tmaxtar = readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight,
-                                     stn_row, stn_col, tmean_stn0)
+                                     stn_row, stn_col, tmean_stn0, downtostn_method)
         tmaxtar = np.float32(tmaxtar)
 
         # merge
@@ -415,6 +387,48 @@ if not os.path.isfile(file_readownstn):
                         trange_readown=trange_readown,
                         latitude=lattar, longitude=lontar, stn_ID=stn_ID, stn_lle=stn_lle, stn_row=stn_row,
                         stn_col=stn_col)
+
+########################################################################################################################
+
+# # downscale reanalysis to 0.1 degree
+# for y in range(year[0], year[1] + 1):
+#     for v in range(len(vars)):
+#         print('year--var:', y, vars[v])
+#         infile = inpath + '/JRA55_' + vars[v] + '_' + str(y) + '.mat'
+#         outfile_grid = outpath + '/JRA55_' + vars[v] + '_' + str(y) + '.npz'
+#         if os.path.isfile(outfile_grid):
+#             continue
+#
+#         # load original daily reanalysis data
+#         datatemp = {}
+#         f = h5py.File(infile, 'r')
+#         for k, v in f.items():
+#             datatemp[k] = np.array(v)
+#         latori = datatemp['latitude'][0]
+#         lonori = datatemp['longitude'][0]
+#         dataori = datatemp['data']
+#         dataori = np.transpose(dataori, [2, 1, 0])
+#         del datatemp
+#         f.close()
+#
+#         # read location information
+#         if not os.path.isfile(filenear):
+#             rowse, colse, weight = neargrid(lattar, lontar, latori, lonori, hwsize)
+#             # extract ori dem
+#             demori = demread(filedem_era, latori, lonori)
+#             io.savemat(filenear, {'rowse': rowse, 'colse': colse, 'weight': weight, 'demori': demori})
+#         else:
+#             datatemp = io.loadmat(filenear)
+#             rowse = datatemp['rowse']
+#             colse = datatemp['colse']
+#             weight = datatemp['weight']
+#             demori = datatemp['demori']
+#             del datatemp
+#
+#         # downscale the reanalysis to 0.1 degree
+#         datatar = readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight, mask)
+#         datatar = np.float32(datatar)
+#         np.savez_compressed(outfile_grid, data=datatar, latitude=lattar, longitude=lontar)
 
 ########################################################################################################################
 
