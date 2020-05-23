@@ -39,10 +39,15 @@ if not os.path.isfile(fileout):
         prcp_readown = datatemp['prcp_readown']
         tmean_readown = datatemp['tmean_readown']
         trange_readown = datatemp['trange_readown']
+        if np.shape(prcp_readown)[2]<14610:
+            st = 365
+        else:
+            st = 0
+
         for g in range(nstn):
-            met_prcp[i, g, :] = au.metric(prcp_stn[g, :], prcp_readown[g, :])
-            met_tmean[i, g, :] = au.metric(tmean_stn[g, :], tmean_readown[g, :])
-            met_trange[i, g, :] = au.metric(trange_stn[g, :], trange_readown[g, :])
+            met_prcp[i, g, :] = au.metric(prcp_stn[g, st:], prcp_readown[g, :])
+            met_tmean[i, g, :] = au.metric(tmean_stn[g, st:], tmean_readown[g, :])
+            met_trange[i, g, :] = au.metric(trange_stn[g, st:], trange_readown[g, :])
         del datatemp
 
     np.savez_compressed(fileout,met_prcp=met_prcp,met_tmean=met_tmean,met_trange=met_trange,
