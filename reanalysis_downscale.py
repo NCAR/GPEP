@@ -151,7 +151,7 @@ def readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, 
         latori = np.flipud(latori)
         dataori = np.flipud(dataori)
         for i in range(ntimes):
-            print('Time step:',i,ntimes)
+            # print('Time step:',i,ntimes)
             rg = RegularGridInterpolator((latori, lonori), dataori[:, :, i], method=method)
             datatar[:, i] = rg(xynew)
 
@@ -289,15 +289,15 @@ gmet_stndatafile = '/home/gut428/stndata_whole.npz'  # to be saved. only process
 
 # reanalysis path: ERA-5
 # mac
-# filedem_era = './DEM/ERA5_DEM2.mat'
+# filedem_era = './DEM/JRA55_DEM2.mat'
 # inpath = '/Users/localuser/Research/Test'
 # outpath = '/Users/localuser/Research'
 # plato
-filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/ERA5_DEM2.mat'
-inpath = '/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_raw'  # downscale to 0.1 degree
+filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/JRA55_DEM2.mat'
+inpath = '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_raw'  # downscale to 0.1 degree
 outpath = '/home/gut428'
-file_readownstn = outpath + '/ERA5_downto_stn_' + downtostn_method + '.npz'  # downscale to station points (1979-2018)
-filenear = '/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds/weight_dem.npz'
+file_readownstn = outpath + '/JRA55_downto_stn_' + downtostn_method + '.npz'  # downscale to station points (1979-2018)
+filenear = '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_ds/weight_dem.npz'
 # filenear = '/Users/localuser/Research/weight_dem.npz'
 
 ########################################################################################################################
@@ -331,8 +331,8 @@ if not os.path.isfile(gmet_stndatafile):
 # for y in range(year[0], year[1] + 1):
 #     for v in range(len(vars)):
 #         print('year--var:', y, vars[v])
-#         infile = inpath + '/ERA5_' + vars[v] + '_' + str(y) + '.mat'
-#         outfile_grid = outpath + '/ERA5_' + vars[v] + '_' + str(y) + '.npz'
+#         infile = inpath + '/JRA55_' + vars[v] + '_' + str(y) + '.mat'
+#         outfile_grid = outpath + '/JRA55_' + vars[v] + '_' + str(y) + '.npz'
 #         if os.path.isfile(outfile_grid):
 #             continue
 #
@@ -392,7 +392,7 @@ if not os.path.isfile(file_readownstn):
     for y in range(1979, 2019):
         print('Downscale to station: year', y)
         # prcp downscaling
-        infile = inpath + '/ERA5_prcp_' + str(y) + '.mat'
+        infile = inpath + '/JRA55_prcp_' + str(y) + '.mat'
         datatemp = {}
         f = h5py.File(infile, 'r')
         for k, v in f.items():
@@ -407,7 +407,7 @@ if not os.path.isfile(file_readownstn):
                                      stn_row, stn_col, prcp_stn0, downtostn_method, stn_lle)
 
         # tmin downscaling
-        infile = inpath + '/ERA5_tmin_' + str(y) + '.mat'
+        infile = inpath + '/JRA55_tmin_' + str(y) + '.mat'
         datatemp = {}
         f = h5py.File(infile, 'r')
         for k, v in f.items():
@@ -422,7 +422,7 @@ if not os.path.isfile(file_readownstn):
                                      stn_row, stn_col, tmean_stn0, downtostn_method, stn_lle)
 
         # tmax downscaling
-        infile = inpath + '/ERA5_tmax_' + str(y) + '.mat'
+        infile = inpath + '/JRA55_tmax_' + str(y) + '.mat'
         datatemp = {}
         f = h5py.File(infile, 'r')
         for k, v in f.items():
@@ -451,13 +451,13 @@ if not os.path.isfile(file_readownstn):
 ########################################################################################################################
 
 # # additional function: tmin/tmax to tmean/trange
-# outpath = '/home/gut428/ERA5_day_ds'
+# outpath = '/home/gut428/JRA55_day_ds'
 # for y in range(1979,2019):
 #     print(y)
-#     infile1 = outpath + '/ERA5_tmin_' + str(y) + '.npz'
-#     infile2 = outpath + '/ERA5_tmax_' + str(y) + '.npz'
-#     outfile1 = outpath + '/ERA5_tmean_' + str(y) + '.npz'
-#     outfile2 = outpath + '/ERA5_trange_' + str(y) + '.npz'
+#     infile1 = outpath + '/JRA55_tmin_' + str(y) + '.npz'
+#     infile2 = outpath + '/JRA55_tmax_' + str(y) + '.npz'
+#     outfile1 = outpath + '/JRA55_tmean_' + str(y) + '.npz'
+#     outfile2 = outpath + '/JRA55_trange_' + str(y) + '.npz'
 #     if os.path.isfile(outfile1) and os.path.isfile(outfile2):
 #         continue
 #
