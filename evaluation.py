@@ -51,6 +51,6 @@ if not os.path.isfile(fileout):
         del datatemp
 
     np.savez_compressed(fileout,met_prcp=met_prcp,met_tmean=met_tmean,met_trange=met_trange,
-                        stn_ID=stn_ID,stn_lle=stn_lle)
+                        stn_ID=stn_ID,stn_lle=stn_lle,file_readown=file_readown)
     io.savemat(fileout2,{'met_prcp':met_prcp, 'met_tmean':met_tmean, 'met_trange':met_trange,
-                         'stn_ID':stn_ID, 'stn_lle':stn_lle})
+                         'stn_ID':stn_ID, 'stn_lle':stn_lle,'file_readown':file_readown})

@@ -216,7 +216,7 @@ def merge_correction_stnerror(outpath, stnlle, stndata, readata_stn, taintestind
 
     # initialization
     reacorr_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)  # corrected reanalysis data
-    reamerge_weight_stn = np.nan * np.zeros([nstn, reanum])  # weight used to obtain reamerge_stn
+    reamerge_weight_stn = np.nan * np.zeros([nstn, reanum], dtype=np.float32)  # weight used to obtain reamerge_stn
     reamerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)  # merged reanalysis at station points
 
     for lay1 in range(dividenum):
@@ -844,3 +844,84 @@ for y in range(year[0], year[1] + 1):
 #                               reamerge_stn[:, indym], neargrid_loc, neargrid_dist, merge_choice[m,:,:], mask, var, pcptrans)
 #
 #         np.savez_compressed(filemse, mse_error=mse_error)
+
+
+
+########################################################################################################################
+
+# probability of precipitation
+
+def threshold_for_occurrence(dref, dtar):
+    # dref is station prcp and >0 means positive precipitation
+    # find the threshold for dtar so that dref and dtar have the same number of precipitation events
+    indnan = (np.isnan(dref)) | (np.isnan(dtar))
+    if np.sum(indnan)>0:
+        dref = dref[~indnan]
+        dtar = dtar[~indnan]
+
+    if len(dtar) < 1:
+        threshold = np.nan
+    else:
+        num1 = np.sum(dref > 0)
+        if num1 == 0:
+            threshold = 0
+        else:
+            indnan = (dtar == 0) | (np.isnan(dtar))
+            dtar = dtar[~indnan]
+            if len(dtar)<=num1:
+                threshold = 0
+            else:
+                dtars = np.flip(np.sort(dtar))
+                threshold = (dtars[num1] + dtars[num1-1]) / 2
+    return threshold
+
+
+def index_contingency(Obs, Pre, Tre=0.1):
+    # Tre: rain/no rain threshold
+    # POD(Probability of Detection),FOH(frequency of hit)
+    # FAR(False Alarm Ratio), CSI(Critical Success Index)
+    # HSS(Heidke skillscore),Ebert et al. [2007]
+    if len(Obs) > 1:
+        n11 = np.sum((Obs > Tre) & (Pre > Tre))
+        n10 = np.sum((Obs <= Tre) & (Pre > Tre))
+        n01 = np.sum((Obs > Tre) & (Pre <= Tre))
+        n00 = np.sum((Obs <= Tre) & (Pre <= Tre))
+    try:
+        POD = n11 / (n11 + n01)
+    except:
+        POD = np.nan
+    try:
+        FOH = n11 / (n11 + n10)
+        FAR = n10 / (n11 + n10)
+    except:
+        FOH = np.nan
+        FAR = np.nan
+    try:
+        CSI = n11 / (n11 + n01 + n10)
+    except:
+        CSI = np.nan
+    try:
+        HSS = 2 * (n11 * n00 - n10 * n01) / ((n11 + n01) *
+                                             (n01 + n00) + (n11 + n10) * (n10 + n00))
+    except:
+        HSS = np.nan
+
+    contingency_group = {'POD': POD, 'FOH': FOH, 'FAR': FAR,
+                         'CSI': CSI, 'HSS': HSS}
+    return contingency_group
+
+def pop_merge(stndata,readata):
+    reanum, nstn, ntimes = np.shape(readata)
+    # 1. get threshold for precipitation occurrence
+    rea_threshold = np.nan * np.zeros([nstn, reanum])
+    for r in range(reanum):
+        for i in range(nstn):
+            rea_threshold[i, r] = threshold_for_occurrence(stndata[i,:], readata[r, i, :])
+
+    # 2. calculate CSI
+    rea_csi = np.nan()
+
+
+
+
+
