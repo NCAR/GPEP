@@ -28,7 +28,7 @@ done
 
 for y in {1980..2018..1}
 do
-sbatch Plato_trange_BMA_${y}.sh
+sbatch Plato_${y}.sh
 done
 
 

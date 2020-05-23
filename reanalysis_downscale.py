@@ -255,9 +255,9 @@ def readstndata(inpath, stnID, ndays):
 
 # time periods: inside or outside
 # outside
-downtostn_method = sys.argv[1]
 a = int(sys.argv[1])
 b = int(sys.argv[2])
+downtostn_method = sys.argv[3]
 year = [a, b]
 # inside
 # year = [1979, 2018]
