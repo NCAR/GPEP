@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/Plato_readown1.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Plato_readown2.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_readown_simple.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_readown3.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readown_test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/readown_test.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reanalysis_downscale.py" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_downscale.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

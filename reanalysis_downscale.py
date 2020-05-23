@@ -119,6 +119,16 @@ def readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse,
                     # this is a conservative limitation
                     lowbound = np.min(datanear)
                     upbound = np.max(datanear)
+                    if np.sign(lowbound) == 1:
+                        lowbound = lowbound * 0.8
+                    else:
+                        lowbound = lowbound * 1.2
+                    if np.sign(upbound) == 1:
+                        upbound = upbound * 1.2
+                    if np.sign(upbound) == 1:
+                        upbound = upbound * 1.2
+                    else:
+                        upbound = upbound * 0.8
 
                     b = reg.least_squares(nearinfo, datanear, twx_red)
                     datatemp = np.dot(tarinfo, b)
@@ -194,6 +204,16 @@ def readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, 
                 # this is a conservative limitation
                 lowbound = np.min(datanear)
                 upbound = np.max(datanear)
+                if np.sign(lowbound) == 1:
+                    lowbound = lowbound * 0.8
+                else:
+                    lowbound = lowbound * 1.2
+                if np.sign(upbound) == 1:
+                    upbound = upbound * 1.2
+                if np.sign(upbound) == 1:
+                    upbound = upbound * 1.2
+                else:
+                    upbound = upbound * 0.8
 
                 b = reg.least_squares(nearinfo, datanear, twx_red)
                 datatemp = np.dot(tarinfo, b)
@@ -309,6 +329,47 @@ if not os.path.isfile(gmet_stndatafile):
     np.savez_compressed(gmet_stndatafile, prcp_stn=prcp_stn, tmean_stn=tmean_stn, trange_stn=trange_stn,
                         stn_ID=stn_ID, stn_lle=stn_lle, stn_row=stn_row, stn_col=stn_col)
 
+########################################################################################################################
+
+# # downscale reanalysis to 0.1 degree
+# for y in range(year[0], year[1] + 1):
+#     for v in range(len(vars)):
+#         print('year--var:', y, vars[v])
+#         infile = inpath + '/ERA5_' + vars[v] + '_' + str(y) + '.mat'
+#         outfile_grid = outpath + '/ERA5_' + vars[v] + '_' + str(y) + '.npz'
+#         if os.path.isfile(outfile_grid):
+#             continue
+#
+#         # load original daily reanalysis data
+#         datatemp = {}
+#         f = h5py.File(infile, 'r')
+#         for k, v in f.items():
+#             datatemp[k] = np.array(v)
+#         latori = datatemp['latitude'][0]
+#         lonori = datatemp['longitude'][0]
+#         dataori = datatemp['data']
+#         dataori = np.transpose(dataori, [2, 1, 0])
+#         del datatemp
+#         f.close()
+#
+#         # read location information
+#         if not os.path.isfile(filenear):
+#             rowse, colse, weight = neargrid(lattar, lontar, latori, lonori, hwsize)
+#             # extract ori dem
+#             demori = demread(filedem_era, latori, lonori)
+#             io.savemat(filenear, {'rowse': rowse, 'colse': colse, 'weight': weight, 'demori': demori})
+#         else:
+#             datatemp = io.loadmat(filenear)
+#             rowse = datatemp['rowse']
+#             colse = datatemp['colse']
+#             weight = datatemp['weight']
+#             demori = datatemp['demori']
+#             del datatemp
+#
+#         # downscale the reanalysis to 0.1 degree
+#         datatar = readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight, mask)
+#         datatar = np.float32(datatar)
+#         np.savez_compressed(outfile_grid, data=datatar, latitude=lattar, longitude=lontar)
 
 ########################################################################################################################
 # downscale to station points
@@ -390,48 +451,6 @@ if not os.path.isfile(file_readownstn):
                         trange_readown=trange_readown,
                         latitude=lattar, longitude=lontar, stn_ID=stn_ID, stn_lle=stn_lle, stn_row=stn_row,
                         stn_col=stn_col)
-
-########################################################################################################################
-
-# # downscale reanalysis to 0.1 degree
-# for y in range(year[0], year[1] + 1):
-#     for v in range(len(vars)):
-#         print('year--var:', y, vars[v])
-#         infile = inpath + '/ERA5_' + vars[v] + '_' + str(y) + '.mat'
-#         outfile_grid = outpath + '/ERA5_' + vars[v] + '_' + str(y) + '.npz'
-#         if os.path.isfile(outfile_grid):
-#             continue
-#
-#         # load original daily reanalysis data
-#         datatemp = {}
-#         f = h5py.File(infile, 'r')
-#         for k, v in f.items():
-#             datatemp[k] = np.array(v)
-#         latori = datatemp['latitude'][0]
-#         lonori = datatemp['longitude'][0]
-#         dataori = datatemp['data']
-#         dataori = np.transpose(dataori, [2, 1, 0])
-#         del datatemp
-#         f.close()
-#
-#         # read location information
-#         if not os.path.isfile(filenear):
-#             rowse, colse, weight = neargrid(lattar, lontar, latori, lonori, hwsize)
-#             # extract ori dem
-#             demori = demread(filedem_era, latori, lonori)
-#             io.savemat(filenear, {'rowse': rowse, 'colse': colse, 'weight': weight, 'demori': demori})
-#         else:
-#             datatemp = io.loadmat(filenear)
-#             rowse = datatemp['rowse']
-#             colse = datatemp['colse']
-#             weight = datatemp['weight']
-#             demori = datatemp['demori']
-#             del datatemp
-#
-#         # downscale the reanalysis to 0.1 degree
-#         datatar = readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse, colse, weight, mask)
-#         datatar = np.float32(datatar)
-#         np.savez_compressed(outfile_grid, data=datatar, latitude=lattar, longitude=lontar)
 
 ########################################################################################################################
 
