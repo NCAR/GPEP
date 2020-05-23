@@ -125,8 +125,6 @@ def readownscale(dataori, latori, lonori, demori, lattar, lontar, demtar, rowse,
                         lowbound = lowbound * 1.2
                     if np.sign(upbound) == 1:
                         upbound = upbound * 1.2
-                    if np.sign(upbound) == 1:
-                        upbound = upbound * 1.2
                     else:
                         upbound = upbound * 0.8
 
@@ -208,8 +206,6 @@ def readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, 
                     lowbound = lowbound * 0.8
                 else:
                     lowbound = lowbound * 1.2
-                if np.sign(upbound) == 1:
-                    upbound = upbound * 1.2
                 if np.sign(upbound) == 1:
                     upbound = upbound * 1.2
                 else:
