@@ -39,7 +39,7 @@ if not os.path.isfile(fileout):
         prcp_readown = datatemp['prcp_readown']
         tmean_readown = datatemp['tmean_readown']
         trange_readown = datatemp['trange_readown']
-        if np.shape(prcp_readown)[2]<14610:
+        if np.shape(prcp_readown)[1]<14610:
             st = 365
         else:
             st = 0
