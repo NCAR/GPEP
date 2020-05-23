@@ -139,10 +139,10 @@ def readownscale_tostn(dataori, latori, lonori, demori, lattar, lontar, demtar, 
     datatar = np.nan * np.zeros([nstn, ntimes])
 
     if method == 'linear' or method == 'nearest':
-        xynew = stn_lle[:,[1, 0]]
+        xynew = stn_lle[:,[0, 1]]
         for i in range(ntimes):
             print('Time step:',i,ntimes)
-            rg = RegularGridInterpolator((lonori, latori), dataori[:, :, i], method=method)
+            rg = RegularGridInterpolator((latori, lonori), dataori[:, :, i], method=method)
             datatar[:, i] = rg(xynew)
 
     elif method == 'GWR':
