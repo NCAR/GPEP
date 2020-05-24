@@ -303,8 +303,8 @@ for y in range(1979, 2019):
 
         indym = (date_number['yyyy'] == y) & (date_number['mm'] == m + 1)
 
-        date_cal_start = y * 10000 + m * 100 + 1
-        date_cal_end = y * 10000 + m * 100 + calendar.monthrange(y, m)[1]
+        date_cal_start = y * 10000 + (m+1) * 100 + 1
+        date_cal_end = y * 10000 + (m+1) * 100 + calendar.monthrange(y, (m+1))[1]
         datestr = str(date_cal_start) + '-' + str(date_cal_end)
 
         # prcp
