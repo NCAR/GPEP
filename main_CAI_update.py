@@ -10,7 +10,8 @@ import os
 import sys
 from scipy.interpolate import griddata
 import h5py
-
+from auxiliary_merge import *
+import calendar
 
 def demread(file, lattar, lontar):
     datatemp = io.loadmat(file)
@@ -260,9 +261,9 @@ gmet_stndatafile = '/home/gut428/stndata_whole.npz'  # to be saved. only process
 # outpath = '/Users/localuser/Research'
 # plato
 filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/ERA5_DEM2.mat'
-inpath = '/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_raw'  # downscale to 0.1 degree
+inpath = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout'  # downscale to 0.1 degree
 outpath = '/home/gut428'
-file_reanearstn = outpath + '/ERA5_nearneighbor_stn.npz'  # downscale to station points (1979-2018)
+file_reanearstn = outpath + '/daily_regression_stn_pop.npz'  # downscale to station points (1979-2018)
 
 ########################################################################################################################
 
@@ -280,93 +281,53 @@ stn_col = ((stn_lle[:, 1] + 180) / 0.1).astype(int)
 nstn = len(stn_ID)
 ndays = 14610  # days from 1979 to 2018
 
-# read all station data and save to facilitate analysis in the future
-if not os.path.isfile(gmet_stndatafile):
-    prcp_stn, tmean_stn, trange_stn = readstndata(gmet_stnpath, stn_ID, ndays)
-    prcp_stn = np.float32(prcp_stn)
-    tmean_stn = np.float32(tmean_stn)
-    trange_stn = np.float32(trange_stn)
-    np.savez_compressed(gmet_stndatafile, prcp_stn=prcp_stn, tmean_stn=tmean_stn, trange_stn=trange_stn,
-                        stn_ID=stn_ID, stn_lle=stn_lle, stn_row=stn_row, stn_col=stn_col)
-
-
 ########################################################################################################################
 # downscale to station points
+date_list, date_number = m_DateList(1979, 2018, 'ByYear')
 
-if not os.path.isfile(file_reanearstn):
-    # ndays should minus 365 for MERRA2
-    prcp_reanear = np.float32(np.nan * np.zeros([nstn, ndays]), dtype=np.float32)
-    tmean_reanear = np.float32(np.nan * np.zeros([nstn, ndays]), dtype=np.float32)
-    trange_reanear = np.float32(np.nan * np.zeros([nstn, ndays]), dtype=np.float32)
+# ndays should minus 365 for MERRA2
+pop_regression = np.float32(np.nan * np.zeros([nstn, ndays]), dtype=np.float32)
 
-    flag = 0
-    for y in range(1979, 2019):
-        print('Downscale to station (near): year', y)
-        # prcp
-        infile = inpath + '/ERA5_prcp_' + str(y) + '.mat'
-        datatemp = {}
-        f = h5py.File(infile, 'r')
-        for k, v in f.items():
-            datatemp[k] = np.array(v)
-        latori = datatemp['latitude'][0]
-        lonori = datatemp['longitude'][0]
-        dataori = datatemp['data']
-        dataori = np.transpose(dataori, [2, 1, 0])
-        del datatemp
-        f.close()
-
-        dayy = np.shape(dataori)[2]
-
-        if y == 1979:
+flag = 0
+for y in range(1979, 2019):
+    print('y',y)
+    for m in range(12):
+        print('Correction and Merge: month', m + 1)
+        if y == 1979 and m == 0:
             nearrowcol = np.zeros([nstn, 2], dtype=int)
             for i in range(nstn):
-                rowi = np.argmin(abs(latori - stn_lle[i, 0]))
-                coli = np.argmin(abs(lonori - stn_lle[i, 1]))
+                rowi = np.argmin(abs(lattar - stn_lle[i, 0]))
+                coli = np.argmin(abs(lontar - stn_lle[i, 1]))
                 nearrowcol[i, 0] = rowi
                 nearrowcol[i, 1] = coli
 
-        prcptar = np.zeros([nstn, dayy], dtype=np.float32)
+        indym = (date_number['yyyy'] == y) & (date_number['mm'] == m + 1)
+
+        date_cal_start = y * 10000 + m * 100 + 1
+        date_cal_end = y * 10000 + m * 100 + calendar.monthrange(y, m)[1]
+        datestr = str(date_cal_start) + '-' + str(date_cal_end)
+
+        # prcp
+        infile = inpath + '/output_' + datestr + '.npz'
+        datatemp = np.load(infile)
+        popym = datatemp['pop']
+        popym_stn = np.zeros([nstn, np.sum(indym)], dtype=np.float32)
         for i in range(nstn):
-            prcptar[i, :] = dataori[nearrowcol[i,0], nearrowcol[i,1], :]
+            pop_regression[i, indym] = popym[nearrowcol[i, 0], nearrowcol[i, 1], :]
 
-        # tmin
-        infile = inpath + '/ERA5_tmin_' + str(y) + '.mat'
-        datatemp = {}
-        f = h5py.File(infile, 'r')
-        for k, v in f.items():
-            datatemp[k] = np.array(v)
-        latori = datatemp['latitude'][0]
-        lonori = datatemp['longitude'][0]
-        dataori = datatemp['data']
-        dataori = np.transpose(dataori, [2, 1, 0])
-        del datatemp
-        f.close()
-        tmintar = np.zeros([nstn, dayy], dtype=np.float32)
-        for i in range(nstn):
-            tmintar[i, :] = dataori[nearrowcol[i,0], nearrowcol[i,1], :]
 
-        # tmax
-        infile = inpath + '/ERA5_tmax_' + str(y) + '.mat'
-        datatemp = {}
-        f = h5py.File(infile, 'r')
-        for k, v in f.items():
-            datatemp[k] = np.array(v)
-        latori = datatemp['latitude'][0]
-        lonori = datatemp['longitude'][0]
-        dataori = datatemp['data']
-        dataori = np.transpose(dataori, [2, 1, 0])
-        del datatemp
-        f.close()
-        tmaxtar = np.zeros([nstn, dayy], dtype=np.float32)
-        for i in range(nstn):
-            tmaxtar[i, :] = dataori[nearrowcol[i,0], nearrowcol[i,1], :]
+d1 = np.load(gmet_stndatafile)
+stndata = d1['prcp_stn']
+mae_pop = np.nan * np.zeros([nstn, 12], dtype=np.float32)
+for i in range(nstn):
+    if np.mod(i, 1000) == 0:
+        print('i', i)
+    if not np.isnan(stndata[i, 0]):
+        for m in range(12):
+            indm = date_number['mm'] == m + 1
+            dobs = stndata[i, indm].copy()
+            dobs[dobs>0] = 1
+            dpop = pop_regression[i, indm]
+            mae_pop[i, m] = np.mean(abs(dpop - dobs))
 
-        # merge
-        dayy = np.shape(prcptar)[1]
-        prcp_reanear[:, flag:flag + dayy] = prcptar
-        tmean_reanear[:, flag:flag + dayy] = (tmintar + tmaxtar) / 2
-        trange_reanear[:, flag:flag + dayy] = np.abs(tmaxtar - tmintar)
-        flag = flag + dayy
-
-    np.savez_compressed(file_reanearstn, prcp_reanear=prcp_reanear, tmean_reanear=tmean_reanear,
-                        trange_reanear=trange_reanear, stn_ID=stn_ID, stn_lle=stn_lle)
+np.savez_compressed(file_reanearstn, mae_pop=mae_pop, pop_regression=pop_regression, stn_ID=stn_ID, stn_lle=stn_lle)
