@@ -143,7 +143,7 @@ for i in range(nstn):
                 popi[r, :] = pr
             weighti[np.isnan(popi)] = 0  # MERRA2 does not have data for 1979
             popi2 = np.nansum(weighti * popi, axis=0) / np.sum(weighti, axis=0)
-        pop_reamerge[i, indm] = popi2
+            pop_reamerge[i, indm] = popi2
 
 # 3. evaluate the occurrence and pop (mean absolute error)
 mae_pop = np.nan * np.zeros([nstn, 12], dtype=np.float32)
