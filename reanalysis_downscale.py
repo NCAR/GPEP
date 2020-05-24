@@ -378,9 +378,9 @@ del datatemp
 
 if not os.path.isfile(file_readownstn):
 
-    # prcp_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
-    # tmean_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
-    # trange_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
+    prcp_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
+    tmean_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
+    trange_readown = np.float32(np.nan * np.zeros([nstn, ndays]))
 
     # load nearby grid information
     datatemp = io.loadmat(filenear)
@@ -452,17 +452,17 @@ if not os.path.isfile(file_readownstn):
 
             np.savez_compressed(file_readownstny, prcptar=prcptar, tmintar=tmintar, tmaxtar=tmaxtar)
 
-        # # merge
-        # dayy = np.shape(prcptar)[1]
-        # prcp_readown[:, flag:flag + dayy] = prcptar
-        # tmean_readown[:, flag:flag + dayy] = (tmintar + tmaxtar) / 2
-        # trange_readown[:, flag:flag + dayy] = np.abs(tmaxtar - tmintar)
-        # flag = flag + dayy
+        # merge
+        dayy = np.shape(prcptar)[1]
+        prcp_readown[:, flag:flag + dayy] = prcptar
+        tmean_readown[:, flag:flag + dayy] = (tmintar + tmaxtar) / 2
+        trange_readown[:, flag:flag + dayy] = np.abs(tmaxtar - tmintar)
+        flag = flag + dayy
 
-    # np.savez_compressed(file_readownstn, prcp_readown=prcp_readown, tmean_readown=tmean_readown,
-    #                     trange_readown=trange_readown,
-    #                     latitude=lattar, longitude=lontar, stn_ID=stn_ID, stn_lle=stn_lle, stn_row=stn_row,
-    #                     stn_col=stn_col)
+    np.savez_compressed(file_readownstn, prcp_readown=prcp_readown, tmean_readown=tmean_readown,
+                        trange_readown=trange_readown,
+                        latitude=lattar, longitude=lontar, stn_ID=stn_ID, stn_lle=stn_lle, stn_row=stn_row,
+                        stn_col=stn_col)
 
 ########################################################################################################################
 
