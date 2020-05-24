@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+from auxiliary_merge import *
 
 
 # probability of precipitation
@@ -86,12 +87,17 @@ def cal_csi(Obs, Pre, Tre=0):
     return CSI
 
 
+date_list, date_number = m_DateList(1979, 2018, 'ByYear')
 
 # main
-filestn = '/Users/localuser/Downloads/stndata_whole.npz'
-filerea = '/Users/localuser/Research/Test/mergecorr_prcp_RMSE.npz'
-outfile = '/Users/localuser/Research/Test/reanalysis_pop_stn.npz'
-maxthreshold = 2
+# filestn = '/Users/localuser/Downloads/stndata_whole.npz'
+# filerea = '/Users/localuser/Research/Test/mergecorr_prcp_RMSE.npz'
+# outfile = '/Users/localuser/Research/Test/reanalysis_pop_stn.npz'
+filestn = '/home/gut428/stndata_whole.npz'
+filerea = '/datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/CrossValidate_2layer/mergecorr_prcp_BMA.npz'
+outfile = '/home/gut428/mergereanalysis_pop_stn_BMA.npz'
+
+maxthreshold = 2 # the largest threshold for determining rain/no-rain
 
 d1 = np.load(filestn)
 d2 = np.load(filerea)
@@ -102,25 +108,20 @@ stn_lle = d1['stn_lle']
 
 reanum, nstn, ntimes = np.shape(readata)
 # 1. get threshold for precipitation occurrence
-# rea_threshold1 = np.nan * np.zeros([nstn, reanum])
-rea_threshold = np.nan * np.zeros([nstn, reanum])
-# rea_csi1 = np.nan * np.zeros([nstn, reanum])
-rea_csi = np.nan * np.zeros([nstn, reanum])
+rea_threshold = np.nan * np.zeros([12, nstn, reanum])
+rea_csi = np.nan * np.zeros([12, nstn, reanum])
 for r in range(reanum):
-    for i in range(nstn):
-        if np.mod(i,1000)==0:
-            print('r i',r,i)
-        if not np.isnan(stndata[i, 0]):
-            dobs = stndata[i, :]
-            drea = readata[r, i, :].copy()
-            # rea_threshold1[i, r] = threshold_for_occurrence(dobs, drea, mode=1, upperbound=maxthreshold)
-            rea_threshold[i, r] = threshold_for_occurrence(dobs, drea, mode=2, upperbound=maxthreshold)
-
-            # drea1 = drea.copy()
-            # drea1[drea1 <rea_threshold1[i, r]] = 0
-            # rea_csi1[i, r] = cal_csi(dobs, drea1)
-            drea[drea <rea_threshold[i, r]] = 0
-            rea_csi[i, r] = cal_csi(dobs, drea)
+    for m in range(12):
+        indm = date_number['mm'] == m + 1
+        for i in range(nstn):
+            if np.mod(i, 1000) == 0:
+                print('r m i', r, m, i)
+            if not np.isnan(stndata[i, 0]):
+                dobs = stndata[i, indm]
+                drea = readata[r, i, indm].copy()
+                rea_threshold[m, i, r] = threshold_for_occurrence(dobs, drea, mode=2, upperbound=maxthreshold)
+                drea[drea < rea_threshold[m, i, r]] = 0
+                rea_csi[m, i, r] = cal_csi(dobs, drea)
 
 # 2. estimate pop by merging reanalysis at station points
 pop_reamerge = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)
@@ -128,20 +129,34 @@ for i in range(nstn):
     if np.mod(i, 1000) == 0:
         print('i', i)
     if not np.isnan(stndata[i, 0]):
-        csii = rea_csi[i, :]
-        weighti = csii ** 2  # weight formulation
-        weighti = np.tile(weighti, (ntimes, 1)).T
-        popi = np.zeros([reanum, ntimes])
-        for r in range(reanum):
-            pr = readata[r, i, :].copy()
-            pr[pr <= rea_threshold[i, r]] = 0
-            pr[pr > rea_threshold[i, r]] = 1
-            popi[r, :] = pr
-        weighti[np.isnan(popi)] = 0  # MERRA2 does not have data for 1979
-        popi2 = np.nansum(weighti * popi, axis=0) / np.sum(weighti, axis=0)
-        pop_reamerge[i, :] = popi2
+        for m in range(12):
+            indm = date_number['mm'] == m + 1
+            mtime = np.sum(indm)
+            csii = rea_csi[m, i, :]
+            weighti = csii ** 2  # weight formulation
+            weighti = np.tile(weighti, (mtime, 1)).T
+            popi = np.zeros([reanum, mtime])
+            for r in range(reanum):
+                pr = readata[r, i, indm].copy()
+                pr[pr <= rea_threshold[m, i, r]] = 0
+                pr[pr > rea_threshold[m, i, r]] = 1
+                popi[r, :] = pr
+            weighti[np.isnan(popi)] = 0  # MERRA2 does not have data for 1979
+            popi2 = np.nansum(weighti * popi, axis=0) / np.sum(weighti, axis=0)
+        pop_reamerge[i, indm] = popi2
 
-np.savez_compressed(outfile,pop_reamerge=pop_reamerge,rea_threshold=rea_threshold,rea_csi=rea_csi,stn_lle=stn_lle)
+# 3. evaluate the occurrence and pop (mean absolute error)
+mae_pop = np.nan * np.zeros([nstn, 12], dtype=np.float32)
+for i in range(nstn):
+    if np.mod(i, 1000) == 0:
+        print('i', i)
+    if not np.isnan(stndata[i, 0]):
+        for m in range(12):
+            indm = date_number['mm'] == m + 1
+            dobs = stndata[i, indm].copy()
+            dobs[dobs>0] = 1
+            dpop = pop_reamerge[i, indm]
+            mae_pop[i, m] = np.mean(abs(dpop - dobs))
 
-
-# 3. evaluate the occurrence and pop
+np.savez_compressed(outfile, pop_reamerge=pop_reamerge, rea_threshold=rea_threshold, rea_csi=rea_csi,
+                    mae_pop=mae_pop, stn_lle=stn_lle)
