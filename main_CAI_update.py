@@ -311,6 +311,7 @@ for y in range(1979, 2019):
         infile = inpath + '/output_' + datestr + '.npz'
         datatemp = np.load(infile)
         popym = datatemp['pop']
+        popym = np.flipud(popym)
         popym_stn = np.zeros([nstn, np.sum(indym)], dtype=np.float32)
         for i in range(nstn):
             pop_regression[i, indym] = popym[nearrowcol[i, 0], nearrowcol[i, 1], :]
