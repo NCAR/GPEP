@@ -356,8 +356,8 @@ outpath_ds = '/Users/localuser/Research/EMDNA/downscale/MERRA2' # path for savin
 
 # ### Plato settings
 # # input files/paths
-# filedem = './DEM/NA_DEM_010deg_trim.mat'  # DEM for the target region(0.1 degree)
-# filedem_era = './DEM/MERRA2_DEM2.mat'  # DEM for the original reanalysis
+# filedem = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'  # DEM for the target region(0.1 degree)
+# filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/DEM/MERRA2_DEM2.mat'  # DEM for the original reanalysis
 # filedist2coast = '/datastore/GLOBALWATER/CommonData/EMDNA/Auxiliary/dist2coast_001.npz'  # 0.01-degree distance to coast
 # filetlr = '/datastore/GLOBALWATER/CommonData/EMDNA/Auxiliary/EMDNA/MERRA2_TLR.mat'  # temperature lapse rate from MERRA2
 # gmet_stnfile = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'  # station lists

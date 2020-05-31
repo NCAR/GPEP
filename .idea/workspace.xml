@@ -2,29 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/reanalysis_correction_merge_new.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reanalysis_correction_merge_new2.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reanalysis_downscale1.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reanalysis_downscale2.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reanalysis_downscale3.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/Evaluation-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/Evaluation-checkpoint.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/est-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/est-checkpoint.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/merge_test-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/merge_test-checkpoint.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/readown_test-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/readown_test-checkpoint.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/reanalysis_test-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/reanalysis_test-checkpoint.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Evaluation.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Evaluation.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_readown1.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_readown1.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_readown2.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_readown2.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_readown3.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_readown3.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/est.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/est.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/merge_test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/merge_test.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/observation_reanalysis_merge.py" beforeDir="false" afterPath="$PROJECT_DIR$/observation_reanalysis_merge.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/optimal_interpolation.py" beforeDir="false" afterPath="$PROJECT_DIR$/optimal_interpolation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/readown_test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/readown_test.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_correction_merge.py" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_correction_merge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_commands" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_commands" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reanalysis_downscale.py" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_downscale.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_test.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reanalysis_downscale1.py" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_downscale1.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reanalysis_downscale2.py" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_downscale2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reanalysis_downscale3.py" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_downscale3.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
