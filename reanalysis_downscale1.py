@@ -359,7 +359,7 @@ hwsize = 2  # use (2*2+1)**2 grids to perform regression
 filedem = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'  # DEM for the target region(0.1 degree)
 filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/ERA5_DEM2.mat'  # DEM for the original reanalysis
 filedist2coast = '/datastore/GLOBALWATER/CommonData/EMDNA/Auxiliary/dist2coast_001.npz'  # 0.01-degree distance to coast
-filetlr = '/datastore/GLOBALWATER/CommonData/EMDNA/Auxiliary/EMDNA/ERA5_TLR.mat'  # temperature lapse rate from ERA5
+filetlr = '/datastore/GLOBALWATER/CommonData/EMDNA/Auxiliary/ERA5_TLR.mat'  # temperature lapse rate from ERA5
 gmet_stnfile = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'  # station lists
 gmet_stnpath = '/home/gut428/GMET/StnInput_daily'  # station files for gmet_stnfile
 
