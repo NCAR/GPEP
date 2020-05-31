@@ -665,9 +665,9 @@ readata_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
 for rr in range(reanum):
     dr = np.load(file_readownstn[rr])
     temp = dr[var + '_readown']
-    if prefix[rr] == 'MERRA2_':  # unify the time length of all data as MERRA2 lacks 1979
-        add = np.nan * np.zeros([nstn, 365])
-        temp = np.concatenate((add, temp), axis=1)
+    # if prefix[rr] == 'MERRA2_':  # unify the time length of all data as MERRA2 lacks 1979
+    #     add = np.nan * np.zeros([nstn, 365])
+    #     temp = np.concatenate((add, temp), axis=1)
     readata_stn[rr, :, :] = temp
     del dr, temp
 if var == 'prcp':

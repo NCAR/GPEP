@@ -549,14 +549,14 @@ if not os.path.isfile(file_readownstn):
 
             np.savez_compressed(file_readownstny, prcptar=prcptar, tmintar=tmintar, tmaxtar=tmaxtar)
 
-        # merge
-        prcp_readown[:, indy] = prcptar
-        tmean_readown[:, indy] = (tmintar + tmaxtar) / 2
-        trange_readown[:, indy] = np.abs(tmaxtar - tmintar)
-    np.savez_compressed(file_readownstn, prcp_readown=prcp_readown, tmean_readown=tmean_readown,
-                        trange_readown=trange_readown,
-                        latitude=lattar, longitude=lontar, stn_ID=stn_ID, stn_lle=stn_lle, stn_row=stn_row,
-                        stn_col=stn_col)
+    #     # merge
+    #     prcp_readown[:, indy] = prcptar
+    #     tmean_readown[:, indy] = (tmintar + tmaxtar) / 2
+    #     trange_readown[:, indy] = np.abs(tmaxtar - tmintar)
+    # np.savez_compressed(file_readownstn, prcp_readown=prcp_readown, tmean_readown=tmean_readown,
+    #                     trange_readown=trange_readown,
+    #                     latitude=lattar, longitude=lontar, stn_ID=stn_ID, stn_lle=stn_lle, stn_row=stn_row,
+    #                     stn_col=stn_col)
 
 ########################################################################################################################
 
