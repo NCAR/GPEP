@@ -295,7 +295,8 @@ def correction_merge_stn(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_d
         # note: this weight is just for independent merging so we can estimate the error of merged reanalysis
         # the real weight will be estimated using just one-layer cross-validation
         weight_use = np.tile(nearstn_weighti1, (reanum, 1)).T
-        weight_i1 = np.sum(weight_use * reamerge_weight_i2, axis=0) / np.sum(weight_use)
+        weight_i1 = np.sum(weight_use * reamerge_weight_i2, axis=0)
+        weight_i1 = weight_i1 / np.sum(weight_i1)
 
         weight_use = np.tile(weight_i1, (ntimes, 1))
         if weightmode == 'BMA' and var == 'prcp':
@@ -539,7 +540,7 @@ anombound = [0.2, 10]  # upper and lower bound when calculating the anomaly for 
 #
 # near_stnfile = near_path + '/near_stn_' + var + '.npz'
 # near_gridfile = near_path + '/near_grid_' + var + '.npz'
-# file_corrmerge_stn = path_merge + '/mergecorr_stn_' + var + '_' + weightmode + '.npz'  # file of indepedent corrected/merging data and merging weights
+# file_corrmerge_stn = path_merge + '/mergecorr_stn_' + var + '_' + weightmode + '-test.npz'  # file of indepedent corrected/merging data and merging weights
 # file_mergechoice = path_merge + '/mergechoice_' + var + '_' + weightmode + '.npz'
 # ### Local Mac settings
 
