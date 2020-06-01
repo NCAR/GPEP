@@ -11,7 +11,7 @@
 module load python/3.7.4
 
 # run the application
-srun python -u reanalysis_correction_merge_new2.py prcp BMA QM 1979 2018
+srun python -u reanalysis_correction_merge_new2.py trange BMA QM 1979 2018
 
 
 
