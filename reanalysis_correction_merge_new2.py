@@ -547,7 +547,7 @@ anombound = [0.2, 10]  # upper and lower bound when calculating the anomaly for 
 ### Plato settings
 # input files/paths
 gmet_stnfile = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'
-gmet_stndatafile = '/Users/localuser/Research/EMDNA/stndata_whole.npz'
+gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA/stndata_whole.npz' 
 file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
 # path_readowngrid = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds',  # downscaled gridded data
 #                    '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds',
