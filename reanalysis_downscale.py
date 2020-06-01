@@ -35,7 +35,7 @@ def demread(file, lattar, lontar):
     datatemp = io.loadmat(file)
     demori = datatemp['DEM']
     ratio = datatemp['pixelratio']
-    demori[ratio < 0.5] = 0  # don't involve ocean pixels in downscaling
+    demori[ratio < 0.5] = 0  # ocean pixels
     demori[np.isnan(demori)] = 0
     info = datatemp['Info'][0][0]
     latori = np.arange(info['yll'] + info['Ysize'] * info['nrows'] - info['Ysize'] / 2, info['yll'], -info['Ysize'])
@@ -317,7 +317,7 @@ def readstndata(inpath_raw, stnID, ndays):
 # method choices: "GWR", "nearest", "linear", "TLR1", "TLR2". Note: TLR1 is fixed tlr of -6.5. TLR2 is MERRA2-based tlr.
 
 
-# read from slurm
+# read from inputs
 # a = int(sys.argv[1])
 # b = int(sys.argv[2])
 # downtostn_method = sys.argv[3]

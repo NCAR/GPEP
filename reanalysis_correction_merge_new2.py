@@ -11,22 +11,23 @@ import datetime
 from bma_merge import bma
 from auxiliary_merge import *
 
+
 def empirical_cdf(data, probtar):
     # data: vector of data
     data2 = data[~np.isnan(data)]
     if len(data2) > 0:
         ds = np.sort(data2)
-        probreal = np.arange(len(data2)) / (len(data2)+1)
+        probreal = np.arange(len(data2)) / (len(data2) + 1)
         ecdf_out = np.interp(probtar, probreal, ds)
     else:
         ecdf_out = np.nan * np.zeros(len(probtar))
     return ecdf_out
 
+
 def cdf_correction(cdf_ref, value_ref, cdf_raw, value_raw, value_tar):
     prob_tar = np.interp(value_tar, value_raw, cdf_raw)
     value_out = np.interp(prob_tar, cdf_ref, value_ref)
     return value_out
-
 
 
 def calculate_anomaly(datatar, dataref, hwsize, amode, upbound=5, lowbound=0.2):
@@ -68,6 +69,7 @@ def calculate_anomaly(datatar, dataref, hwsize, amode, upbound=5, lowbound=0.2):
     anom[anom > upbound] = upbound
     anom[anom < lowbound] = lowbound
     return anom
+
 
 def findnearstn(stnlat, stnlon, tarlat, tarlon, nearnum, noself):
     # only use lat/lon to find near stations without considering distance in km
@@ -154,6 +156,7 @@ def error_correction_new(corrmode, stndata_i2_near, nearstn_weighti2, readata_st
 
     return corrdata_out
 
+
 def error_correction(dataori, anomaly, mode='ratio'):
     # default: time is the last dimension
     if mode == 'ratio':
@@ -192,6 +195,7 @@ def calweight(obs, rea, mode, preprocess=True):
         weight = np.ones(reanum) / reanum
     return weight
 
+
 def weightmerge(data, weight):
     if np.ndim(data) == 2:
         weight2 = weight.copy()
@@ -201,7 +205,7 @@ def weightmerge(data, weight):
         weight2 = weight.copy()
         weight2[np.isnan(data)] = np.nan
         dataout = np.nansum(data * weight2, axis=2) / np.nansum(weight2, axis=2)
-        dataout[np.isnan(data[:,:,0])]=np.nan
+        dataout[np.isnan(data[:, :, 0])] = np.nan
     return dataout
 
 
@@ -215,7 +219,7 @@ def correction_merge_stn(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_d
     reamerge_weight_stn = np.nan * np.zeros([nstn, reanum], dtype=np.float32)  # weight used to obtain reamerge_stn
     reamerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)  # merged reanalysis at station points
 
-    for i1 in range(nstn): # layer-1
+    for i1 in range(nstn):  # layer-1
         if np.mod(i1, 1000) == 0:
             print(i1)
         if np.isnan(stndata[i1, 0]):
@@ -231,13 +235,13 @@ def correction_merge_stn(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_d
 
         # start layer-2
         reamerge_weight_i2 = np.zeros([nearstn_numi1, reanum])
-        for i2 in range(nearstn_numi1): # layer-2
+        for i2 in range(nearstn_numi1):  # layer-2
             nearstn_loci2 = nearstn_loc[nearstn_loci1[i2], :]
             nearstn_disti2 = nearstn_dist[nearstn_loci1[i2], :]
-            induse = (nearstn_loci2 > -1) & (nearstn_loci2 != i1) # i1 should be independent
+            induse = (nearstn_loci2 > -1) & (nearstn_loci2 != i1)  # i1 should be independent
             nearstn_loci2 = nearstn_loci2[induse]
             nearstn_disti2 = nearstn_disti2[induse]
-            maxd = np.max([np.max(nearstn_disti2)+1, 100])
+            maxd = np.max([np.max(nearstn_disti2) + 1, 100])
             nearstn_weighti2 = au.distanceweight(nearstn_disti2, maxd, 3)
             nearstn_weighti2 = nearstn_weighti2 / np.sum(nearstn_weighti2)
 
@@ -255,7 +259,7 @@ def correction_merge_stn(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_d
             corrdata_i2 = np.zeros([ntimes, reanum])
             for r in range(reanum):
                 corrdata_i2[:, r] = error_correction_new(corrmode, stndata_i2_near, nearstn_weighti2,
-                                                         readata_stn_i2[r,:], readata_i2_near[r,:,:], ecdf_prob)
+                                                         readata_stn_i2[r, :], readata_i2_near[r, :, :], ecdf_prob)
 
             # calculate merging weight for i2
             if weightmode == 'BMA' and var == 'prcp':
@@ -320,7 +324,7 @@ def correction_merge_stn(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_d
     return reamerge_stn, reamerge_weight_stn, reacorr_stn
 
 
-def correction_comparison(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_dist, corrmode):
+def correction_rea(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_dist, corrmode):
     # compare the performance of daily-scale multiplicative correction and QM
     reanum, nstn, ntimes = np.shape(readata_stn)
     nprob = len(ecdf_prob)
@@ -328,7 +332,7 @@ def correction_comparison(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_
     # initialization
     reacorr = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)  # corrected reanalysis data
 
-    for i1 in range(nstn): # layer-1
+    for i1 in range(nstn):  # layer-1
         # if np.mod(i1, 1000) == 0:
         #     print(i1)
         if np.isnan(stndata[i1, 0]):
@@ -359,19 +363,19 @@ def correction_comparison(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_
 
     return reacorr
 
-def correction_merge_grid(stndata, readata_raw, readata_stn, reacorr_stn, reamerge_stn, reamerge_weight_stn, neargrid_loc,
-         neargrid_dist, merge_choice, mask, hwsize, corrmode, anombound, var, weightmode):
 
+def correction_merge_grid(stndata, readata_raw, readata_stn, reacorr_stn, reamerge_stn, reamerge_weight_stn,
+                          neargrid_loc,
+                          neargrid_dist, merge_choice, mask, hwsize, corrmode, anombound, var, weightmode):
     nrows, ncols, nearnum = np.shape(neargrid_loc)
     reanum, nstn, nday = np.shape(readata_stn)
 
     neargrid_loc = neargrid_loc.copy()
     neargrid_dist = neargrid_dist.copy()
-    mask2 = np.tile(mask[:,:,np.newaxis], (1,1,nearnum))
+    mask2 = np.tile(mask[:, :, np.newaxis], (1, 1, nearnum))
     neargrid_loc[mask2 != 1] = -1
     neargrid_dist[mask2 != 1] = np.nan
     del mask2
-
 
     # correct raw gridded reanalysis data using all stations
     corr_data = np.nan * np.zeros([reanum, nrows, ncols, nday], dtype=np.float32)
@@ -380,7 +384,7 @@ def correction_merge_grid(stndata, readata_raw, readata_stn, reacorr_stn, reamer
         anom_ori = calculate_anomaly(readata_stn[rr, :, :], stndata[:, :],
                                      hwsize, corrmode, upbound=anombound[1], lowbound=anombound[0])
         anom_ext = extrapolation(anom_ori, neargrid_loc, neargrid_dist)
-        corr_data[rr, :, :, :] = error_correction(readata_raw[rr,:,:,:], anom_ext, mode=corrmode)
+        corr_data[rr, :, :, :] = error_correction(readata_raw[rr, :, :, :], anom_ext, mode=corrmode)
 
     # first error estimation
     corr_error = np.nan * np.zeros([reanum, nrows, ncols, nday], dtype=np.float32)
@@ -443,14 +447,13 @@ def correction_merge_grid(stndata, readata_raw, readata_stn, reacorr_stn, reamer
     return corr_data, corr_error, merge_data, merge_error_out
 
 
-def mse_error(stndata, reacorr_stn, reamerge_stn, neargrid_loc, neargrid_dist, merge_choice, mask, var, pcptrans = False):
-
+def mse_error(stndata, reacorr_stn, reamerge_stn, neargrid_loc, neargrid_dist, merge_choice, mask, var, pcptrans=False):
     nrows, ncols, nearnum = np.shape(neargrid_loc)
     reanum, nstn, nday = np.shape(reacorr_stn)
 
     neargrid_loc = neargrid_loc.copy()
     neargrid_dist = neargrid_dist.copy()
-    mask2 = np.tile(mask[:,:,np.newaxis], (1,1,nearnum))
+    mask2 = np.tile(mask[:, :, np.newaxis], (1, 1, nearnum))
     neargrid_loc[mask2 != 1] = -1
     neargrid_dist[mask2 != 1] = np.nan
     del mask2
@@ -481,110 +484,107 @@ def mse_error(stndata, reacorr_stn, reamerge_stn, neargrid_loc, neargrid_dist, m
 
 
 ########################################################################################################################
+# time periods and methods
+# var = 'prcp'  # ['prcp', 'tmean', 'trange']: this should be input from sbtach script
+# weightmode for merging: (CC, RMSE, BMA): Weight = CC**2, or Weight = 1/RMSE**2, or Weight = BMA
+# corrmode: QM, Mul_Climo, Mul_Daily, Add_Climo, Add_Climo
+# year range for merging. note weight is calculated using all data not limited by year
 
+# read from inputs
 # var = sys.argv[1]
 # weightmode = sys.argv[2]
 # y1 = int(sys.argv[3])
 # y2 = int(sys.argv[4])
 # year = [y1, y2]
-var='prcp'
+
+# embeded
+var = 'prcp'
 weightmode = 'BMA'
-y1=2000
-y2=2000
-year = [y1,y2]
-print('var is ',var)
-print('weightmode is ',weightmode)
-print('years are ',y1,y2)
+corrmode = 'QM'
+y1 = 2000
+y2 = 2000
+year = [y1, y2]
+
+print('var is ', var)
+print('weightmode is ', weightmode)
+print('years are ', y1, y2)
 
 ########################################################################################################################
-# var = 'prcp'  # ['prcp', 'tmean', 'trange']: this should be input from sbtach script
-# weightmode = 'RMSE'  # (CC, RMSE, BMA). Weight = CC**2, or Weight = 1/RMSE**2, or Weight = BMA
-# year = [1979, 2018]  # year range for merging. note weight is calculated using all data not limited by year
+
 # basic settings
 lontar = np.arange(-180 + 0.05, -50, 0.1)
 lattar = np.arange(85 - 0.05, 5, -0.1)
 nearnum = 8  # the number of nearby stations used to extrapolate points to grids (for correction and merging)
 anombound = [0.2, 10]  # upper and lower bound when calculating the anomaly for correction
+# prefix = ['ERA5_', 'MERRA2_', 'JRA55_']
 
-# input files
-# station list and data
-# gmet_stnfile = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'
-# gmet_stndatafile = '/home/gut428/stndata_whole.npz'
+### Local Mac settings
+# input files/paths
 gmet_stnfile = '/Users/localuser/Research/EMDNA/basicinfo/stnlist_whole.txt'
-gmet_stndatafile = '/Users/localuser//Research/EMDNA/stndata_whole.npz'  # to be saved. only process when absent
-
-# mask file
-# file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
+gmet_stndatafile = '/Users/localuser//Research/EMDNA/stndata_whole.npz'
 file_mask = './DEM/NA_DEM_010deg_trim.mat'
-
-# downscaled reanalysis: gridded data
-prefix = ['ERA5_', 'MERRA2_', 'JRA55_']
-# downscaled reanalysis data at station points
-# path_readowngrid = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds',
-#                    '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds',
-#                    '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_ds']
-# file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds/ERA5_downto_stn.npz',
-#                    '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds/MERRA2_downto_stn.npz',
-#                    '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_ds/JRA55_downto_stn.npz']
-path_readowngrid = ['/Users/localuser/Research/Test',
-                   '/Users/localuser/Research/Test',
-                   '/Users/localuser/Research/Test']
-# file_readownstn = ['/Users/localuser/Research/EMDNA/downscale/ERA5_downto_stn_nearest.npz',
+# path_readowngrid = ['/Users/localuser/Research/Test',  # downscaled gridded data
+#                     '/Users/localuser/Research/Test',
+#                     '/Users/localuser/Research/Test']
+# file_readownstn = ['/Users/localuser/Research/EMDNA/downscale/ERA5_downto_stn_nearest.npz', # downscaled to stn points
 #                    '/Users/localuser/Research/EMDNA/downscale/MERRA2_downto_stn_nearest.npz',
 #                    '/Users/localuser/Research/EMDNA/downscale/JRA55_downto_stn_nearest.npz']
-file_readownstn = ['/Users/localuser/Research/EMDNA/downscale/MERRA2_downto_stn_nearest.npz']
+file_readownstn = ['/Users/localuser/Research/EMDNA/downscale/JRA55_downto_stn_nearest.npz']
+
+# output files/paths (can also be used as inputs once generated)
+near_path = '/Users/localuser/Research/EMDNA/correction'  # path to save near station for each grid/cell
+path_reacorr = '/Users/localuser/Research/EMDNA/correction' # path to save corrected reanalysis data at station points
+path_merge = '/Users/localuser/Research/EMDNA/merge'
+
+near_stnfile = near_path + '/near_stn_' + var + '.npz'
+near_gridfile = near_path + '/near_grid_' + var + '.npz'
+file_corrmerge_stn = path_merge + '/mergecorr_stn_' + var + '_' + weightmode + '.npz'  # file of indepedent corrected/merging data and merging weights
+file_mergechoice = path_merge + '/mergechoice_' + var + '_' + weightmode + '.npz'
+### Local Mac settings
 
 
-# near stations
-near_path = '/Users/localuser/Research/EMDNA/correction'
-# near_file_GMET = '/Users/localuser/GMET/pyGMET_NA/weight_nearstn.npz'
-# near_path = '/home/gut428/ReanalysisCorrMerge'
-# near_file_GMET = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/weight.npz'
-# useGMET = True
-
-# error and merging at station level
-path_reastn_cv = '/Users/localuser/Research/EMDNA/correction'
-path_reastn_corr = '/Users/localuser/Research/EMDNA/correction'
-# path_reastn_cv = '/datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/CrossValidate_2layer'
-# path_reastn_cv = '/home/gut428/ReanalysisCorrMerge/CrossValidate_2layer'
-file_corrmerge_stn = path_reastn_cv + '/mergecorr_' + var + '_' + weightmode + '.npz'
-
-# output corrected and merged data
-path_reacorr = '/Users/localuser/Research/Test'
-path_merge = '/Users/localuser/Research/Test'
-# path_reacorr = '/home/gut428/ReanalysisCorrMerge/Reanalysis_corr'
+# ### Plato settings
+# # input files/paths
+# gmet_stnfile = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'
+# gmet_stndatafile = '/Users/localuser/Research/EMDNA/stndata_whole.npz'
+# file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
+# # path_readowngrid = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds',  # downscaled gridded data
+# #                    '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds',
+# #                    '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_ds']
+# # file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds/ERA5_downto_stn.npz', # downscaled to stn points
+# #                    '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds/MERRA2_downto_stn.npz',
+# #                    '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_ds/JRA55_downto_stn.npz']
+# file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds/MERRA2_downto_stn.npz']
+#
+# # output files/paths (can also be used as inputs once generated)
+# near_path = '/home/gut428/ReanalysisCorrMerge'  # path to save near station for each grid/cell
+# path_reacorr = '/home/gut428/ReanalysisCorrMerge/Reanalysis_corr'  # path to save corrected reanalysis data at station points
 # path_merge = '/home/gut428/ReanalysisCorrMerge/Reanalysis_merge'
-file_mergechoice = path_merge + '/mergechoice_' + var + '_' +  weightmode + '.npz'
-
-# file_ecdf = '/home/gut428/ReanalysisCorrMerge/stn_ecdf_' + var + '.npz'
-# file_ecdf = '/Users/localuser/Research/Test/stn_ecdf_' + var + '.npz'
+#
+# near_stnfile = near_path + '/near_stn_' + var + '.npz'
+# near_gridfile = near_path + '/near_grid_' + var + '.npz'
+# file_corrmerge_stn = path_merge + '/mergecorr_stn_' + var + '_' + weightmode + '.npz'  # file of indepedent corrected/merging data and merging weights
+# file_mergechoice = path_merge + '/mergechoice_' + var + '_' + weightmode + '.npz'
+# ### Plato settings
 
 ########################################################################################################################
 
 # basic processing
 print('start basic processing')
-# decide correction mode according to variables
-# corrmode: QM, Mul_Climo, Mul_Daily, Add_Climo, Add_Climo
-# Mul_ has default upper limit of 10
-if var == 'prcp':
-    corrmode = 'Mul_Climo'
-elif var == 'tmean' or var == 'trange':
-    corrmode = 'Mul_Climo'
-else:
-    sys.exit('Unknown correction mode')
 
 # mask
 mask = io.loadmat(file_mask)
 mask = mask['DEM']
 mask[~np.isnan(mask)] = 1  # 1: valid pixels
-# attributes
+
+# meshed lat/lon of the target region
 reanum = len(file_readownstn)
 nrows, ncols = np.shape(mask)
 lontarm, lattarm = np.meshgrid(lontar, lattar)
 lontarm[np.isnan(mask)] = np.nan
 lattarm[np.isnan(mask)] = np.nan
 
-# date
+# date list
 date_list, date_number = m_DateList(1979, 2018, 'ByYear')
 
 # load observations for all stations
@@ -596,19 +596,12 @@ del datatemp
 
 # probability bins for QM
 binprob = 500
-prob_stn = np.arange(0, 1 + 1 / binprob, 1 / binprob)
+ecdf_prob = np.arange(0, 1 + 1 / binprob, 1 / binprob)
 
 ########################################################################################################################
 
-# find near stations for all grids and station
-if var == 'trange':
-    vari = 'tmean'  # trange and tmean have the same index
-else:
-    vari = var
-
-near_stnfile = near_path + '/near_stn_' + vari + '.npz'
-near_gridfile = near_path + '/near_grid_' + vari + '.npz'
-
+# find near stations
+# find near stations for all stations
 if os.path.isfile(near_stnfile):
     print('load near station information for points')
     with np.load(near_stnfile) as datatemp:
@@ -618,11 +611,12 @@ if os.path.isfile(near_stnfile):
 else:
     print('find near stations for station points')
     stnllein = stnlle.copy()
-    stnllein[np.isnan(stndata[:, 0]),:] = np.nan
-    nearstn_loc, nearstn_dist = findnearstn\
+    stnllein[np.isnan(stndata[:, 0]), :] = np.nan
+    nearstn_loc, nearstn_dist = findnearstn \
         (stnllein[:, 0], stnllein[:, 1], stnllein[:, 0], stnllein[:, 1], nearnum, 1)
     np.savez_compressed(near_stnfile, nearstn_loc=nearstn_loc, nearstn_dist=nearstn_dist)
 
+# find near stations for all grids
 # if os.path.isfile(near_gridfile):
 #     print('load near station information for grids')
 #     with np.load(near_gridfile) as datatemp:
@@ -644,22 +638,22 @@ else:
 # if os.path.isfile(file_ecdf):
 #     datatemp = np.load(file_ecdf)
 #     ecdf_stn = datatemp['ecdf']
-#     prob_stn = datatemp['prob']
+#     ecdf_prob = datatemp['prob']
 # else:
 #     print('estimate ecdf of stations',)
-#     prob_stn = np.arange(0, 1 + 1 / binprob, 1 / binprob)
+#     ecdf_prob = np.arange(0, 1 + 1 / binprob, 1 / binprob)
 #     ecdf_stn = np.nan * np.zeros([12, nstn, binprob + 1], dtype=np.float32)
 #     for m in range(12):
 #         print('month', m+1)
 #         indm = date_number['mm'] == (m + 1)
 #         for i in range(nstn):
 #             if not np.isnan(stndata[i, 0]):
-#                 ecdf_stn[m, i, :] = empirical_cdf(stndata[i, indm], prob_stn)
-#     np.savez_compressed(file_ecdf, ecdf=ecdf_stn, prob=prob_stn, stnlle=stnlle)
+#                 ecdf_stn[m, i, :] = empirical_cdf(stndata[i, indm], ecdf_prob)
+#     np.savez_compressed(file_ecdf, ecdf=ecdf_stn, prob=ecdf_prob, stnlle=stnlle)
 
 ########################################################################################################################
 
-# load downscaled reanalysis for all stations
+# load downscaled reanalysis at station points
 print('load downscaled reanalysis data at station points')
 readata_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
 for rr in range(reanum):
@@ -671,21 +665,22 @@ for rr in range(reanum):
     readata_stn[rr, :, :] = temp
     del dr, temp
 if var == 'prcp':
-    readata_stn[readata_stn<0] = 0
+    readata_stn[readata_stn < 0] = 0
 
 ########################################################################################################################
 
-# compare the performance of different error correction methods
-corrmode = 'QM'
-filecorrstn = path_reastn_corr + '/corr_' + var + '_' + corrmode + '.npz'
+# correction reanalysis at station points
+# this step is to support comparison between different methods. In practice, this step is not very necessary.
+filecorrstn = path_reacorr + '/JRA55_corrstn_nearest_' + var + '_' + corrmode + '.npz'
 if not os.path.isfile(filecorrstn):
     reacorr_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
     for m in range(12):
-        print('month', m+1)
+        print('month', m + 1)
         indm = date_number['mm'] == (m + 1)
-        corrm = correction_comparison(stndata[:, indm], prob_stn, readata_stn[:,:,indm], nearstn_loc, nearstn_dist, corrmode)
-        reacorr_stn[:,:,indm] = corrm
-        np.savez_compressed(filecorrstn,reacorr_stn=reacorr_stn)
+        corrm = correction_rea(stndata[:, indm], ecdf_prob, readata_stn[:, :, indm],
+                               nearstn_loc, nearstn_dist, corrmode)
+        reacorr_stn[:, :, indm] = corrm
+        np.savez_compressed(filecorrstn, reacorr_stn=reacorr_stn)
 
 ########################################################################################################################
 
@@ -718,17 +713,18 @@ else:
     reacorr_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
     # for each month
     for m in range(12):
-        print('month', m+1)
+        print('month', m + 1)
         indm = date_number['mm'] == (m + 1)
         reamerge_stnm, reamerge_weight_stnm, reacorr_stnm = \
-            correction_merge_stn(stndata[:,indm], prob_stn, readata_stn[:,:,indm], nearstn_loc, nearstn_dist,
-                                      var, corrmode, weightmode)
+            correction_merge_stn(stndata[:, indm], ecdf_prob, readata_stn[:, :, indm], nearstn_loc, nearstn_dist,
+                                 var, corrmode, weightmode)
         reamerge_stn[:, indm] = reamerge_stnm
         reacorr_stn[:, :, indm] = reacorr_stnm
         reamerge_weight_stn[m, :, :] = reamerge_weight_stnm
+
     # the variables are independent with their concurrent stations. thus, station data can be used to evaluate them
-    # np.savez_compressed(file_corrmerge_stn, reamerge_stn=reamerge_stn, reamerge_weight_stn=reamerge_weight_stn,
-    #                     reacorr_stn=reacorr_stn, date_list=date_list)
+    np.savez_compressed(file_corrmerge_stn, reamerge_stn=reamerge_stn, reamerge_weight_stn=reamerge_weight_stn,
+                        reacorr_stn=reacorr_stn, date_list=date_list)
 
 ########################################################################################################################
 
@@ -860,7 +856,6 @@ else:
 #         np.savez_compressed(filemse, mse_error=mse_error)
 
 
-
 ########################################################################################################################
 
 # probability of precipitation
@@ -983,11 +978,3 @@ else:
 #
 #     return rea_threshold, rea_csi, pop_reamerge
 #
-
-
-
-
-
-
-
-
