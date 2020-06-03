@@ -145,7 +145,7 @@ for v in range(len(vars)):
         if not os.path.isfile(filemerge_stnm):
             # use optimal interpolation to get OI-merged estimate at each station points
             for i in range(nstn):
-                if np.mod(i,2000)==0:
+                if np.mod(i,100)==0:
                     print('station',i,nstn)
 
                 if np.isnan(observation_stn[i, 0]):
