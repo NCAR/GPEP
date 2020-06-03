@@ -134,7 +134,7 @@ for v in range(len(vars)):
     del datatemp
 
     # start OI merging
-    oimerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.nan)
+    oimerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)
 
     for m in range(month, month+1):
         print('month', m + 1)
@@ -190,7 +190,7 @@ for v in range(len(vars)):
             flag = 0
 
     if flag==1:
-        oimerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.nan)
+        oimerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)
         filemerge_stn = path_oimerge + '/OImerge_stn_GWRQMBMA_' + vars[v] + '.npz'
         for m in range(12):
             indm = (date_number['mm'] == m + 1)
