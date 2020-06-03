@@ -136,7 +136,7 @@ for v in range(len(vars)):
     # start OI merging
     oimerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)
 
-    for m in range(month, month+1):
+    for m in range(month-1, month):
         print('month', m + 1)
         indm = (date_number['mm'] == m + 1)
         nday = sum(indm)
