@@ -13,17 +13,20 @@ from auxiliary_merge import *
 ########################################################################################################################
 
 # time periods and methods
-# y1 = int(sys.argv[3])
-# y2 = int(sys.argv[4])
-# year = [y1, y2]
-year = [1980, 1980]
+y1 = int(sys.argv[1])
+y2 = int(sys.argv[2])
+vars = sys.argv[3]
+vars = [vars]
+month = int(sys.argv[4])
+year = [y1, y2]
+# year = [1980, 1980]
 print('year:',year)
 
 ########################################################################################################################
 
 # basic settings
 weightmode = 'BMA' # method used to merge different reanalysis products
-vars = ['prcp', 'tmean', 'trange']
+# vars = ['prcp', 'tmean', 'trange']
 hwsize = 2  # 5X5 space window used to support estimation at the center grid
 lontar = np.arange(-180 + 0.05, -50, 0.1)
 lattar = np.arange(85 - 0.05, 5, -0.1)
@@ -32,33 +35,33 @@ lattar = np.arange(85 - 0.05, 5, -0.1)
 # "Gaussian" is not a good choice because station prcp regression using box-cox has large underestimation
 prcp_space = 'Actual'
 
-### Local Mac settings
+# ### Local Mac settings
+# # input files/paths
+# path_bac = '/Users/localuser/Research/EMDNA/merge' # data that will be used as background
+# path_obs = '/Users/localuser/Research/EMDNA/regression' # data that will be used as observation
+# near_file_GMET = '/Users/localuser/Research/EMDNA/regression/weight_nearstn.npz' # near station of stations/grids
+# file_mask = './DEM/NA_DEM_010deg_trim.mat'
+# FileStnInfo = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'
+# gmet_stndatafile = '/Users/localuser/Research/EMDNA/stndata_whole.npz'
+#
+# # output files/paths (can also be used as inputs once generated)
+# path_oimerge = '/Users/localuser/Research/EMDNA/oimerge'
+#
+# ### Local Mac settings
+
+
+### Plato settings
 # input files/paths
-path_bac = '/Users/localuser/Research/EMDNA/merge' # data that will be used as background
-path_obs = '/Users/localuser/Research/EMDNA/regression' # data that will be used as observation
-near_file_GMET = '/Users/localuser/Research/EMDNA/regression/weight_nearstn.npz' # near station of stations/grids
-file_mask = './DEM/NA_DEM_010deg_trim.mat'
-FileStnInfo = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'
-gmet_stndatafile = '/Users/localuser/Research/EMDNA/stndata_whole.npz'
+path_bac = '/home/gut428/ReanalysisCorrMerge/Reanalysis_merge'
+path_obs = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout'
+near_file_GMET = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/weight.npz'
+file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
+FileStnInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'
+gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA/stndata_whole.npz'
 
 # output files/paths (can also be used as inputs once generated)
-path_oimerge = '/Users/localuser/Research/EMDNA/oimerge'
-
-### Local Mac settings
-
-
-# ### Plato settings
-# # input files/paths
-# path_bac = '/datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/Reanalysis_merge'
-# path_obs = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout'
-# near_file_GMET = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/weight.npz'
-# file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
-# FileStnInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'
-# gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA/stndata_whole.npz'
-
-# # output files/paths (can also be used as inputs once generated)
-# path_oimerge = '/home/gut428/OImerge'
-# ### Plato settings
+path_oimerge = '/home/gut428/OImerge'
+### Plato settings
 
 file_regression_stn = path_obs + '/daily_regression_stn.npz'
 file_corrmerge_stn = [''] * len(vars)
@@ -86,7 +89,7 @@ nstn = len(stnID)
 # this function use nearby stations to get OI-merged estimate at the target station
 for v in range(len(vars)):
     print('OI merge at stations:', vars[v])
-    filemerge_stn = path_oimerge + '/OImerge_stn_GWRQMBMA_' + vars[v] + '.npz'
+    # filemerge_stn = path_oimerge + '/OImerge_stn_GWRQMBMA_' + vars[v] + '.npz'
     # if os.path.isfile(filemerge_stn):
     #     continue
 
@@ -132,46 +135,74 @@ for v in range(len(vars)):
 
     # start OI merging
     oimerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.nan)
-    for m in range(12):
+
+    for m in range(month, month+1):
         print('month', m + 1)
         indm = (date_number['mm'] == m + 1)
         nday = sum(indm)
 
-        # use optimal interpolation to get OI-merged estimate at each station points
-        for i in range(nstn):
-            if np.mod(i,2000)==0:
-                print('station',i,nstn)
+        filemerge_stnm = path_oimerge + '/OImerge_stn_GWRQMBMA_' + vars[v] + '_' + str(m+1) + '.npz'
+        if not os.path.isfile(filemerge_stnm):
+            # use optimal interpolation to get OI-merged estimate at each station points
+            for i in range(nstn):
+                if np.mod(i,2000)==0:
+                    print('station',i,nstn)
 
-            if not np.mod(i, 5)==0:
-                continue
+                if not np.mod(i, 5)==0:
+                    continue
 
-            if np.isnan(observation_stn[i, 0]):
-                continue
+                if np.isnan(observation_stn[i, 0]):
+                    continue
 
-            near_loci = near_loc[i, :]
-            near_loci = near_loci[near_loci > -1]
+                near_loci = near_loc[i, :]
+                near_loci = near_loci[near_loci > -1]
 
-            b_tar = reafinal_stn[i, indm]
-            o_tar = regression_stn[i, indm]
-            b_near = reafinal_stn[near_loci,:][:, indm]
-            o_near = regression_stn[near_loci,:][:, indm]
+                b_tar = reafinal_stn[i, indm]
+                o_tar = regression_stn[i, indm]
+                b_near = reafinal_stn[near_loci,:][:, indm]
+                o_near = regression_stn[near_loci,:][:, indm]
 
-            tar_err_b = b_tar - observation_stn[i, indm]
-            near_err_b = b_near - observation_stn[near_loci,:][:, indm]
-            near_err_o = o_near - observation_stn[near_loci,:][:, indm]
-            weight = OImerge(tar_err_b, near_err_b, near_err_o, eye_o=0)
-            if np.any(np.isnan(weight)) or np.any(abs(weight) > 2):
-                weight = near_weight[i, 0:len(near_loci)]
-                weight = weight / np.sum(weight)
+                tar_err_b = b_tar - observation_stn[i, indm]
+                near_err_b = b_near - observation_stn[near_loci,:][:, indm]
+                near_err_o = o_near - observation_stn[near_loci,:][:, indm]
 
-            diff = o_near - b_near
-            merge_est = b_tar.copy()
-            for id in range(nday):
-                merge_est[id] = merge_est[id] + np.dot(weight, diff[:, id])
+                # delete possible nan values
+                indnan = ~np.isnan(tar_err_b + np.sum(near_err_b,axis=0) + np.sum(near_err_o,axis=0) )
+                weight = OImerge(tar_err_b[indnan], near_err_b[:, indnan], near_err_o[:, indnan], eye_o=0)
+                if np.any(np.isnan(weight)) or np.any(abs(weight) > 2):
+                    weight = near_weight[i, 0:len(near_loci)]
+                    weight = weight / np.sum(weight)
 
-            oimerge_stn[i, indm] = merge_est
+                diff = o_near - b_near
+                merge_est = b_tar.copy()
+                for id in range(nday):
+                    merge_est[id] = merge_est[id] + np.dot(weight, diff[:, id])
 
-    np.savez_compressed(filemerge_stn, oimerge_stn=oimerge_stn, reafinal_stn=reafinal_stn)
+                oimerge_stn[i, indm] = merge_est
+
+            np.savez_compressed(filemerge_stnm, oimerge_stn=oimerge_stn, reafinal_stn=reafinal_stn)
+
+
+# combine all months
+for v in range(len(vars)):
+    flag = 1
+    for m in range(12):
+        print('month', m + 1)
+        filemerge_stnm = path_oimerge + '/OImerge_stn_GWRQMBMA_' + vars[v] + '_' + str(m+1) + '.npz'
+        if not os.path.isfile(filemerge_stnm):
+            flag = 0
+
+    if flag==1:
+        oimerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.nan)
+        filemerge_stn = path_oimerge + '/OImerge_stn_GWRQMBMA_' + vars[v] + '.npz'
+        for m in range(12):
+            indm = (date_number['mm'] == m + 1)
+            nday = sum(indm)
+            filemerge_stnm = path_oimerge + '/OImerge_stn_GWRQMBMA_' + vars[v] + '_' + str(m + 1) + '.npz'
+            datatemp = np.load(filemerge_stnm)
+            oimerge_stnm = datatemp['oimerge_stn']
+            oimerge_stn[:, indm] = oimerge_stnm[:, indm]
+        np.savez_compressed(filemerge_stn, oimerge_stn=oimerge_stn, reafinal_stn=reafinal_stn)
 
 ########################################################################################################################
 
