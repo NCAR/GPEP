@@ -1,6 +1,6 @@
 import numpy as np
 
-def OImerge(tar_err_b, near_err_b, near_err_o, flag_o=0):
+def OImerge(tar_err_b, near_err_b, near_err_o, eye_o=1):
     # tar/near: target and nearby stations/grids
     # o/b: observation/background
     # err: error (o-t or b-t where t is truth)
@@ -14,7 +14,7 @@ def OImerge(tar_err_b, near_err_b, near_err_o, flag_o=0):
     Cb = np.cov(near_err_b)
     Co = np.cov(near_err_o)
 
-    if flag_o != 1:
+    if eye_o == 1:
         Co = np.eye(nstn) * Co # independence assumption
 
     Cb0 = np.zeros(nstn)

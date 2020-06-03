@@ -36,13 +36,13 @@ prcp_space = 'Actual'
 # input files/paths
 path_bac = '/Users/localuser/Research/EMDNA/merge' # data that will be used as background
 path_obs = '/Users/localuser/Research/EMDNA/regression' # data that will be used as observation
-near_file_GMET = '/Users/localuser/GMET/pyGMET_NA/weight_nearstn.npz' # near station of stations/grids
+near_file_GMET = '/Users/localuser/Research/EMDNA/regression/weight_nearstn.npz' # near station of stations/grids
 file_mask = './DEM/NA_DEM_010deg_trim.mat'
 FileStnInfo = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'
-gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA/stndata_whole.npz'
+gmet_stndatafile = '/Users/localuser/Research/EMDNA/stndata_whole.npz'
 
 # output files/paths (can also be used as inputs once generated)
-path_oimerge = '/Users/localuser/GMET/merge'
+path_oimerge = '/Users/localuser/Research/EMDNA/oimerge'
 
 ### Local Mac settings
 
@@ -54,7 +54,8 @@ path_oimerge = '/Users/localuser/GMET/merge'
 # near_file_GMET = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/weight.npz'
 # file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
 # FileStnInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'
-#
+# gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA/stndata_whole.npz'
+
 # # output files/paths (can also be used as inputs once generated)
 # path_oimerge = '/home/gut428/OImerge'
 # ### Plato settings
@@ -62,7 +63,7 @@ path_oimerge = '/Users/localuser/GMET/merge'
 file_regression_stn = path_obs + '/daily_regression_stn.npz'
 file_corrmerge_stn = [''] * len(vars)
 for i in range(len(vars)):
-    file_corrmerge_stn[i] = path_bac + '/mergecorr_' + vars[i] + '_' + weightmode + '.npz'
+    file_corrmerge_stn[i] = path_bac + '/mergecorr_stn_' + vars[i] + '_GWRQM_' + weightmode + '.npz'
 
 ########################################################################################################################
 
@@ -83,11 +84,11 @@ nstn = len(stnID)
 
 # get the error of the merged data for all stations and extrapolate to all grids
 # this function use nearby stations to get OI-merged estimate at the target station
-for v in range(1):
+for v in range(len(vars)):
     print('OI merge at stations:', vars[v])
-    filemerge_stn = path_oimerge + '/OImerge_stn_' + vars[v] + '.npz'
-    if os.path.isfile(filemerge_stn):
-        continue
+    filemerge_stn = path_oimerge + '/OImerge_stn_GWRQMBMA_' + vars[v] + '.npz'
+    # if os.path.isfile(filemerge_stn):
+    #     continue
 
     # load station original observations
     datatemp = np.load(gmet_stndatafile)
@@ -105,16 +106,19 @@ for v in range(1):
     reacorr_stn_all = datatemp['reacorr_stn']
     reanum, nstn, ntimes = np.shape(reacorr_stn_all)
     del datatemp
-    rearmse = np.zeros([nstn, reanum + 1])
-    rearmse[:, 0] = calmetric(reamerge_stn, observation_stn, metname='RMSE')
-    for i in range(3):
-        rearmse[:, i + 1] = calmetric(reacorr_stn[i, :, :], observation_stn, metname='RMSE')
-    bestchoice = np.argmin(rearmse, axis=1)
-    reafinal_stn = reamerge_stn.copy()
-    for i in range(nstn):
-        if bestchoice[i] > 0:
-            reafinal_stn[i, :] = reacorr_stn[bestchoice[i] - 1, i, :]
-
+    reafinal_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)
+    for m in range(12):
+        indm =  (date_number['mm'] == m + 1)
+        rearmse = np.zeros([nstn, reanum + 1])
+        rearmse[:, 0] = calmetric(reamerge_stn_all[:, indm], observation_stn[:, indm], metname='RMSE')
+        for i in range(reanum):
+            rearmse[:, i + 1] = calmetric(reacorr_stn_all[i, :, indm].T, observation_stn[:, indm], metname='RMSE')
+        bestchoice = np.argmin(rearmse, axis=1)
+        for i in range(nstn):
+            if bestchoice[i] > 0:
+                reafinal_stn[i, indm] = reacorr_stn_all[bestchoice[i] - 1, i, indm]
+            else:
+                reafinal_stn[i, indm] = reamerge_stn_all[i, indm]
 
     # load near station information
     datatemp = np.load(near_file_GMET)
@@ -126,74 +130,48 @@ for v in range(1):
         near_weight = datatemp['near_stn_tempWeight']
     del datatemp
 
-    oimerge_stn = np.zeros([nstn, ntimes])
+    # start OI merging
+    oimerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.nan)
+    for m in range(12):
+        print('month', m + 1)
+        indm = (date_number['mm'] == m + 1)
+        nday = sum(indm)
 
-    for y in range(1980, 1981):
-        for m in range(1):
-            print('merging error: date:', y * 100 + m + 1)
-            indym = (date_number['yyyy'] == y) & (date_number['mm'] == m + 1)
-            nday = sum(indym)
-            oimerge_stnym = np.zeros([nstn, nday])
-            oimerge_stnym2 = np.zeros([nstn, nday])
+        # use optimal interpolation to get OI-merged estimate at each station points
+        for i in range(nstn):
+            if np.mod(i,2000)==0:
+                print('station',i,nstn)
 
-            # load station regression estimates at all stations (locally weighted regression)
-            date_cal_start = y * 10000 + (m + 1) * 100 + 1
-            date_cal_end = y * 10000 + (m + 1) * 100 + calendar.monthrange(y, m + 1)[1]
-            datestr = str(date_cal_start) + '-' + str(date_cal_end)
-            file1 = path_obs + '/stndata_' + datestr + '.npz'
-            file2 = path_obs + '/error_' + datestr + '.npz'
-            datatemp1 = np.load(file1)
-            datatemp2 = np.load(file2)
-            observation_stn = datatemp1[vars[v] + '_stn_daily']
-            if vars[v] == 'prcp':
-                regression_stn = observation_stn + datatemp2['pcp' + '_err_stn_raw']
-            else:
-                regression_stn = observation_stn + datatemp2[vars[v] + '_err_stn']
-            del datatemp1, datatemp2
+            if not np.mod(i, 5)==0:
+                continue
 
-            # get the best reanalysis among three original reanalysis datasets and one merged dataset for each station
-            reamerge_stn = reamerge_stn_all[:, indym]
-            reacorr_stn = reacorr_stn_all[:, :, indym]
-            rearmse = np.zeros([nstn, reanum+1])
-            rearmse[:, 0] = calmetric(reamerge_stn, observation_stn, metname='RMSE')
-            for i in range(3):
-                rearmse[:, i + 1] = calmetric(reacorr_stn[i, :, :], observation_stn, metname='RMSE')
-            bestchoice = np.argmin(rearmse, axis=1)
-            reafinal_stn = reamerge_stn.copy()
-            for i in range(nstn):
-                if bestchoice[i] > 0:
-                    reafinal_stn[i, :] = reacorr_stn[bestchoice[i] - 1, i, :]
+            if np.isnan(observation_stn[i, 0]):
+                continue
 
-            # use optimal interpolation to get OI-merged estimate at each station points
-            for i in range(nstn):
-                if not np.isnan(observation_stn[i, 0]):
-                    near_loci = near_loc[i, :]
-                    near_loci = near_loci[near_loci > -1]
-                    if len(near_loci) > (hwsize * 2 + 1) ** 2:
-                        near_loci = near_loci[0:(hwsize * 2 + 1) ** 2]
-                    b_tar = reafinal_stn[i, :]
-                    o_tar = regression_stn[i, :]
-                    b_near = reafinal_stn[near_loci, :]
-                    o_near = regression_stn[near_loci, :]
+            near_loci = near_loc[i, :]
+            near_loci = near_loci[near_loci > -1]
 
-                    tar_err_b = b_tar - observation_stn[i, :]
-                    near_err_b = b_near - observation_stn[near_loci, :]
-                    near_err_o = o_near - observation_stn[near_loci, :]
-                    weight = OImerge(tar_err_b, near_err_b, near_err_o, 0)
-                    if np.any(np.isnan(weight)) or np.any(abs(weight) > 2):
-                        weight = near_weight[i, 0:len(near_loci)]
-                        weight = weight / np.sum(weight)
+            b_tar = reafinal_stn[i, indm]
+            o_tar = regression_stn[i, indm]
+            b_near = reafinal_stn[near_loci,:][:, indm]
+            o_near = regression_stn[near_loci,:][:, indm]
 
-                    diff = o_near - b_near
-                    merge_est = b_tar.copy()
-                    for id in range(nday):
-                        merge_est[id] = merge_est[id] + np.dot(weight, diff[:, id])
+            tar_err_b = b_tar - observation_stn[i, indm]
+            near_err_b = b_near - observation_stn[near_loci,:][:, indm]
+            near_err_o = o_near - observation_stn[near_loci,:][:, indm]
+            weight = OImerge(tar_err_b, near_err_b, near_err_o, eye_o=0)
+            if np.any(np.isnan(weight)) or np.any(abs(weight) > 2):
+                weight = near_weight[i, 0:len(near_loci)]
+                weight = weight / np.sum(weight)
 
-                    oimerge_stnym[i, :] = merge_est
+            diff = o_near - b_near
+            merge_est = b_tar.copy()
+            for id in range(nday):
+                merge_est[id] = merge_est[id] + np.dot(weight, diff[:, id])
 
-            oimerge_stn[:, indym] = oimerge_stnym
+            oimerge_stn[i, indm] = merge_est
 
-    np.savez_compressed(filemerge_stn, oimerge_stn=oimerge_stn)
+    np.savez_compressed(filemerge_stn, oimerge_stn=oimerge_stn, reafinal_stn=reafinal_stn)
 
 ########################################################################################################################
 

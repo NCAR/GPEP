@@ -219,7 +219,7 @@ def correction_merge_stn(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_d
     reamerge_weight_stn = np.nan * np.zeros([nstn, reanum], dtype=np.float32)  # weight used to obtain reamerge_stn
     reamerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)  # merged reanalysis at station points
 
-    for i1 in range(3350,nstn):  # layer-1
+    for i1 in range(nstn):  # layer-1
         if np.mod(i1, 1000) == 0:
             print(i1)
         if np.isnan(stndata[i1, 0]):
@@ -299,14 +299,15 @@ def correction_merge_stn(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_d
         weight_i1 = weight_i1 / np.sum(weight_i1)
 
         weight_use = np.tile(weight_i1, (ntimes, 1))
-        if weightmode == 'BMA' and var == 'prcp':
-            # the merging after box-cox transformation underestimates precipitation in southeast US
-            # and the rationality of box-cox should be revisited
-            # reamerge_stni1 = np.sum(weight_use * box_cox_transform(corrdata_i1), axis=1)
-            # reamerge_stni1 = box_cox_recover(reamerge_stni1)
-            reamerge_stni1 = np.sum(weight_use * corrdata_i1, axis=1)
-        else:
-            reamerge_stni1 = np.sum(weight_use * corrdata_i1, axis=1)
+        weight_use[np.isnan(corrdata_i1)] = np.nan
+        # if weightmode == 'BMA' and var == 'prcp':
+        #     # the merging after box-cox transformation underestimates precipitation in southeast US
+        #     # and the rationality of box-cox should be revisited
+        #     reamerge_stni1 = np.nansum(weight_use * box_cox_transform(corrdata_i1), axis=1) / np.nansum(weight_use, axis=1)
+        #     reamerge_stni1 = box_cox_recover(reamerge_stni1)
+        # else:
+        #     reamerge_stni1 = np.nansum(weight_use * corrdata_i1, axis=1) / np.nansum(weight_use, axis=1)
+        reamerge_stni1 = np.nansum(weight_use * corrdata_i1, axis=1) / np.nansum(weight_use, axis=1)
         reamerge_stn[i1, :] = reamerge_stni1
 
         # get the final merging weight
@@ -526,7 +527,7 @@ anombound = [0.2, 10]  # upper and lower bound when calculating the anomaly for 
 # ### Local Mac settings
 # # input files/paths
 # gmet_stnfile = '/Users/localuser/Research/EMDNA/basicinfo/stnlist_whole.txt'
-# gmet_stndatafile = '/Users/localuser//Research/EMDNA/stndata_whole.npz'
+# gmet_stndatafile = '/Users/localuser/Research/EMDNA/stndata_whole.npz'
 # file_mask = './DEM/NA_DEM_010deg_trim.mat'
 # # path_readowngrid = ['/Users/localuser/Research/Test',  # downscaled gridded data
 # #                     '/Users/localuser/Research/Test',
@@ -568,7 +569,7 @@ path_merge = '/home/gut428/ReanalysisCorrMerge/Reanalysis_merge'
 
 near_stnfile = near_path + '/near_stn_' + var + '.npz'
 near_gridfile = near_path + '/near_grid_' + var + '.npz'
-file_corrmerge_stn = path_merge + '/mergecorr_stn_' + var + '_' + weightmode + '-compare.npz'  # file of indepedent corrected/merging data and merging weights
+file_corrmerge_stn = path_merge + '/mergecorr_stn_' + var + '_GWRQM_' + weightmode + '.npz'  # file of indepedent corrected/merging data and merging weights
 file_mergechoice = path_merge + '/mergechoice_' + var + '_' + weightmode + '.npz'
 ### Plato settings
 
@@ -676,6 +677,7 @@ if var == 'prcp':
 
 # correction reanalysis at station points
 # this step is to support comparison between different methods. In practice, this step is not very necessary.
+
 # filecorrstn = path_reacorr + '/JRA55_corrstn_nearest_' + var + '_' + corrmode + '.npz'
 # if not os.path.isfile(filecorrstn):
 #     reacorr_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
@@ -767,6 +769,8 @@ else:
 
 # final merging with data and error
 # use the same weight with GMET estimation?
+# this part is not used
+
 # if useGMET == True:
 #     print('use near station information from GMET regression')
 #     del neargrid_loc, neargrid_dist
