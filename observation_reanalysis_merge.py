@@ -148,9 +148,6 @@ for v in range(len(vars)):
                 if np.mod(i,2000)==0:
                     print('station',i,nstn)
 
-                if not np.mod(i, 5)==0:
-                    continue
-
                 if np.isnan(observation_stn[i, 0]):
                     continue
 
