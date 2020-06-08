@@ -335,7 +335,7 @@ def readstndata(inpath_raw, stnID, ndays):
 ########################################################################################################################
 
 # time periods and methods
-# method choices: "GWR", "nearest", "linear", "TLR1", "TLR2". Note: TLR1 is fixed tlr of -6.5. TLR2 is ERA5-based tlr.
+# method choices: "GWR", "nearest", "linear", "TLR1", "TLR2". Note: TLR1 is fixed tlr of -6.5. TLR2 is JRA55-based tlr.
 
 
 # read from inputs
@@ -361,37 +361,37 @@ hwsize = 2  # use (2*2+1)**2 grids to perform regression
 # ### Local Mac settings
 # # input files/paths
 # filedem = './DEM/NA_DEM_010deg_trim.mat' # DEM for the target region(0.1 degree)
-# filedem_era = './DEM/ERA5_DEM2.mat' # DEM for the original reanalysis
+# filedem_era = './DEM/JRA55_DEM2.mat' # DEM for the original reanalysis
 # filedist2coast = '/Users/localuser/Research/EMDNA/dist2coast_001.npz' # 0.01-degree distance to coast
-# filetlr = '/Users/localuser/Research/EMDNA/ERA5_TLR.mat' # temperature lapse rate from ERA5
+# filetlr = '/Users/localuser/Research/EMDNA/JRA55_TLR.mat' # temperature lapse rate from JRA55
 # gmet_stnfile = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt' # station lists
 # gmet_stnpath = '/Users/localuser/GMET/StnInput_daily' # station files for gmet_stnfile
-# inpath_raw = '/Users/localuser/Research/EMDNA/downscale/ERA5' # path for original gridded reanalysis data
+# inpath_raw = '/Users/localuser/Research/EMDNA/downscale/JRA55' # path for original gridded reanalysis data
 
 # # output files/paths (can also be used as inputs once generated)
-# filenear = '/Users/localuser/Research/EMDNA/downscale/ERA5/ERA5_weight_dem.npz' # file of dem and near gird information
+# filenear = '/Users/localuser/Research/EMDNA/downscale/JRA55/JRA55_weight_dem.npz' # file of dem and near gird information
 # gmet_stndatafile = '/Users/localuser/Research/EMDNA/stndata_whole.npz' # to be saved. only process when absent
-# outpath_ds = '/Users/localuser/Research/EMDNA/downscale/ERA5' # path for saving downscaled reanalysis data
+# outpath_ds = '/Users/localuser/Research/EMDNA/downscale/JRA55' # path for saving downscaled reanalysis data
 # ### Local Mac settings
 
 ### Plato settings
 # input files/paths
 filedem = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'  # DEM for the target region(0.1 degree)
-filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/ERA5_DEM2.mat'  # DEM for the original reanalysis
+filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/JRA55_DEM2.mat'  # DEM for the original reanalysis
 filedist2coast = '/datastore/GLOBALWATER/CommonData/EMDNA/Auxiliary/dist2coast_001.npz'  # 0.01-degree distance to coast
-filetlr = '/datastore/GLOBALWATER/CommonData/EMDNA/Auxiliary/ERA5_TLR.mat'  # temperature lapse rate from ERA5
+filetlr = '/datastore/GLOBALWATER/CommonData/EMDNA/Auxiliary/JRA55_TLR.mat'  # temperature lapse rate from JRA55
 gmet_stnfile = '/datastore/GLOBALWATER/CommonData/EMDNA/StnGridInfo/stnlist_whole.txt'  # station lists
 gmet_stnpath = '/home/gut428/GMET/StnInput_daily'  # station files for gmet_stnfile
-inpath_raw = '/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_raw'  # path for original gridded reanalysis data
+inpath_raw = '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_raw'  # path for original gridded reanalysis data
 
 # output files/paths (can also be used as inputs once generated)
-filenear = '/home/gut428/ERA5_day_ds/ERA5_weight_dem.npz'  # file of dem and near gird information
+filenear = '/home/gut428/JRA55_day_ds/JRA55_weight_dem.npz'  # file of dem and near gird information
 gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA/stndata_whole.npz'  # to be saved. only process when absent
-outpath_ds = '/home/gut428/ERA5_day_ds'  # path for saving downscaled reanalysis data
+outpath_ds = '/home/gut428/JRA55_day_ds'  # path for saving downscaled reanalysis data
 ### Plato settings
 
 # output downscale file at station points
-file_readownstn = outpath_ds + '/ERA5_downto_stn_' + downtostn_method + '.npz'  # downscale to station points (1979-2018)
+file_readownstn = outpath_ds + '/JRA55_downto_stn_' + downtostn_method + '.npz'  # downscale to station points (1979-2018)
 
 ########################################################################################################################
 
@@ -417,7 +417,7 @@ stn_col = ((stn_lle[:, 1] + 180) / 0.1).astype(int)
 nstn = len(stn_ID)
 
 # load the lat/lon of original data
-infile = inpath_raw + '/ERA5_' + vars[0] + '_' + str(year[1]) + '.mat'
+infile = inpath_raw + '/JRA55_' + vars[0] + '_' + str(year[1]) + '.mat'
 datatemp = {}
 f = h5py.File(infile, 'r')
 for k, v in f.items():
@@ -512,7 +512,7 @@ else:
 #             TLRy = np.nan
 #
 #         # star downscaling
-#         file_readownstny = outpath_ds + '/ERA5_downto_stn_' + downtostn_method + str(y) + '.npz'
+#         file_readownstny = outpath_ds + '/JRA55_downto_stn_' + downtostn_method + str(y) + '.npz'
 #         if os.path.isfile(file_readownstny):
 #             print('file exists. loading')
 #             datatemp = np.load(file_readownstny)
@@ -521,7 +521,7 @@ else:
 #             tmaxtar = datatemp['tmaxtar']
 #         else:
 #             # downscaling: prcp
-#             infile = inpath_raw + '/ERA5_prcp_' + str(y) + '.mat'
+#             infile = inpath_raw + '/JRA55_prcp_' + str(y) + '.mat'
 #             if not os.path.isfile(infile):
 #                 print(infile,'does not exist')
 #                 continue
@@ -542,7 +542,7 @@ else:
 #                                              TLRy)
 #
 #             # downscaling: tmin/tmax
-#             infile = inpath_raw + '/ERA5_tmin_' + str(y) + '.mat'
+#             infile = inpath_raw + '/JRA55_tmin_' + str(y) + '.mat'
 #             if not os.path.isfile(infile):
 #                 print(infile,'does not exist')
 #                 continue
@@ -558,7 +558,7 @@ else:
 #                                          stn_row, stn_col, tmean_stn0, downtostn_method, stn_lle, dist2coast_stn, TLRy)
 #
 #             # tmax downscaling
-#             infile = inpath_raw + '/ERA5_tmax_' + str(y) + '.mat'
+#             infile = inpath_raw + '/JRA55_tmax_' + str(y) + '.mat'
 #             if not os.path.isfile(infile):
 #                 print(infile,'does not exist')
 #                 continue
@@ -590,8 +590,8 @@ else:
 for y in range(year[0], year[1] + 1):
     for v in range(len(vars)):
         print('year--var:', y, vars[v])
-        infile = inpath_raw + '/ERA5_' + vars[v] + '_' + str(y) + '.mat'
-        outfile_grid = outpath_ds + '/ERA5_ds_' + vars[v] + '_' + str(y) + '.npz'
+        infile = inpath_raw + '/JRA55_' + vars[v] + '_' + str(y) + '.mat'
+        outfile_grid = outpath_ds + '/JRA55_ds_' + vars[v] + '_' + str(y) + '.npz'
         if os.path.isfile(outfile_grid):
             continue
 
@@ -612,10 +612,10 @@ for y in range(year[0], year[1] + 1):
         np.savez_compressed(outfile_grid, data=datatar, latitude=lattar, longitude=lontar)
 
     # tmin/tmax to tmean/trange
-    infile1 = outpath_ds + '/ERA5_ds_tmin_' + str(y) + '.npz'
-    infile2 = outpath_ds + '/ERA5_ds_tmax_' + str(y) + '.npz'
-    outfile1 = outpath_ds + '/ERA5_ds_tmean_' + str(y) + '.npz'
-    outfile2 = outpath_ds + '/ERA5_ds_trange_' + str(y) + '.npz'
+    infile1 = outpath_ds + '/JRA55_ds_tmin_' + str(y) + '.npz'
+    infile2 = outpath_ds + '/JRA55_ds_tmax_' + str(y) + '.npz'
+    outfile1 = outpath_ds + '/JRA55_ds_tmean_' + str(y) + '.npz'
+    outfile2 = outpath_ds + '/JRA55_ds_trange_' + str(y) + '.npz'
     if os.path.isfile(outfile1) and os.path.isfile(outfile2):
         continue
     tmin = np.load(infile1)

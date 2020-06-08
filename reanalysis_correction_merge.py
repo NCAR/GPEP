@@ -117,7 +117,7 @@ def findnearstn(stnlat, stnlon, tarlat, tarlon, nearnum, noself):
     return nearstn_loc, nearstn_dist
 
 
-def error_correction_new(corrmode, stndata_i2_near, nearstn_weighti2, readata_stn_i2, readata_i2_near, ecdf_prob):
+def error_correction_stn(corrmode, stndata_i2_near, nearstn_weighti2, readata_stn_i2, readata_i2_near, ecdf_prob):
     # corrmode: QM, Mul_Climo, Mul_Daily, Add_Climo, Add_Climo
     nearstn_numi2, ntimes = np.shape(stndata_i2_near)
     corrdata_out = np.zeros(ntimes)
@@ -258,7 +258,7 @@ def correction_merge_stn(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_d
             # error correction for each reanalysis dataset using different modes
             corrdata_i2 = np.zeros([ntimes, reanum])
             for r in range(reanum):
-                corrdata_i2[:, r] = error_correction_new(corrmode, stndata_i2_near, nearstn_weighti2,
+                corrdata_i2[:, r] = error_correction_stn(corrmode, stndata_i2_near, nearstn_weighti2,
                                                          readata_stn_i2[r, :], readata_i2_near[r, :, :], ecdf_prob)
 
             # calculate merging weight for i2
@@ -287,7 +287,7 @@ def correction_merge_stn(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_d
         # get corrected data at i1
         corrdata_i1 = np.zeros([ntimes, reanum])
         for r in range(reanum):
-            corrdata_i1[:, r] = error_correction_new(corrmode, stndata_i1_near, nearstn_weighti1,
+            corrdata_i1[:, r] = error_correction_stn(corrmode, stndata_i1_near, nearstn_weighti1,
                                                      readata_stn_i1[r, :], readata_i1_near[r, :, :], ecdf_prob)
         reacorr_stn[:, i1, :] = corrdata_i1.T
 
@@ -362,7 +362,7 @@ def correction_rea(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_dist, c
         # get corrected data at i1
         corrdata_i1 = np.zeros([ntimes, reanum])
         for r in range(reanum):
-            corrdata_i1[:, r] = error_correction_new(corrmode, stndata_i1_near, nearstn_weighti1,
+            corrdata_i1[:, r] = error_correction_stn(corrmode, stndata_i1_near, nearstn_weighti1,
                                                      readata_stn_i1[r, :], readata_i1_near[r, :, :], ecdf_prob)
         reacorr[:, i1, :] = corrdata_i1.T
 
@@ -560,6 +560,7 @@ file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds/ERA5_dow
 near_path = '/home/gut428/ReanalysisCorrMerge'  # path to save near station for each grid/cell
 path_reacorr = '/home/gut428/ReanalysisCorrMerge/Reanalysis_corr'  # path to save corrected reanalysis data at station points
 path_merge = '/home/gut428/ReanalysisCorrMerge/Reanalysis_merge'
+path_ecdf = '/home/gut428/ReanalysisCorrMerge/ECDF'
 ### Plato settings
 
 
@@ -629,28 +630,6 @@ else:
     stnlle_in[np.isnan(stndata[:, 0]), 0:2] = np.nan
     neargrid_loc, neargrid_dist = findnearstn(stnlle_in[:, 0], stnlle_in[:, 1], lattarm, lontarm, nearnum, 0)
     np.savez_compressed(near_gridfile,neargrid_loc=neargrid_loc,neargrid_dist=neargrid_dist)
-
-########################################################################################################################
-
-# this part is unnecessary because ecdf will calculated within error correction,
-# which will cost more time (acceptable) but is clearer
-
-# calculate the ecdf of station data
-# if os.path.isfile(file_ecdf):
-#     datatemp = np.load(file_ecdf)
-#     ecdf_stn = datatemp['ecdf']
-#     ecdf_prob = datatemp['prob']
-# else:
-#     print('estimate ecdf of stations',)
-#     ecdf_prob = np.arange(0, 1 + 1 / binprob, 1 / binprob)
-#     ecdf_stn = np.nan * np.zeros([12, nstn, binprob + 1], dtype=np.float32)
-#     for m in range(12):
-#         print('month', m+1)
-#         indm = date_number['mm'] == (m + 1)
-#         for i in range(nstn):
-#             if not np.isnan(stndata[i, 0]):
-#                 ecdf_stn[m, i, :] = empirical_cdf(stndata[i, indm], ecdf_prob)
-#     np.savez_compressed(file_ecdf, ecdf=ecdf_stn, prob=ecdf_prob, stnlle=stnlle)
 
 ########################################################################################################################
 
@@ -762,6 +741,43 @@ else:
     np.savez_compressed(file_mergechoice, merge_choice=merge_choice)
 
 ########################################################################################################################
+
+# if QM is used, we have to derive the CDF curve for all grids before correction
+
+# calculate the ecdf of station data
+for m in range(12):
+    print('month', m+1)
+    indm = date_number['mm'] == (m + 1)
+
+    print('estimate ecdf of stations')
+    file_ecdf = path_ecdf + '/ecdf_stn_' + var + '.npz'
+    ecdf_stn = np.nan * np.zeros([nstn, binprob + 1], dtype=np.float32)
+    for i in range(nstn):
+        if not np.isnan(stndata[i, 0]):
+            ecdf_stn[m, i, :] = empirical_cdf(stndata[i, indm], ecdf_prob)
+    np.savez_compressed(file_ecdf, ecdf=ecdf_stn, prob=ecdf_prob, stnlle=stnlle)
+
+    print('estimate ecdf of reanalysis')
+    ecdf_rea = np.nan * np.zeros([nrows, ncols, binprob + 1], dtype=np.float32)
+
+    # read raw gridded reanalysis data by space windows
+
+    for y in range(1979, 2019):
+        readata_raw = np.nan * np.zeros([reanum, nrows, ncols, nday], dtype=np.float32)
+        for rr in range(reanum):
+            if not (prefix[rr] == 'MERRA2_' and y == 1979):
+                filer = path_readowngrid[rr] + '/' + prefix[rr] + 'ds_' + var + '_' + str(y) + '.npz'
+                d = np.load(filer)
+                readata_raw[rr, :, :, :] = d['data']
+                del d
+
+
+
+
+
+
+########################################################################################################################
+
 
 # start final correction and merging
 for y in range(year[0], year[1] + 1):
