@@ -11,8 +11,6 @@
 module load python/3.7.4
 
 # run the application
-srun python -u reanalysis_downscale.py $((${SLURM_ARRAY_TASK_ID}+1978)) $((${SLURM_ARRAY_TASK_ID}+1978))
-
-
+srun python -u reanalysis_downscale.py $((${SLURM_ARRAY_TASK_ID}+1978)) $((${SLURM_ARRAY_TASK_ID}+1978)) GWR
 
 

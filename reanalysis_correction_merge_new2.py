@@ -524,54 +524,54 @@ nearnum = 8  # the number of nearby stations used to extrapolate points to grids
 anombound = [0.2, 10]  # upper and lower bound when calculating the anomaly for correction
 # prefix = ['ERA5_', 'MERRA2_', 'JRA55_']
 
-# ### Local Mac settings
-# # input files/paths
-# gmet_stnfile = '/Users/localuser/Research/EMDNA/basicinfo/stnlist_whole.txt'
-# gmet_stndatafile = '/Users/localuser/Research/EMDNA/stndata_whole.npz'
-# file_mask = './DEM/NA_DEM_010deg_trim.mat'
-# # path_readowngrid = ['/Users/localuser/Research/Test',  # downscaled gridded data
-# #                     '/Users/localuser/Research/Test',
-# #                     '/Users/localuser/Research/Test']
-# file_readownstn = ['/Users/localuser/Research/EMDNA/downscale/ERA5_downto_stn_nearest.npz', # downscaled to stn points
-#                    '/Users/localuser/Research/EMDNA/downscale/MERRA2_downto_stn_nearest.npz',
-#                    '/Users/localuser/Research/EMDNA/downscale/JRA55_downto_stn_nearest.npz']
-# # file_readownstn = ['/Users/localuser/Research/EMDNA/downscale/JRA55_downto_stn_nearest.npz']
-#
-# # output files/paths (can also be used as inputs once generated)
-# near_path = '/Users/localuser/Research/EMDNA/correction'  # path to save near station for each grid/cell
-# path_reacorr = '/Users/localuser/Research/EMDNA/correction' # path to save corrected reanalysis data at station points
-# path_merge = '/Users/localuser/Research/EMDNA/merge'
-#
-# near_stnfile = near_path + '/near_stn_' + var + '.npz'
-# near_gridfile = near_path + '/near_grid_' + var + '.npz'
-# file_corrmerge_stn = path_merge + '/mergecorr_stn_' + var + '_' + weightmode + '-test.npz'  # file of indepedent corrected/merging data and merging weights
-# file_mergechoice = path_merge + '/mergechoice_' + var + '_' + weightmode + '.npz'
-# ### Local Mac settings
-
-
-### Plato settings
+### Local Mac settings
 # input files/paths
-gmet_stnfile = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'
-gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA/stndata_whole.npz'
-file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
-# path_readowngrid = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds',  # downscaled gridded data
-#                    '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds',
-#                    '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_ds']
-file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds/ERA5_downto_stn_GWR.npz', # downscaled to stn points
-                   '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds/MERRA2_downto_stn_GWR.npz',
-                   '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_ds/JRA55_downto_stn_GWR.npz']
-# file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds/MERRA2_downto_stn.npz']
+gmet_stnfile = '/Users/localuser/Research/EMDNA/basicinfo/stnlist_whole.txt'
+gmet_stndatafile = '/Users/localuser/Research/EMDNA/stndata_whole.npz'
+file_mask = './DEM/NA_DEM_010deg_trim.mat'
+# path_readowngrid = ['/Users/localuser/Research/Test',  # downscaled gridded data
+#                     '/Users/localuser/Research/Test',
+#                     '/Users/localuser/Research/Test']
+file_readownstn = ['/Users/localuser/Research/EMDNA/downscale/ERA5_downto_stn_nearest.npz', # downscaled to stn points
+                   '/Users/localuser/Research/EMDNA/downscale/MERRA2_downto_stn_nearest.npz',
+                   '/Users/localuser/Research/EMDNA/downscale/JRA55_downto_stn_nearest.npz']
+# file_readownstn = ['/Users/localuser/Research/EMDNA/downscale/JRA55_downto_stn_nearest.npz']
 
 # output files/paths (can also be used as inputs once generated)
-near_path = '/home/gut428/ReanalysisCorrMerge'  # path to save near station for each grid/cell
-path_reacorr = '/home/gut428/ReanalysisCorrMerge/Reanalysis_corr'  # path to save corrected reanalysis data at station points
-path_merge = '/home/gut428/ReanalysisCorrMerge/Reanalysis_merge'
+near_path = '/Users/localuser/Research/EMDNA/correction'  # path to save near station for each grid/cell
+path_reacorr = '/Users/localuser/Research/EMDNA/correction' # path to save corrected reanalysis data at station points
+path_merge = '/Users/localuser/Research/EMDNA/merge'
 
 near_stnfile = near_path + '/near_stn_' + var + '.npz'
 near_gridfile = near_path + '/near_grid_' + var + '.npz'
-file_corrmerge_stn = path_merge + '/mergecorr_stn_' + var + '_GWRQM_' + weightmode + '.npz'  # file of indepedent corrected/merging data and merging weights
+file_corrmerge_stn = path_merge + '/mergecorr_stn_' + var + '_' + weightmode + '-test.npz'  # file of indepedent corrected/merging data and merging weights
 file_mergechoice = path_merge + '/mergechoice_' + var + '_' + weightmode + '.npz'
-### Plato settings
+### Local Mac settings
+
+
+# ### Plato settings
+# # input files/paths
+# gmet_stnfile = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'
+# gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA/stndata_whole.npz'
+# file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
+# # path_readowngrid = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds',  # downscaled gridded data
+# #                    '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds',
+# #                    '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_ds']
+# file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds/ERA5_downto_stn_GWR.npz', # downscaled to stn points
+#                    '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds/MERRA2_downto_stn_GWR.npz',
+#                    '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_ds/JRA55_downto_stn_GWR.npz']
+# # file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds/MERRA2_downto_stn.npz']
+#
+# # output files/paths (can also be used as inputs once generated)
+# near_path = '/home/gut428/ReanalysisCorrMerge'  # path to save near station for each grid/cell
+# path_reacorr = '/home/gut428/ReanalysisCorrMerge/Reanalysis_corr'  # path to save corrected reanalysis data at station points
+# path_merge = '/home/gut428/ReanalysisCorrMerge/Reanalysis_merge'
+#
+# near_stnfile = near_path + '/near_stn_' + var + '.npz'
+# near_gridfile = near_path + '/near_grid_' + var + '.npz'
+# file_corrmerge_stn = path_merge + '/mergecorr_stn_' + var + '_GWRQM_' + weightmode + '.npz'  # file of indepedent corrected/merging data and merging weights
+# file_mergechoice = path_merge + '/mergechoice_' + var + '_' + weightmode + '.npz'
+# ### Plato settings
 
 ########################################################################################################################
 
@@ -678,16 +678,16 @@ if var == 'prcp':
 # correction reanalysis at station points
 # this step is to support comparison between different methods. In practice, this step is not very necessary.
 
-# filecorrstn = path_reacorr + '/JRA55_corrstn_nearest_' + var + '_' + corrmode + '.npz'
-# if not os.path.isfile(filecorrstn):
-#     reacorr_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
-#     for m in range(12):
-#         print('month', m + 1)
-#         indm = date_number['mm'] == (m + 1)
-#         corrm = correction_rea(stndata[:, indm], ecdf_prob, readata_stn[:, :, indm],
-#                                nearstn_loc, nearstn_dist, corrmode)
-#         reacorr_stn[:, :, indm] = corrm
-#         np.savez_compressed(filecorrstn, reacorr_stn=reacorr_stn)
+filecorrstn = path_reacorr + '/JRA55_corrstn_nearest_' + var + '_' + corrmode + '.npz'
+if not os.path.isfile(filecorrstn):
+    reacorr_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
+    for m in range(12):
+        print('month', m + 1)
+        indm = date_number['mm'] == (m + 1)
+        corrm = correction_rea(stndata[:, indm], ecdf_prob, readata_stn[:, :, indm],
+                               nearstn_loc, nearstn_dist, corrmode)
+        reacorr_stn[:, :, indm] = corrm
+        np.savez_compressed(filecorrstn, reacorr_stn=reacorr_stn)
 
 ########################################################################################################################
 
