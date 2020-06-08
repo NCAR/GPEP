@@ -358,37 +358,37 @@ lontar = np.arange(-180 + 0.05, -50, 0.1)
 lattar = np.arange(85 - 0.05, 5, -0.1)
 hwsize = 2  # use (2*2+1)**2 grids to perform regression
 
-### Local Mac settings
+# ### Local Mac settings
+# # input files/paths
+# filedem = './DEM/NA_DEM_010deg_trim.mat' # DEM for the target region(0.1 degree)
+# filedem_era = './DEM/MERRA2_DEM2.mat' # DEM for the original reanalysis
+# filedist2coast = '/Users/localuser/Research/EMDNA/dist2coast_001.npz' # 0.01-degree distance to coast
+# filetlr = '/Users/localuser/Research/EMDNA/MERRA2_TLR.mat' # temperature lapse rate from MERRA2
+# gmet_stnfile = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt' # station lists
+# gmet_stnpath = '/Users/localuser/GMET/StnInput_daily' # station files for gmet_stnfile
+# inpath_raw = '/Users/localuser/Research/EMDNA/downscale/MERRA2' # path for original gridded reanalysis data
+
+# # output files/paths (can also be used as inputs once generated)
+# filenear = '/Users/localuser/Research/EMDNA/downscale/MERRA2/MERRA2_weight_dem.npz' # file of dem and near gird information
+# gmet_stndatafile = '/Users/localuser/Research/EMDNA/stndata_whole.npz' # to be saved. only process when absent
+# outpath_ds = '/Users/localuser/Research/EMDNA/downscale/MERRA2' # path for saving downscaled reanalysis data
+# ### Local Mac settings
+
+### Plato settings
 # input files/paths
-filedem = './DEM/NA_DEM_010deg_trim.mat' # DEM for the target region(0.1 degree)
-filedem_era = './DEM/MERRA2_DEM2.mat' # DEM for the original reanalysis
-filedist2coast = '/Users/localuser/Research/EMDNA/dist2coast_001.npz' # 0.01-degree distance to coast
-filetlr = '/Users/localuser/Research/EMDNA/MERRA2_TLR.mat' # temperature lapse rate from MERRA2
-gmet_stnfile = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt' # station lists
-gmet_stnpath = '/Users/localuser/GMET/StnInput_daily' # station files for gmet_stnfile
+filedem = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'  # DEM for the target region(0.1 degree)
+filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/DEM/MERRA2_DEM2.mat'  # DEM for the original reanalysis
+filedist2coast = '/datastore/GLOBALWATER/CommonData/EMDNA/Auxiliary/dist2coast_001.npz'  # 0.01-degree distance to coast
+filetlr = '/datastore/GLOBALWATER/CommonData/EMDNA/Auxiliary/EMDNA/MERRA2_TLR.mat'  # temperature lapse rate from MERRA2
+gmet_stnfile = '/datastore/GLOBALWATER/CommonData/EMDNA/StnGridInfo/stnlist_whole.txt'  # station lists
+gmet_stnpath = '/home/gut428/GMET/StnInput_daily'  # station files for gmet_stnfile
+inpath_raw = '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_raw'  # path for original gridded reanalysis data
 
 # output files/paths (can also be used as inputs once generated)
-filenear = '/Users/localuser/Research/EMDNA/downscale/MERRA2/MERRA2_weight_dem.npz' # file of dem and near gird information
-gmet_stndatafile = '/Users/localuser/Research/EMDNA/stndata_whole.npz' # to be saved. only process when absent
-inpath_raw = '/Users/localuser/Research/EMDNA/downscale/MERRA2' # path for original gridded reanalysis data
-outpath_ds = '/Users/localuser/Research/EMDNA/downscale/MERRA2' # path for saving downscaled reanalysis data
-### Local Mac settings
-
-# ### Plato settings
-# # input files/paths
-# filedem = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'  # DEM for the target region(0.1 degree)
-# filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/DEM/MERRA2_DEM2.mat'  # DEM for the original reanalysis
-# filedist2coast = '/datastore/GLOBALWATER/CommonData/EMDNA/Auxiliary/dist2coast_001.npz'  # 0.01-degree distance to coast
-# filetlr = '/datastore/GLOBALWATER/CommonData/EMDNA/Auxiliary/EMDNA/MERRA2_TLR.mat'  # temperature lapse rate from MERRA2
-# gmet_stnfile = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'  # station lists
-# gmet_stnpath = '/home/gut428/GMET/StnInput_daily'  # station files for gmet_stnfile
-#
-# # output files/paths (can also be used as inputs once generated)
-# filenear = '/home/gut428/MERRA2_day_ds/MERRA2_weight_dem.npz'  # file of dem and near gird information
-# gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA/stndata_whole.npz'  # to be saved. only process when absent
-# inpath_raw = '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_raw'  # path for original gridded reanalysis data
-# outpath_ds = '/home/gut428/MERRA2_day_ds'  # path for saving downscaled reanalysis data
-# ### Plato settings
+filenear = '/home/gut428/MERRA2_day_ds/MERRA2_weight_dem.npz'  # file of dem and near gird information
+gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA/stndata_whole.npz'  # to be saved. only process when absent
+outpath_ds = '/home/gut428/MERRA2_day_ds'  # path for saving downscaled reanalysis data
+### Plato settings
 
 # output downscale file at station points
 file_readownstn = outpath_ds + '/MERRA2_downto_stn_' + downtostn_method + '.npz'  # downscale to station points (1979-2018)
