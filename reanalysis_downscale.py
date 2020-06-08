@@ -427,23 +427,24 @@ lonori = datatemp['longitude'][0]
 del datatemp
 
 # 3. load temperature lapse rate (TLR) to support "TLR" downscaling. 12 climatological monthly maps.
-dt = io.loadmat(filetlr)
-TLRori = dt['TLRori']
-latM0 = dt['latM0']
-lonM0 = dt['lonM0']
-del dt
+if downtostn_method == 'TLR1' or downtostn_method == 'TLR2':
+    dt = io.loadmat(filetlr)
+    TLRori = dt['TLRori']
+    latM0 = dt['latM0']
+    lonM0 = dt['lonM0']
+    del dt
 
-TLRnew = np.nan * np.zeros([len(latori), len(lonori), np.shape(TLRori)[2]])
-for i in range(np.shape(TLRori)[2]):
-    f = interpolate.interp2d(latM0, lonM0, TLRori[:, :, 0], kind='linear')
-    tlrnew = f(latori, lonori)
-    tlrnew = np.flipud(tlrnew.T)
-    TLRnew[:, :, i] = tlrnew
-TLRuse = np.nan * np.zeros([len(latori), len(lonori), 12])
-for i in range(12):
-    TLRuse[:, :, i] = np.nanmean(TLRnew[:, :, np.arange(i, np.shape(TLRori)[2], 12)], axis=2)
+    TLRnew = np.nan * np.zeros([len(latori), len(lonori), np.shape(TLRori)[2]])
+    for i in range(np.shape(TLRori)[2]):
+        f = interpolate.interp2d(latM0, lonM0, TLRori[:, :, 0], kind='linear')
+        tlrnew = f(latori, lonori)
+        tlrnew = np.flipud(tlrnew.T)
+        TLRnew[:, :, i] = tlrnew
+    TLRuse = np.nan * np.zeros([len(latori), len(lonori), 12])
+    for i in range(12):
+        TLRuse[:, :, i] = np.nanmean(TLRnew[:, :, np.arange(i, np.shape(TLRori)[2], 12)], axis=2)
 
-del TLRori, TLRnew
+    del TLRori, TLRnew
 
 # 4. calculate distance to coast from a 0.01 degree map using linear interpolation
 dist2coast_stn = dist2coast_cal(filedist2coast, stn_lle[:, [0, 1]])
@@ -506,7 +507,7 @@ else:
 #             for i in range(np.sum(indy)):
 #                 TLRy[:, :, i] = TLRuse[:, :, mmy[i] - 1]
 #         elif downtostn_method == 'TLR1':
-#             TLRy = -6.5 * np.ones([np.shape(TLRuse)[0], np.shape(TLRuse)[1], np.sum(indy)], dtype=np.float32)
+#             TLRy = -6.5 * np.ones([len(latori), len(lonori), np.sum(indy)], dtype=np.float32)
 #         else:
 #             TLRy = np.nan
 #
