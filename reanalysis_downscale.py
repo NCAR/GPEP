@@ -377,7 +377,7 @@ hwsize = 2  # use (2*2+1)**2 grids to perform regression
 ### Plato settings
 # input files/paths
 filedem = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'  # DEM for the target region(0.1 degree)
-filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/DEM/MERRA2_DEM2.mat'  # DEM for the original reanalysis
+filedem_era = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/MERRA2_DEM2.mat'  # DEM for the original reanalysis
 filedist2coast = '/datastore/GLOBALWATER/CommonData/EMDNA/Auxiliary/dist2coast_001.npz'  # 0.01-degree distance to coast
 filetlr = '/datastore/GLOBALWATER/CommonData/EMDNA/Auxiliary/MERRA2_TLR.mat'  # temperature lapse rate from MERRA2
 gmet_stnfile = '/datastore/GLOBALWATER/CommonData/EMDNA/StnGridInfo/stnlist_whole.txt'  # station lists
