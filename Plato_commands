@@ -32,7 +32,6 @@ sbatch Plato_${y}.sh
 done
 
 
-
 for y in {1979..2018..1}
 do
 FILE=/home/gut428/ReanalysisCorrMerge/Reanalysis_corr/reacorrdata_prcp_${y}12.npz

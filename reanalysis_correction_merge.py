@@ -976,7 +976,7 @@ for m in range(12):
         ################################################################################################################
 
         # start BMA-based merging
-        if os.path.isfile(filebma_merge):
+        if not os.path.isfile(filebma_merge):
             # initialization
             bma_data = np.nan * np.zeros([nrows, ncols, mmdays], dtype=np.float32)
             # bma_error = np.nan * np.zeros([nrows, ncols, mmdays], dtype=np.float32)

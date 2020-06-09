@@ -587,8 +587,10 @@ for m in range(m1-1,m2):
             if not np.isnan(stndata[i, 0]):
                 ecdf_stn[i, :] = empirical_cdf(stndata[i, indm], ecdf_prob)
         np.savez_compressed(file_ecdf, ecdf=ecdf_stn, prob=ecdf_prob, stnlle=stnlle)
-        del ecdf_stn, stndata
+        del ecdf_stn
+del stndata
 
+for m in range(m1 - 1, m2):
     print('estimate ecdf of reanalysis')
     for rr in range(reanum):
         print('reanalysis',rr,'/',reanum)
