@@ -685,32 +685,32 @@ if var == 'prcp':
 # 7. get the final merged dataset and its accuracy indicators from steo-6
 
 # get merged and corrected reanalysis data at all station points using two-layer cross-validation
-# if os.path.isfile(file_corrmerge_stn):
-#     print('load independent merged/corrected data at station points')
-#     datatemp = np.load(file_corrmerge_stn)
-#     reamerge_stn = datatemp['reamerge_stn']
-#     reamerge_weight_stn = datatemp['reamerge_weight_stn']
-#     reacorr_stn = datatemp['reacorr_stn']
-#     del datatemp
-# else:
-#     print('calculate independent merged/corrected data at station points')
-#     reamerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)
-#     reamerge_weight_stn = np.nan * np.zeros([12, nstn, reanum], dtype=np.float32)
-#     reacorr_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
-#     # for each month
-#     for m in range(12):
-#         print('month', m + 1)
-#         indm = date_number['mm'] == (m + 1)
-#         reamerge_stnm, reamerge_weight_stnm, reacorr_stnm = \
-#             correction_merge_stn(stndata[:, indm], ecdf_prob, readata_stn[:, :, indm], nearstn_loc, nearstn_dist,
-#                                  var, corrmode, weightmode)
-#         reamerge_stn[:, indm] = reamerge_stnm
-#         reacorr_stn[:, :, indm] = reacorr_stnm
-#         reamerge_weight_stn[m, :, :] = reamerge_weight_stnm
-#
-#     # the variables are independent with their concurrent stations. thus, station data can be used to evaluate them
-#     np.savez_compressed(file_corrmerge_stn, reamerge_stn=reamerge_stn, reamerge_weight_stn=reamerge_weight_stn,
-#                         reacorr_stn=reacorr_stn, date_list=date_list)
+if os.path.isfile(file_corrmerge_stn):
+    print('load independent merged/corrected data at station points')
+    datatemp = np.load(file_corrmerge_stn)
+    reamerge_stn = datatemp['reamerge_stn']
+    reamerge_weight_stn = datatemp['reamerge_weight_stn']
+    reacorr_stn = datatemp['reacorr_stn']
+    del datatemp
+else:
+    print('calculate independent merged/corrected data at station points')
+    reamerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)
+    reamerge_weight_stn = np.nan * np.zeros([12, nstn, reanum], dtype=np.float32)
+    reacorr_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
+    # for each month
+    for m in range(12):
+        print('month', m + 1)
+        indm = date_number['mm'] == (m + 1)
+        reamerge_stnm, reamerge_weight_stnm, reacorr_stnm = \
+            correction_merge_stn(stndata[:, indm], ecdf_prob, readata_stn[:, :, indm], nearstn_loc, nearstn_dist,
+                                 var, corrmode, weightmode)
+        reamerge_stn[:, indm] = reamerge_stnm
+        reacorr_stn[:, :, indm] = reacorr_stnm
+        reamerge_weight_stn[m, :, :] = reamerge_weight_stnm
+
+    # the variables are independent with their concurrent stations. thus, station data can be used to evaluate them
+    np.savez_compressed(file_corrmerge_stn, reamerge_stn=reamerge_stn, reamerge_weight_stn=reamerge_weight_stn,
+                        reacorr_stn=reacorr_stn, date_list=date_list)
 
 ########################################################################################################################
 
@@ -920,11 +920,6 @@ for y in range(year[0], year[1] + 1):
 
         # start BMA-based merging
         if os.path.isfile(filebma_merge):
-            datatemp = np.load(filebma_merge)
-            bma_data = datatemp['bma_data']
-            bma_error = datatemp['bma_error']
-            del datatemp
-        else:
             # initialization
             bma_data = np.nan * np.zeros([nrows, ncols, mmdays], dtype=np.float32)
             # bma_error = np.nan * np.zeros([nrows, ncols, mmdays], dtype=np.float32)
@@ -940,25 +935,6 @@ for y in range(year[0], year[1] + 1):
                 weighti[np.isnan(datai)] = np.nan
                 bma_data[:, :, i] = np.nansum(weighti * datai, axis=0) / np.nansum(weighti, axis=0)
             np.savez_compressed(filebma_merge, bma_data=bma_data, bma_error=bma_error,
-                                reaname=prefix, latitude=lattar, longitude=lontar)
-
-        ################################################################################################################
-
-        # start final merging: the best one among BMA and three reanalysis products
-        if not os.path.isfile(filefinal_merge):
-            merge_data = np.nan * np.zeros([nrows, ncols, mmdays], dtype=np.float32)
-            merge_error = np.nan * np.zeros([nrows, ncols, mmdays], dtype=np.float32)
-            for r in range(nrows):
-                for c in range(ncols):
-                    if not np.isnan(mask[r, c]):
-                        chi = merge_choice[m, r, c]
-                        if chi > 0:
-                            merge_error[r, c, :] = corr_error[chi - 1, r, c, :]
-                            merge_data[r, c, :] = corr_data[chi - 1, r, c, :]
-                        else:
-                            merge_error[r, c, :] = bma_error[r, c, :]
-                            merge_data[r, c, :] = bma_data[r, c, :]
-            np.savez_compressed(filefinal_merge, merge_data=merge_data, merge_error=merge_error,
                                 reaname=prefix, latitude=lattar, longitude=lontar)
 
 ########################################################################################################################

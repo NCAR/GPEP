@@ -23,19 +23,19 @@ clc;clear
 % end
 
 
-% for y=1979:2:2018
-%     outfile=['Plato_',num2str(y),'.sh'];
-%     fidout=fopen(outfile,'w');
-%     fprintf(fidout,'#!/bin/bash\n');
-%     fprintf(fidout,['#SBATCH --job-name=err_',num2str(y),'\n']);
-%     fprintf(fidout,['#SBATCH --time=0-4:00:00\n']);
-%     fprintf(fidout,'#SBATCH --mem=10G\n');
-%     fprintf(fidout,'module load python/3.7.4\n');
-% 
-%     fprintf(fidout,['srun python -u reanalysis_downscale.py ',num2str(y),' ',num2str(y+1),' GWR\n']);
-%     %         fprintf(fidout,'rm *.out\n');
-%     fclose(fidout);
-% end
+for y=1979:2:2018
+    outfile=['Plato_',num2str(y),'.sh'];
+    fidout=fopen(outfile,'w');
+    fprintf(fidout,'#!/bin/bash\n');
+    fprintf(fidout,['#SBATCH --job-name=y2m\n']);
+    fprintf(fidout,['#SBATCH --time=0-2:00:00\n']);
+    fprintf(fidout,'#SBATCH --mem=5G\n');
+    fprintf(fidout,'module load python/3.7.4\n');
+
+    fprintf(fidout,['srun python -u year_2_month.py ',num2str(y),' ',num2str(y+1),'\n']);
+    %         fprintf(fidout,'rm *.out\n');
+    fclose(fidout);
+end
 
 % var={'prcp','tmean','trange'};
 % mode={'RMSE','BMA'};
@@ -83,18 +83,18 @@ clc;clear
 %     end
 % end
 
-vars={'prcp','tmean','trange'};
-for v=1:3
-    for m=1:12
-        outfile=['Plato_',vars{v},num2str(m),'.sh'];
-        fidout=fopen(outfile,'w');
-        fprintf(fidout,'#!/bin/bash\n');
-        fprintf(fidout,['#SBATCH --job-name=',vars{v},num2str(m),'\n']);
-        fprintf(fidout,['#SBATCH --time=0-2:00:00\n']);
-        fprintf(fidout,'#SBATCH --mem=15G\n');
-        fprintf(fidout,'module load python/3.7.4\n');
-        fprintf(fidout,['srun python -u observation_reanalysis_merge.py 1979 2018 ',vars{v},' ',num2str(m),'\n']);
-        %         fprintf(fidout,'rm *.out\n');
-        fclose(fidout);
-    end
-end
+% vars={'prcp','tmean','trange'};
+% for v=1:3
+%     for m=1:12
+%         outfile=['Plato_',vars{v},num2str(m),'.sh'];
+%         fidout=fopen(outfile,'w');
+%         fprintf(fidout,'#!/bin/bash\n');
+%         fprintf(fidout,['#SBATCH --job-name=',vars{v},num2str(m),'\n']);
+%         fprintf(fidout,['#SBATCH --time=0-2:00:00\n']);
+%         fprintf(fidout,'#SBATCH --mem=15G\n');
+%         fprintf(fidout,'module load python/3.7.4\n');
+%         fprintf(fidout,['srun python -u observation_reanalysis_merge.py 1979 2018 ',vars{v},' ',num2str(m),'\n']);
+%         %         fprintf(fidout,'rm *.out\n');
+%         fclose(fidout);
+%     end
+% end
