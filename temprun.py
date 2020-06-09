@@ -574,7 +574,7 @@ ecdf_prob = np.arange(0, 1 + 1 / binprob, 1 / binprob)
 
 # strategy-2: read monthly files
 # if QM is used, we have to derive the CDF curve for all grids before correction
-for m in range(m1,m2+1):
+for m in range(m1-1,m2):
     print('month', m+1)
     indm = date_number['mm'] == (m + 1)
 
@@ -587,7 +587,7 @@ for m in range(m1,m2+1):
             if not np.isnan(stndata[i, 0]):
                 ecdf_stn[i, :] = empirical_cdf(stndata[i, indm], ecdf_prob)
         np.savez_compressed(file_ecdf, ecdf=ecdf_stn, prob=ecdf_prob, stnlle=stnlle)
-        del ecdf_stn
+        del ecdf_stn, stndata
 
     print('estimate ecdf of reanalysis')
     for rr in range(reanum):
@@ -601,6 +601,7 @@ for m in range(m1,m2+1):
         datam_rea = np.nan * np.zeros([nrows, ncols, np.sum(indm)], dtype=np.float32)
         flag=0
         for y in range(1979, 2019):
+            print(y)
             mmy = date_number['mm'].copy()
             mmy = mmy[date_number['yyyy'] == y]
             indmmy = mmy == (m + 1)
