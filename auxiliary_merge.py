@@ -89,7 +89,8 @@ def extrapolation(datain, nearstn_loc, nearstn_dist):
             indloci = nearloci > -1
             dataini = datain[nearloci[indloci], :]
             disti = nearstn_dist[i, indloci]
-            weighti = au.distanceweight(disti, np.max(disti) + 1, wexp)
+            maxdist = np.max([np.max(disti) + 1, 100])
+            weighti = au.distanceweight(disti, maxdist, wexp)
             weighti[np.isnan(dataini[:,0])] = np.nan
             weighti = weighti / np.nansum(weighti)
             weighti2 = np.tile(weighti,[ntimes,1]).T

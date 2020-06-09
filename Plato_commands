@@ -1,4 +1,4 @@
-sbatch --array=1-39%39 Plato_readown.sh
+sbatch --array=2-39%38 Plato_readown.sh
 sbatch --array=1-1%1 Plato_readown1.sh
 
 for (( y=2017; y<=2017; y++))
