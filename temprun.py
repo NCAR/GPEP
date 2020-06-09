@@ -592,6 +592,7 @@ del stndata
 
 for m in range(m1 - 1, m2):
     print('estimate ecdf of reanalysis')
+    indm = date_number['mm'] == (m + 1)
     for rr in range(reanum):
         print('reanalysis',rr,'/',reanum)
         file_ecdf = path_ecdf + '/ecdf_' + prefix[rr] + var + '_month_' + str(m+1) + '.npz'
