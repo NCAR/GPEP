@@ -750,6 +750,71 @@ else:
 
 ########################################################################################################################
 
+# strategy-1: to avoid loading too large file, divide it into different space windows
+# should be deleted after strategy-2 is provided successful
+
+# # if QM is used, we have to derive the CDF curve for all grids before correction
+# for m in range(12):
+#     print('month', m+1)
+#     indm = date_number['mm'] == (m + 1)
+#
+#     # calculate the ecdf of station data
+#     print('estimate ecdf of stations')
+#     file_ecdf = path_ecdf + '/ecdf_stn_' + var + '_month_' + str(m+1) + '.npz'
+#     if not os.path.isfile(file_ecdf):
+#         ecdf_stn = np.nan * np.zeros([nstn, binprob + 1], dtype=np.float32)
+#         for i in range(nstn):
+#             if not np.isnan(stndata[i, 0]):
+#                 ecdf_stn[i, :] = empirical_cdf(stndata[i, indm], ecdf_prob)
+#         np.savez_compressed(file_ecdf, ecdf=ecdf_stn, prob=ecdf_prob, stnlle=stnlle)
+#         del ecdf_stn
+#
+#     print('estimate ecdf of reanalysis')
+#     # read raw gridded reanalysis data by space windows to avoid reading all data into memory
+#     ws = 100
+#     xloop = int(ncols/ws)
+#     yloop = int(nrows/ws)
+#     for rr in range(reanum):
+#         print('reanalysis',rr,'/',reanum)
+#         ecdf_rea = np.nan * np.zeros([nrows, ncols, binprob + 1], dtype=np.float32)
+#         file_ecdf = path_ecdf + '/ecdf_' + prefix[rr] + var + '_month_' + str(m+1) + '.npz'
+#         if os.path.isfile(file_ecdf):
+#             continue
+#         for xl in range(xloop):
+#             print('xloop',xl,xloop)
+#             xls = xl * ws
+#             xle = (xl+1) * ws
+#             for yl in range(yloop):
+#                 print('yloop',yl,yloop)
+#                 yls = yl * ws
+#                 yle = (yl + 1) * ws
+#
+#                 rea_batch = np.nan * np.zeros([ws, ws, np.sum(indm)])
+#                 ecdf_rea_batch = np.nan * np.zeros([ws, ws, binprob + 1])
+#                 flag = 0
+#                 for y in range(1979, 2019):
+#                     mmy = date_number['mm'].copy()
+#                     mmy = mmy[date_number['yyyy'] == y]
+#                     indmmy = mmy == (m+1)
+#                     mmdays = np.sum(indmmy)
+#                     if not (prefix[rr] == 'MERRA2_' and y == 1979):
+#                         filer = path_readowngrid[rr] + '/' + prefix[rr] + 'ds_' + var + '_' + str(y) + '.npz'
+#                         d = np.load(filer)
+#                         rea_batch[:, :, flag:flag+mmdays] = d['data'][yls:yle, xls:xle, indmmy]
+#                         del d
+#                     flag = flag + mmdays
+#
+#                 # calculate ecdf for this batch data
+#                 for i in range(ws):
+#                     for j in range(ws):
+#                         ecdf_rea_batch[i, j, :] = empirical_cdf(rea_batch[i, j, :], ecdf_prob)
+#                 ecdf_rea[yls:yle, xls:xle, :] = ecdf_rea_batch
+#                 del rea_batch, ecdf_rea_batch
+#         np.savez_compressed(file_ecdf, ecdf=ecdf_rea, prob=ecdf_prob)
+#         del ecdf_rea
+
+
+# strategy-2: read monthly files
 # if QM is used, we have to derive the CDF curve for all grids before correction
 for m in range(12):
     print('month', m+1)
@@ -767,48 +832,39 @@ for m in range(12):
         del ecdf_stn
 
     print('estimate ecdf of reanalysis')
-    # read raw gridded reanalysis data by space windows to avoid reading all data into memory
-    ws = 100
-    xloop = int(ncols/ws)
-    yloop = int(nrows/ws)
     for rr in range(reanum):
         print('reanalysis',rr,'/',reanum)
-        ecdf_rea = np.nan * np.zeros([nrows, ncols, binprob + 1], dtype=np.float32)
         file_ecdf = path_ecdf + '/ecdf_' + prefix[rr] + var + '_month_' + str(m+1) + '.npz'
         if os.path.isfile(file_ecdf):
             continue
-        for xl in range(xloop):
-            print('xloop',xl,xloop)
-            xls = xl * ws
-            xle = (xl+1) * ws
-            for yl in range(yloop):
-                print('yloop',yl,yloop)
-                yls = yl * ws
-                yle = (yl + 1) * ws
 
-                rea_batch = np.nan * np.zeros([ws, ws, np.sum(indm)])
-                ecdf_rea_batch = np.nan * np.zeros([ws, ws, binprob + 1])
-                flag = 0
-                for y in range(1979, 2019):
-                    mmy = date_number['mm'].copy()
-                    mmy = mmy[date_number['yyyy'] == y]
-                    indmmy = mmy == (m+1)
-                    mmdays = np.sum(indmmy)
-                    if not (prefix[rr] == 'MERRA2_' and y == 1979):
-                        filer = path_readowngrid[rr] + '/' + prefix[rr] + 'ds_' + var + '_' + str(y) + '.npz'
-                        d = np.load(filer)
-                        rea_batch[:, :, flag:flag+mmdays] = d['data'][yls:yle, xls:xle, indmmy]
-                        del d
-                    flag = flag + mmdays
+        # read raw gridded reanalysis data
+        print('load reanalysis data for this month')
+        datam_rea = np.nan * np.zeros([nrows, ncols, np.sum(indm)], dtype=np.float32)
+        flag=0
+        for y in range(1979, 2019):
+            mmy = date_number['mm'].copy()
+            mmy = mmy[date_number['yyyy'] == y]
+            indmmy = mmy == (m + 1)
+            mmdays = np.sum(indmmy)
+            if not (prefix[rr] == 'MERRA2_' and y == 1979):
+                filer = path_readowngrid[rr] + '/' + prefix[rr] + 'ds_' + var + '_' + str(y*100+m+1) + '.npz'
+                d = np.load(filer)
+                datam_rea[:, :, flag:flag + mmdays] = d['data']
+                del d
+            flag = flag + mmdays
 
-                # calculate ecdf for this batch data
-                for i in range(ws):
-                    for j in range(ws):
-                        ecdf_rea_batch[i, j, :] = empirical_cdf(rea_batch[i, j, :], ecdf_prob)
-                ecdf_rea[yls:yle, xls:xle, :] = ecdf_rea_batch
-                del rea_batch, ecdf_rea_batch
+        # calculate ecdf
+        print('calculate ecdf')
+        ecdf_rea = np.nan * np.zeros([nrows, ncols, binprob + 1], dtype=np.float32)
+        for i in range(nrows):
+            for j in range(ncols):
+                if not np.isnan(mask[i,j]):
+                    ecdf_rea[i, j, :] = empirical_cdf(datam_rea[i, j, :], ecdf_prob)
+
         np.savez_compressed(file_ecdf, ecdf=ecdf_rea, prob=ecdf_prob)
         del ecdf_rea
+
 
 ########################################################################################################################
 
@@ -832,37 +888,47 @@ else:
 # QM-based correction
 # BMA-based merging
 
-for y in range(year[0], year[1] + 1):
-    print('Correction and Merge: year',y)
-    if (np.mod(y,4)==0 and np.mod(y,100)!=0) or np.mod(y,400)==0:
-        nday=366
-    else:
-        nday=365
-    # read raw gridded reanalysis data
-    readata_raw = np.nan * np.zeros([reanum, nrows, ncols, nday], dtype=np.float32)
+# process for each month
+for m in range(12):
+    print('Correction and Merge: month', m + 1)
+
+    # load the ecdf of stations and reanalysis for this month
+    file_ecdf = path_ecdf + '/ecdf_stn_' + var + '_month_' + str(m + 1) + '.npz'
+    datatemp = np.load(file_ecdf)
+    ecdf_stn = datatemp['ecdf']
+    del datatemp
+
+    ecdf_rea = np.nan * np.zeros([reanum, nrows, ncols, binprob+1])
     for rr in range(reanum):
-        if not (prefix[rr] == 'MERRA2_' and y == 1979):
-            filer = path_readowngrid[rr] + '/' + prefix[rr] + 'ds_' + var + '_' + str(y) + '.npz'
-            d = np.load(filer)
-            readata_raw[rr, :, :, :] = d['data']
-            del d
+        file_ecdf = path_ecdf + '/ecdf_' + prefix[rr] + var + '_month_' + str(m + 1) + '.npz'
+        datatemp = np.load(file_ecdf)
+        ecdf_rea[rr, :, :, :] = datatemp['ecdf']
+        del datatemp
 
-    # process for each month
-    for m in range(12):
-        print('Correction and Merge: month', m+1)
+
+    for y in range(year[0], year[1] + 1):
+        print('Correction and Merge: year',y)
         filebma_merge = path_merge + '/bmamerge_' + var + '_' + str(y * 100 + m + 1) + weightmode + '.npz'
-        filefinal_merge = path_merge + '/finalmerge_' + var + '_' + str(y * 100 + m + 1) + weightmode + '.npz'
         filecorr = path_reacorr + '/reacorrdata_' + var + '_' + str(y * 100 + m + 1) + '.npz'
-
         if os.path.isfile(filebma_merge) and os.path.isfile(filecorr):
             print('file exists ... continue')
             continue
 
+        # date processing
         mmy = date_number['mm'].copy()
         mmy = mmy[date_number['yyyy'] == y]
         indmmy = mmy == (m + 1)
         indmmy2 = (date_number['yyyy'] == y) & (date_number['mm'] == m + 1)
         mmdays = np.sum(indmmy)
+
+        # read raw gridded reanalysis data
+        readata_raw = np.nan * np.zeros([reanum, nrows, ncols, mmdays], dtype=np.float32)
+        for rr in range(reanum):
+            if not (prefix[rr] == 'MERRA2_' and y == 1979):
+                filer = path_readowngrid[rr] + '/' + prefix[rr] + 'ds_' + var + '_' + str(y*100 +m+1) + '.npz'
+                d = np.load(filer)
+                readata_raw[rr, :, :, :] = d['data']
+                del d
 
         ################################################################################################################
         # start QM-based error correction
@@ -878,23 +944,14 @@ for y in range(year[0], year[1] + 1):
 
             # (1) estimate the error of corrected data by interpolating stations
             for rr in range(reanum):
-                corr_error[rr, :, :, :] = extrapolation(reacorr_stn[rr, :, indmmy2] - stndata[:, indmmy2],
+                corr_error[rr, :, :, :] = extrapolation(reacorr_stn[rr, :, indmmy2].T - stndata[:, indmmy2],
                                                         neargrid_loc, neargrid_dist)
 
             # (2) estimate the value of corrected data
-            # load the ecdf of stations and reanalysis for this month
-            file_ecdf = path_ecdf + '/ecdf_stn_' + var + '_month_' + str(m + 1) + '.npz'
-            datatemp = np.load(file_ecdf)
-            ecdf_stn = datatemp['ecdf']
-            del datatemp
-
+            # error correction
             for rr in range(reanum):
-                file_ecdf = path_ecdf + '/ecdf_' + prefix[rr] + var + '_month_' + str(m + 1) + '.npz'
-                datatemp = np.load(file_ecdf)
-                ecdf_rea = datatemp['ecdf']
-                del datatemp
-
-                # error correction
+                if (prefix[rr] == 'MERRA2_' and y == 1979):
+                    continue
                 for r in range(nrows):
                     for c in range(ncols):
                         if np.isnan(mask[r, c]):
@@ -908,9 +965,9 @@ for y in range(year[0], year[1] + 1):
                         reacorr_rc = np.zeros([nearnum, mmdays])
                         for i in range(nearnum):
                             reacorr_rc[i, :] = cdf_correction(ecdf_prob, ecdf_stn[nearloc_rc[i], :],
-                                                              ecdf_prob, ecdf_rea[r, c, :], readata_raw[rr, r, c, indmmy])
+                                                              ecdf_prob, ecdf_rea[rr, r, c, :], readata_raw[rr, r, c, :])
                         nearweight_rc[np.isnan(reacorr_rc)] = np.nan
-                        corr_data[rr, r, c, indmmy] = \
+                        corr_data[rr, r, c, :] = \
                             np.nansum(reacorr_rc * nearweight_rc, axis=0) / np.nansum(nearweight_rc, axis=0)
 
             np.savez_compressed(filecorr, corr_data=corr_data, corr_error=corr_error,

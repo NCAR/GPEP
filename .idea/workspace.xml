@@ -2,10 +2,31 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/year_2_month.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/reamerge_corr_test-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/reamerge_corr_test-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1979.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1981.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1983.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1985.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1987.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1989.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1991.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1993.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1995.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1997.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1999.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2001.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2003.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2005.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2007.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2009.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2011.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2013.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2015.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2017.sh" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/reamerge_corr_test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/reamerge_corr_test.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reanalysis_correction_merge.py" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_correction_merge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/temprun.py" beforeDir="false" afterPath="$PROJECT_DIR$/temprun.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -500,11 +500,8 @@ def mse_error(stndata, reacorr_stn, reamerge_stn, neargrid_loc, neargrid_dist, m
 
 # read from inputs
 var = sys.argv[1]
-weightmode = sys.argv[2]
-corrmode =  sys.argv[3]
-y1 = int(sys.argv[4])
-y2 = int(sys.argv[5])
-year = [y1, y2]
+m1 = int(sys.argv[2])
+m2 = int(sys.argv[3])
 
 # embeded
 # var = 'prcp'
@@ -512,11 +509,7 @@ year = [y1, y2]
 # corrmode = 'QM'
 # y1 = 2017
 # y2 = 2018
-# year = [y1, y2]
 
-print('var is ', var)
-print('weightmode is ', weightmode)
-print('years are ', y1, y2)
 
 ########################################################################################################################
 
@@ -526,27 +519,6 @@ lattar = np.arange(85 - 0.05, 5, -0.1)
 nearnum = 10  # the number of nearby stations used to extrapolate points to grids (for correction and merging)
 anombound = [0.2, 10]  # upper and lower bound when calculating the anomaly for correction
 prefix = ['ERA5_', 'MERRA2_', 'JRA55_']
-
-# ### Local Mac settings
-# # input files/paths
-# gmet_stnfile = '/Users/localuser/Research/EMDNA/basicinfo/stnlist_whole.txt'
-# gmet_stndatafile = '/Users/localuser/Research/EMDNA/stndata_whole.npz'
-# file_mask = './DEM/NA_DEM_010deg_trim.mat'
-# path_readowngrid = ['/Users/localuser/Research/EMDNA/downscale/ERA5',  # downscaled gridded data
-#                     '/Users/localuser/Research/EMDNA/downscale/MERRA2',
-#                     '/Users/localuser/Research/EMDNA/downscale/JRA55']
-# file_readownstn = ['/Users/localuser/Research/EMDNA/downscale/ERA5_downto_stn_nearest.npz', # downscaled to stn points
-#                    '/Users/localuser/Research/EMDNA/downscale/MERRA2_downto_stn_nearest.npz',
-#                    '/Users/localuser/Research/EMDNA/downscale/JRA55_downto_stn_nearest.npz']
-# # file_readownstn = ['/Users/localuser/Research/EMDNA/downscale/JRA55_downto_stn_nearest.npz']
-#
-# # output files/paths (can also be used as inputs once generated)
-# near_path = '/Users/localuser/Research/EMDNA/correction'  # path to save near station for each grid/cell
-# path_reacorr = '/Users/localuser/Research/EMDNA/correction' # path to save corrected reanalysis data at station points
-# path_merge = '/Users/localuser/Research/EMDNA/merge'
-# path_ecdf = '/Users/localuser/Research/EMDNA/merge/ECDF'
-# ### Local Mac settings
-
 
 ### Plato settings
 # input files/paths
@@ -566,12 +538,6 @@ path_reacorr = '/home/gut428/ReanalysisCorrMerge/Reanalysis_corr'  # path to sav
 path_merge = '/home/gut428/ReanalysisCorrMerge/Reanalysis_merge'
 path_ecdf = '/home/gut428/ReanalysisCorrMerge/ECDF'
 ### Plato settings
-
-
-near_stnfile = near_path + '/near_stn_' + var + '.npz'
-near_gridfile = near_path + '/near_grid_' + var + '.npz'
-file_corrmerge_stn = path_merge + '/mergecorr_stn_' + var + '_GWRQM_' + weightmode + '.npz'  # file of indepedent corrected/merging data and merging weights
-file_mergechoice = path_merge + '/mergechoice_' + var + '_' + weightmode + '.npz'
 
 ########################################################################################################################
 
@@ -606,31 +572,53 @@ ecdf_prob = np.arange(0, 1 + 1 / binprob, 1 / binprob)
 
 ########################################################################################################################
 
-# find near stations
-# find near stations for all stations
-if os.path.isfile(near_stnfile):
-    print('load near station information for station points')
-    with np.load(near_stnfile) as datatemp:
-        nearstn_loc = datatemp['nearstn_loc']
-        nearstn_dist = datatemp['nearstn_dist']
-    del datatemp
-else:
-    print('find near stations for station points')
-    stnllein = stnlle.copy()
-    stnllein[np.isnan(stndata[:, 0]), :] = np.nan
-    nearstn_loc, nearstn_dist = findnearstn \
-        (stnllein[:, 0], stnllein[:, 1], stnllein[:, 0], stnllein[:, 1], nearnum, 1)
-    np.savez_compressed(near_stnfile, nearstn_loc=nearstn_loc, nearstn_dist=nearstn_dist)
+# strategy-2: read monthly files
+# if QM is used, we have to derive the CDF curve for all grids before correction
+for m in range(m1,m2+1):
+    print('month', m+1)
+    indm = date_number['mm'] == (m + 1)
 
-# find near stations for all grids
-if os.path.isfile(near_gridfile):
-    print('load near station information for grids')
-    with np.load(near_gridfile) as datatemp:
-        neargrid_loc = datatemp['neargrid_loc']
-        neargrid_dist = datatemp['neargrid_dist']
-else:
-    print('find near stations for grids')
-    stnlle_in = stnlle.copy()
-    stnlle_in[np.isnan(stndata[:, 0]), 0:2] = np.nan
-    neargrid_loc, neargrid_dist = findnearstn(stnlle_in[:, 0], stnlle_in[:, 1], lattarm, lontarm, nearnum, 0)
-    np.savez_compressed(near_gridfile,neargrid_loc=neargrid_loc,neargrid_dist=neargrid_dist)
+    # calculate the ecdf of station data
+    print('estimate ecdf of stations')
+    file_ecdf = path_ecdf + '/ecdf_stn_' + var + '_month_' + str(m+1) + '.npz'
+    if not os.path.isfile(file_ecdf):
+        ecdf_stn = np.nan * np.zeros([nstn, binprob + 1], dtype=np.float32)
+        for i in range(nstn):
+            if not np.isnan(stndata[i, 0]):
+                ecdf_stn[i, :] = empirical_cdf(stndata[i, indm], ecdf_prob)
+        np.savez_compressed(file_ecdf, ecdf=ecdf_stn, prob=ecdf_prob, stnlle=stnlle)
+        del ecdf_stn
+
+    print('estimate ecdf of reanalysis')
+    for rr in range(reanum):
+        print('reanalysis',rr,'/',reanum)
+        file_ecdf = path_ecdf + '/ecdf_' + prefix[rr] + var + '_month_' + str(m+1) + '.npz'
+        if os.path.isfile(file_ecdf):
+            continue
+
+        # read raw gridded reanalysis data
+        print('load reanalysis data for this month')
+        datam_rea = np.nan * np.zeros([nrows, ncols, np.sum(indm)], dtype=np.float32)
+        flag=0
+        for y in range(1979, 2019):
+            mmy = date_number['mm'].copy()
+            mmy = mmy[date_number['yyyy'] == y]
+            indmmy = mmy == (m + 1)
+            mmdays = np.sum(indmmy)
+            if not (prefix[rr] == 'MERRA2_' and y == 1979):
+                filer = path_readowngrid[rr] + '/' + prefix[rr] + 'ds_' + var + '_' + str(y*100+m+1) + '.npz'
+                d = np.load(filer)
+                datam_rea[:, :, flag:flag + mmdays] = d['data']
+                del d
+            flag = flag + mmdays
+
+        # calculate ecdf
+        print('calculate ecdf')
+        ecdf_rea = np.nan * np.zeros([nrows, ncols, binprob + 1], dtype=np.float32)
+        for i in range(nrows):
+            for j in range(ncols):
+                if not np.isnan(mask[i,j]):
+                    ecdf_rea[i, j, :] = empirical_cdf(datam_rea[i, j, :], ecdf_prob)
+
+        np.savez_compressed(file_ecdf, ecdf=ecdf_rea, prob=ecdf_prob)
+        del ecdf_rea
