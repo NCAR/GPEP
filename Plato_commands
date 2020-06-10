@@ -23,15 +23,10 @@ done
 
 for (( y=1980; y<=2018; y++))
 do
-sbatch Plato_${y}.sh
+sbatch Plato_prcp_${y}.sh
 done
 
 for y in {1981..2017..2}
-do
-sbatch Plato_${y}.sh
-done
-
-for y in {1..12..1}
 do
 sbatch Plato_${y}.sh
 done
