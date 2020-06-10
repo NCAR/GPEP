@@ -747,7 +747,7 @@ for m in range(12):
     datatemp = np.load(file_ecdf)
     ecdf_stn = datatemp['ecdf']
     del datatemp
-    ecdf_rea = np.nan * np.zeros([reanum, nrows, ncols, binprob+1])
+    ecdf_rea = np.nan * np.zeros([reanum, nrows, ncols, binprob+1], dtype=np.float32)
     for rr in range(reanum):
         file_ecdf = path_ecdf + '/ecdf_' + prefix[rr] + var + '_month_' + str(m + 1) + '.npz'
         datatemp = np.load(file_ecdf)
@@ -846,6 +846,7 @@ for m in range(12):
                                 reaname=prefix, latitude=lattar, longitude=lontar)
 
             del bma_error, bma_data
+    del ecdf_rea, ecdf_stn
 ########################################################################################################################
 
 # pcptrans = True
