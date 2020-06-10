@@ -67,7 +67,7 @@ for i=1:3
         fidout=fopen(outfile,'w');
         fprintf(fidout,'#!/bin/bash\n');
         fprintf(fidout,['#SBATCH --job-name=corrmerge','\n']);
-        fprintf(fidout,['#SBATCH --time=0-3:0:0\n']);
+        fprintf(fidout,['#SBATCH --time=0-2:0:0\n']);
         fprintf(fidout,'#SBATCH --mem=35G\n');
         fprintf(fidout,'module load python/3.7.4\n');
         
