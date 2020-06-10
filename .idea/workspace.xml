@@ -2,27 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/reamerge_corr_test-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/reamerge_corr_test-checkpoint.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_1.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_10.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_11.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_12.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_2.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_3.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_4.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_5.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_6.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_7.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_8.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_9.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_corrmerge1.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_corrmerge2.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_corrmerge3.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/generate_batch.m" beforeDir="false" afterPath="$PROJECT_DIR$/generate_batch.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reamerge_corr_test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/reamerge_corr_test.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reanalysis_correction_merge.py" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_correction_merge.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/temprun.py" beforeDir="false" afterPath="$PROJECT_DIR$/temprun.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

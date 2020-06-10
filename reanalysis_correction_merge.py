@@ -667,7 +667,7 @@ else:
 ########################################################################################################################
 
 # if QM is used, we have to derive the CDF curve for all grids before correction
-print('Calculate ecdf of station and reanalysis')
+print('Calculate ecdf of station and reanalysis if files are not generated')
 for m in range(12):
     print('month', m+1)
     indm = date_number['mm'] == (m + 1)
