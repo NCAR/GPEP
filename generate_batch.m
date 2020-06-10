@@ -61,17 +61,17 @@ clc;clear
 var={'prcp','tmean','trange'};
 flag=1;
 for i=1:3
-    for y=1979:2:2018
+    for y=1979:1:2018
         stri=[var{i},'_',num2str(y)];
         outfile=['Plato_',stri,'.sh'];
         fidout=fopen(outfile,'w');
         fprintf(fidout,'#!/bin/bash\n');
         fprintf(fidout,['#SBATCH --job-name=corrmerge','\n']);
-        fprintf(fidout,['#SBATCH --time=0-6:0:0\n']);
-        fprintf(fidout,'#SBATCH --mem=30G\n');
+        fprintf(fidout,['#SBATCH --time=0-3:0:0\n']);
+        fprintf(fidout,'#SBATCH --mem=35G\n');
         fprintf(fidout,'module load python/3.7.4\n');
         
-        stri=[var{i},' BMA QM ',num2str(y),' ',num2str(y+1)];
+        stri=[var{i},' BMA QM ',num2str(y),' ',num2str(y)];
         fprintf(fidout,['srun python -u reanalysis_correction_merge.py ',stri,'\n']);
         %         fprintf(fidout,'rm *.out\n');
         fclose(fidout);

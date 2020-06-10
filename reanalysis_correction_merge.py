@@ -669,13 +669,12 @@ else:
 # if QM is used, we have to derive the CDF curve for all grids before correction
 print('Calculate ecdf of station and reanalysis if files are not generated')
 for m in range(12):
-    print('month', m+1)
     indm = date_number['mm'] == (m + 1)
 
     # calculate the ecdf of station data
     file_ecdf = path_ecdf + '/ecdf_stn_' + var + '_month_' + str(m+1) + '.npz'
     if not os.path.isfile(file_ecdf):
-        print('estimate ecdf of stations')
+        print('month', m+1, 'estimate ecdf of stations')
         ecdf_stn = np.nan * np.zeros([nstn, binprob + 1], dtype=np.float32)
         for i in range(nstn):
             if not np.isnan(stndata[i, 0]):
@@ -683,13 +682,13 @@ for m in range(12):
         np.savez_compressed(file_ecdf, ecdf=ecdf_stn, prob=ecdf_prob, stnlle=stnlle)
         del ecdf_stn
 
+    # calculate the ecdf of reanalysis data
     for rr in range(reanum):
         file_ecdf = path_ecdf + '/ecdf_' + prefix[rr] + var + '_month_' + str(m+1) + '.npz'
         if os.path.isfile(file_ecdf):
             continue
-        print('estimate ecdf of reanalysis', rr+1, '/', reanum)
+        print('month', m+1, 'estimate ecdf of reanalysis', rr+1, '/', reanum)
         # read raw gridded reanalysis data
-        print('load reanalysis data for this month')
         datam_rea = np.nan * np.zeros([nrows, ncols, np.sum(indm)], dtype=np.float32)
         flag=0
         for y in range(1979, 2019):
@@ -705,7 +704,6 @@ for m in range(12):
             flag = flag + mmdays
 
         # calculate ecdf
-        print('calculate ecdf')
         ecdf_rea = np.nan * np.zeros([nrows, ncols, binprob + 1], dtype=np.float32)
         for i in range(nrows):
             for j in range(ncols):
@@ -744,6 +742,7 @@ for m in range(12):
     print('Correction and Merge: month', m + 1)
 
     # load ecdf of stations and reanalysis for this month
+    print('load ecdf data')
     file_ecdf = path_ecdf + '/ecdf_stn_' + var + '_month_' + str(m + 1) + '.npz'
     datatemp = np.load(file_ecdf)
     ecdf_stn = datatemp['ecdf']
@@ -824,6 +823,7 @@ for m in range(12):
             np.savez_compressed(filecorr, corr_data=corr_data, corr_error=corr_error,
                                 reaname=prefix, latitude=lattar, longitude=lontar)
 
+            del corr_error, readata_raw
         ################################################################################################################
         print('Reanalysis merging')
         # start BMA-based merging
@@ -845,6 +845,7 @@ for m in range(12):
             np.savez_compressed(filebma_merge, bma_data=bma_data, bma_error=bma_error,
                                 reaname=prefix, latitude=lattar, longitude=lontar)
 
+            del bma_error, bma_data
 ########################################################################################################################
 
 # pcptrans = True
