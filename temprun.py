@@ -572,7 +572,7 @@ ecdf_prob = np.arange(0, 1 + 1 / binprob, 1 / binprob)
 
 ########################################################################################################################
 
-# strategy-2: read monthly files
+
 # if QM is used, we have to derive the CDF curve for all grids before correction
 for m in range(m1-1,m2):
     print('month', m+1)
