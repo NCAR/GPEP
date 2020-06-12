@@ -738,7 +738,7 @@ else:
 # BMA-based merging
 
 # process for each month
-for m in range(12):
+for m in range(11,12):
     print('Correction and Merge: month', m + 1)
 
     # load ecdf of stations and reanalysis for this month

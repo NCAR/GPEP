@@ -283,7 +283,7 @@ for v in range(len(vars)):
 
         # perform OI merging for all years
         print('perform OI merging')
-        for y in range(1979, 2018):
+        for y in range(2018, 2019):
             fileoi_ym = path_oimerge + '/oimerge_' + vars[v] + str(y*100+m+1) + '.npz'
             indym1 = datem == y
             ndayy = np.sum(indym1)
@@ -312,8 +312,9 @@ for v in range(len(vars)):
 
                     diff = o_near - b_near
                     merge_est = b_tar.copy()
-                    for id in range(nday):
+                    for id in range(ndayy):
                         merge_est[id] = merge_est[id] + np.dot(weight, diff[:, id])
+                    oi_value[r, c, :] = merge_est
 
             # calculate OI error (mean square error from nearby stations)
             oi_error_stn = (oimerge_stn[:, indym2] - observation_stn[:, indym2]) ** 2
