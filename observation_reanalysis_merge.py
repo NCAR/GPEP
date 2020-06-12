@@ -284,6 +284,7 @@ for v in range(len(vars)):
         # perform OI merging for all years
         print('perform OI merging')
         for y in range(1979, 2019):
+            print('year',y)
             fileoi_ym = path_oimerge + '/oimerge_' + vars[v] + str(y*100+m+1) + '.npz'
             indym1 = datem == y
             ndayy = np.sum(indym1)
@@ -294,6 +295,8 @@ for v in range(len(vars)):
             # calculate OI value
             oi_value = np.nan * np.zeros([nrows, ncols, ndayy], dtype=np.float32)
             for r in range(nrows):
+                if np.mod(r,100)==0:
+                    print(r,nrows)
                 for c in range(ncols):
                     if np.isnan(mask[r, c]):
                         continue
