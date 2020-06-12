@@ -86,10 +86,10 @@ for v=1:3
         fidout=fopen(outfile,'w');
         fprintf(fidout,'#!/bin/bash\n');
         fprintf(fidout,['#SBATCH --job-name=',vars{v},num2str(m),'\n']);
-        fprintf(fidout,['#SBATCH --time=0-12:00:00\n']);
+        fprintf(fidout,['#SBATCH --time=1-00:00:00\n']);
         fprintf(fidout,'#SBATCH --mem=35G\n');
         fprintf(fidout,'module load python/3.7.4\n');
-        fprintf(fidout,['srun python -u temprun.py ',vars{v},' ',num2str(m),'\n']);
+        fprintf(fidout,['srun python -u observation_reanalysis_merge.py ',vars{v},' ',num2str(m),'\n']);
         %         fprintf(fidout,'rm *.out\n');
         fclose(fidout);
         flag=flag+1;
