@@ -2,7 +2,51 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
+      <change afterPath="$PROJECT_DIR$/reanalysis_pop_thresholdmethod.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/reanalysis_pop-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/reanalysis_pop-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_10.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_11.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_12.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_13.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_14.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_15.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_16.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_17.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_18.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_19.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_20.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_21.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_22.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_23.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_24.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_25.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_26.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_27.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_28.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_29.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_3.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_30.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_31.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_32.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_33.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_34.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_35.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_36.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_4.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_5.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_6.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_7.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_8.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_9.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_commands" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_commands" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reapop.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_reapop.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/generate_batch.m" beforeDir="false" afterPath="$PROJECT_DIR$/generate_batch.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/oimerge_test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/oimerge_test.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reanalysis_pop.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_pop.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reanalysis_pop.py" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_pop.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -125,7 +169,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="reanalysis_pop" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="reanalysis_pop_thresholdmethod" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="pyGMET" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -137,7 +181,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/reanalysis_pop.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/reanalysis_pop_thresholdmethod.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -151,7 +195,7 @@
         <item itemvalue="Python.reanalysis_correction_merge_old" />
         <item itemvalue="Python.observation_reanalysis_merge" />
         <item itemvalue="Python.reanalysis_downscale" />
-        <item itemvalue="Python.reanalysis_pop" />
+        <item itemvalue="Python.reanalysis_pop_thresholdmethod" />
       </list>
     </recent_temporary>
   </component>

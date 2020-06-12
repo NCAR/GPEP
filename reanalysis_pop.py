@@ -1,162 +1,218 @@
 import numpy as np
-import sys
-from auxiliary_merge import *
+import regression as reg
+from scipy import io
+from auxiliary_merge import m_DateList
+import os, sys
 
-
-# probability of precipitation
-
-def threshold_for_occurrence(dref, dtar, mode=1, upperbound=2):
-    # dref is station prcp and >0 means positive precipitation
-    # mode 1: objective is that dref and dtar have the same number of precipitation events
-    # mode 2: objective is to get max CSI of dtar
-
-    indnan = (np.isnan(dref)) | (np.isnan(dtar))
-    if np.sum(indnan) > 0:
-        dref = dref[~indnan]
-        dtar = dtar[~indnan]
-
-    if len(dtar) < 1:
-        threshold = np.nan
+def empirical_cdf(data, probtar):
+    # data: vector of data
+    data2 = data[~np.isnan(data)]
+    if len(data2) > 0:
+        ds = np.sort(data2)
+        probreal = np.arange(len(data2)) / (len(data2) + 1)
+        ecdf_out = np.interp(probtar, probreal, ds)
     else:
-        num1 = np.sum(dref > 0)
-        if num1 == 0:
-            threshold = np.max(dtar) + 0.1
-        else:
-            if mode == 1:
-                indnan = (dtar == 0) | (np.isnan(dtar))
-                dtar = dtar[~indnan]
-                if len(dtar) <= num1:
-                    threshold = 0
-                else:
-                    dtars = np.flip(np.sort(dtar))
-                    threshold = (dtars[num1] + dtars[num1 - 1]) / 2
-            elif mode == 2:
-                step = 0.05
-                num = int(upperbound / step) + 1
-                csi = np.zeros(num)
-                for i in range(num):
-                    threi = i * step
-                    n11 = np.sum((dref > 0) & (dtar > threi))
-                    n10 = np.sum((dref <= 0) & (dtar > threi))
-                    n01 = np.sum((dref > 0) & (dtar <= threi))
-                    csii = n11 / (n11 + n01 + n10)
-                    csi[i] = csii
-                indi = np.nanargmax(csi)
-                threshold = indi * step
-            else:
-                sys.exit('Unknown mode for threshold estimation')
-
-    if threshold > upperbound:
-        threshold = upperbound
-
-    return threshold
+        ecdf_out = np.nan * np.zeros(len(probtar))
+    return ecdf_out
 
 
-def cal_csi(Obs, Pre, Tre=0):
-    # Tre: rain/no rain threshold
-    # POD(Probability of Detection),FOH(frequency of hit)
-    # FAR(False Alarm Ratio), CSI(Critical Success Index)
-    # HSS(Heidke skillscore),Ebert et al. [2007]
-    if len(Obs) > 1:
-        n11 = np.sum((Obs > Tre) & (Pre > Tre))
-        n10 = np.sum((Obs <= Tre) & (Pre > Tre))
-        n01 = np.sum((Obs > Tre) & (Pre <= Tre))
-        # n00 = np.sum((Obs <= Tre) & (Pre <= Tre))
-    # try:
-    #     POD = n11 / (n11 + n01)
-    # except:
-    #     POD = np.nan
-    # try:
-    #     FOH = n11 / (n11 + n10)
-    #     FAR = n10 / (n11 + n10)
-    # except:
-    #     FOH = np.nan
-    #     FAR = np.nan
-    try:
-        CSI = n11 / (n11 + n01 + n10)
-    except:
-        CSI = np.nan
-    # try:
-    #     HSS = 2 * (n11 * n00 - n10 * n01) / ((n11 + n01) *
-    #                                          (n01 + n00) + (n11 + n10) * (n10 + n00))
-    # except:
-    #     HSS = np.nan
-    #
-    # contingency_group = {'POD': POD, 'FOH': FOH, 'FAR': FAR,
-    #                      'CSI': CSI, 'HSS': HSS}
-    return CSI
+def cdf_correction(cdf_ref, value_ref, cdf_raw, value_raw, value_tar):
+    prob_tar = np.interp(value_tar, value_raw, cdf_raw)
+    value_out = np.interp(prob_tar, cdf_ref, value_ref)
+    return value_out
 
 
+# read from inputs
+time1 = int(sys.argv[1])
+time2 = int(sys.argv[2])
+print(time1,time2)
+
+prefix = ['ERA5_', 'MERRA2_', 'JRA55_']
+
+# ### Local Mac settings
+# # input files/paths
+# gmet_stnfile = '/Users/localuser/Research/EMDNA/basicinfo/stnlist_whole.txt'
+# gmet_stndatafile = '/Users/localuser/Research/EMDNA/stndata_whole.npz'
+# file_mask = './DEM/NA_DEM_010deg_trim.mat'
+# near_file_GMET = '/Users/localuser/Research/EMDNA/regression/weight_nearstn.npz' # near station of stations/grids
+# file_readownstn = ['/Users/localuser/Research/EMDNA/downscale/ERA5_downto_stn_nearest.npz', # downscaled to stn points
+#                    '/Users/localuser/Research/EMDNA/downscale/MERRA2_downto_stn_nearest.npz',
+#                    '/Users/localuser/Research/EMDNA/downscale/JRA55_downto_stn_nearest.npz']
+#
+# # output files/paths (can also be used as inputs once generated)
+# near_path = '/Users/localuser/Research/EMDNA/correction'  # path to save near station for each grid/cell
+# path_ecdf = '/Users/localuser/Research/EMDNA/merge/ECDF'
+# path_pop = '/Users/localuser/Research/EMDNA/pop'
+# ### Local Mac settings
+
+
+### Plato settings
+gmet_stnfile = '/datastore/GLOBALWATER/CommonData/EMDNA/StnGridInfo/stnlist_whole.txt'
+gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA/stndata_whole.npz'
+file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA/DEM/NA_DEM_010deg_trim.mat'
+near_file_GMET = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/weight.npz'
+file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds/ERA5_downto_stn_GWR.npz', # downscaled to stn points
+                   '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds/MERRA2_downto_stn_GWR.npz',
+                   '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_ds/JRA55_downto_stn_GWR.npz']
+near_path = '/home/gut428/ReanalysisCorrMerge'  # path to save near station for each grid/cell
+path_ecdf = '/datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/ECDF'
+path_pop = '/home/gut428/ReanalysisCorrMerge/pop'
+file_pop1 = '/home/gut428/ReanalysisCorrMerge/reanalysis_pop1.npz'
+### Plato settings
+
+near_stnfile = near_path + '/near_stn_prcp.npz'
+near_gridfile = near_path + '/near_grid_prcp.npz'
+file_pop1 = path_pop + '/reanalysis_pop1.npz'
+
+########################################################################################################################
+
+# basic processing
+print('start basic processing')
+
+lontar = np.arange(-180 + 0.05, -50, 0.1)
+lattar = np.arange(85 - 0.05, 5, -0.1)
+# mask
+mask = io.loadmat(file_mask)
+mask = mask['DEM']
+mask[~np.isnan(mask)] = 1  # 1: valid pixels
+
+# meshed lat/lon of the target region
+reanum = len(file_readownstn)
+nrows, ncols = np.shape(mask)
+lontarm, lattarm = np.meshgrid(lontar, lattar)
+lontarm[np.isnan(mask)] = np.nan
+lattarm[np.isnan(mask)] = np.nan
+
+# date list
 date_list, date_number = m_DateList(1979, 2018, 'ByYear')
 
-# main
-# filestn = '/Users/localuser/Downloads/stndata_whole.npz'
-# filerea = '/Users/localuser/Research/Test/mergecorr_prcp_RMSE.npz'
-# outfile = '/Users/localuser/Research/Test/reanalysis_pop_stn.npz'
-filestn = '/home/gut428/stndata_whole.npz'
-filerea = '/datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/CrossValidate_2layer/mergecorr_prcp_BMA.npz'
-outfile = '/home/gut428/mergereanalysis_pop_stn_BMA.npz'
+# load observations for all stations
+datatemp = np.load(gmet_stndatafile)
+stndata = datatemp['prcp_stn']
+stnlle = datatemp['stn_lle']
+nstn, ntimes = np.shape(stndata)
+del datatemp
 
-maxthreshold = 2 # the largest threshold for determining rain/no-rain
+# load near station information
+datatemp = np.load(near_file_GMET)
+near_loc_stn = datatemp['near_stn_prcpLoc']
+near_weight_stn = datatemp['near_stn_prcpWeight']
+near_dist_stn = datatemp['near_stn_prcpDist']
+# near_loc_grid = datatemp['near_grid_prcpLoc']
+# near_weight_grid = datatemp['near_grid_prcpWeight']
+# near_dist_grid = datatemp['near_grid_prcpDist']
+# near_loc = np.flipud(near_loc_grid)
+# near_weight = np.flipud(near_weight_grid)
+# near_dist = np.flipud(near_dist_grid)
 
-d1 = np.load(filestn)
-d2 = np.load(filerea)
+# probability bins for QM
+binprob = 500
+ecdf_prob = np.arange(0, 1 + 1 / binprob, 1 / binprob)
 
-stndata = d1['prcp_stn']
-readata = d2['reacorr_stn']
-stn_lle = d1['stn_lle']
+########################################################################################################################
 
-reanum, nstn, ntimes = np.shape(readata)
-# 1. get threshold for precipitation occurrence
-rea_threshold = np.nan * np.zeros([12, nstn, reanum])
-rea_csi = np.nan * np.zeros([12, nstn, reanum])
-for r in range(reanum):
-    for m in range(12):
-        indm = date_number['mm'] == m + 1
-        for i in range(nstn):
-            if np.mod(i, 1000) == 0:
-                print('r m i', r, m, i)
-            if not np.isnan(stndata[i, 0]):
-                dobs = stndata[i, indm]
-                drea = readata[r, i, indm].copy()
-                rea_threshold[m, i, r] = threshold_for_occurrence(dobs, drea, mode=2, upperbound=maxthreshold)
-                drea[drea < rea_threshold[m, i, r]] = 0
-                rea_csi[m, i, r] = cal_csi(dobs, drea)
+# load downscaled reanalysis at station points
+print('load downscaled reanalysis data at station points')
+readata_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
+for rr in range(reanum):
+    dr = np.load(file_readownstn[rr])
+    temp = dr['prcp_readown']
+    readata_stn[rr, :, :] = temp
+    del dr, temp
+readata_stn[readata_stn < 0] = 0
 
-# 2. estimate pop by merging reanalysis at station points
-pop_reamerge = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)
-for i in range(nstn):
-    if np.mod(i, 1000) == 0:
-        print('i', i)
-    if not np.isnan(stndata[i, 0]):
-        for m in range(12):
-            indm = date_number['mm'] == m + 1
-            mtime = np.sum(indm)
-            csii = rea_csi[m, i, :]
-            weighti = csii ** 2  # weight formulation
-            weighti = np.tile(weighti, (mtime, 1)).T
-            popi = np.zeros([reanum, mtime])
-            for r in range(reanum):
-                pr = readata[r, i, indm].copy()
-                pr[pr <= rea_threshold[m, i, r]] = 0
-                pr[pr > rea_threshold[m, i, r]] = 1
-                popi[r, :] = pr
-            weighti[np.isnan(popi)] = 0  # MERRA2 does not have data for 1979
-            popi2 = np.nansum(weighti * popi, axis=0) / np.sum(weighti, axis=0)
-            pop_reamerge[i, indm] = popi2
+########################################################################################################################
 
-# 3. evaluate the occurrence and pop (mean absolute error)
-mae_pop = np.nan * np.zeros([nstn, 12], dtype=np.float32)
-for i in range(nstn):
-    if np.mod(i, 1000) == 0:
-        print('i', i)
-    if not np.isnan(stndata[i, 0]):
-        for m in range(12):
-            indm = date_number['mm'] == m + 1
-            dobs = stndata[i, indm].copy()
-            dobs[dobs>0] = 1
-            dpop = pop_reamerge[i, indm]
-            mae_pop[i, m] = np.mean(abs(dpop - dobs))
+# method-1: estimate pop using a univariate regression between station occurrence (0-1) and reanalysis precipitation
+file_popt = path_pop + '/reapop_stn_' + str(time1) + '-' + str(time2) + '.npz'
+if not os.path.isfile(file_popt):
+    reapop_stn = np.zeros([reanum, nstn, ntimes], dtype=np.float32)
+    for rr in range(reanum):
+        for gg in range(nstn):
+            if np.mod(gg,100)==0:
+                print(gg,nstn)
 
-np.savez_compressed(outfile, pop_reamerge=pop_reamerge, rea_threshold=rea_threshold, rea_csi=rea_csi,
-                    mae_pop=mae_pop, stn_lle=stn_lle)
+            if np.isnan(stndata[gg, 0]):
+                continue
+            nearloc = near_loc_stn[gg, :]
+            neardist = near_dist_stn[gg, :]
+            nearweight = near_weight_stn[gg, :]
+            neardist = neardist[nearloc > -1]
+            nearweight = nearweight[nearloc > -1]
+            nearloc = nearloc[nearloc > -1]
+
+            nstn_prcp = len(nearloc)
+            w_pcp_red = np.zeros([nstn_prcp, nstn_prcp])
+            for i in range(nstn_prcp):
+                w_pcp_red[i, i] = nearweight[i]  # eye matrix: stn weight in one-one lien
+
+            x_red = np.ones([nstn_prcp, 2])
+
+            # for tt in range(ntimes):
+            for tt in range(time1-1, time2):
+                prea_tar = readata_stn[rr, gg, tt]
+                if stndata[gg, tt]>0:
+                    pstn_tar = 1
+                else:
+                    pstn_tar = 0
+                prea_near = readata_stn[rr, nearloc, tt]
+                pstn_near = stndata[nearloc, tt]
+                pstn_near[pstn_near > 0] = 1
+
+                # logistic regression
+                if np.all(pstn_near == 1):
+                    reapop_stn[rr, gg, tt] = 1
+                elif np.all(pstn_near == 0) or np.all(prea_near == 0):
+                    reapop_stn[rr, gg, tt] = 0
+                else:
+                    x_red[:, 1] = prea_near
+                    tx_red = np.transpose(x_red)
+                    twx_red = np.matmul(tx_red, w_pcp_red)
+                    b = reg.logistic_regression(x_red, twx_red, pstn_near)
+                    zb = - np.dot(np.array([1,prea_tar]), b)
+                    reapop_stn[rr, gg, tt] = 1 / (1 + np.exp(zb))
+    np.savez_compressed(file_popt, reapop_stn=reapop_stn)
+
+########################################################################################################################
+
+# this method is quick in speed, but slightly worse than method-1
+
+# # method-2: estimate pop during the proess of QM correction
+# date_list, date_number = m_DateList(1979, 2018, 'ByYear')
+# rea_pop2 = np.zeros([reanum, nstn, ntimes], dtype=np.float32)
+# for rr in range(reanum):
+#     for gg in range(nstn):
+#         if np.mod(gg,100)==0:
+#             print(gg)
+#         if np.isnan(stndata[gg, 0]):
+#             continue
+#         nearloc = near_loc_stn[gg, :]
+#         neardist = near_dist_stn[gg, :]
+#         nearweight = near_weight_stn[gg, :]
+#         neardist = neardist[nearloc > -1]
+#         nearweight = nearweight[nearloc > -1]
+#         nearweight = nearweight / np.sum(nearweight)
+#         nearloc = nearloc[nearloc > -1]
+#         nstn_prcp = len(nearloc)
+#
+#         for mm in range(12):
+#             indm = date_number['mm'] == (mm+1)
+#             prea_tar = readata_stn[rr, gg, indm]
+#             pstn_near = stndata[nearloc,:][:, indm]
+#             ecdf_reatar = empirical_cdf(prea_tar, ecdf_prob)
+#             popmm_near = np.zeros([nstn_prcp, np.sum(indm)])
+#             popmm = np.zeros(np.sum(indm))
+#             for i in range(nstn_prcp):
+#                 # a simple Qunatile mapping by sorting
+#                 ecdf_neari = empirical_cdf(pstn_near[i,:], ecdf_prob)
+#                 pqm = cdf_correction(ecdf_prob, ecdf_neari, ecdf_prob, ecdf_reatar, pstn_near[i,:])
+#                 pqm[pqm > 0] = 1
+#                 popmm_near[i, :] = pqm
+#                 popmm = popmm + pqm * nearweight[i]
+#             rea_pop2[rr, gg, indm] = popmm
+
+########################################################################################################################
+
+# method-3: estimate pop using the threshold-based method
+
+

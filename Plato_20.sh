@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=tmean8
+#SBATCH --job-name=pop20
 #SBATCH --time=1-00:00:00
-#SBATCH --mem=35G
+#SBATCH --mem=10G
 module load python/3.7.4
-srun python -u observation_reanalysis_merge.py tmean 8
+srun python -u reanalysis_pop.py 5701 6001
