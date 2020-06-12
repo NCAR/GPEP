@@ -128,6 +128,7 @@ file_popt = path_pop + '/reapop_stn_' + str(time1) + '-' + str(time2) + '.npz'
 if not os.path.isfile(file_popt):
     reapop_stn = np.zeros([reanum, nstn, ntimes], dtype=np.float32)
     for rr in range(reanum):
+        print('reanalysis',rr)
         for gg in range(nstn):
             if np.mod(gg,100)==0:
                 print(gg,nstn)
@@ -139,6 +140,7 @@ if not os.path.isfile(file_popt):
             nearweight = near_weight_stn[gg, :]
             neardist = neardist[nearloc > -1]
             nearweight = nearweight[nearloc > -1]
+            nearweight = nearweight/np.sum(nearweight)
             nearloc = nearloc[nearloc > -1]
 
             nstn_prcp = len(nearloc)
@@ -169,8 +171,11 @@ if not os.path.isfile(file_popt):
                     tx_red = np.transpose(x_red)
                     twx_red = np.matmul(tx_red, w_pcp_red)
                     b = reg.logistic_regression(x_red, twx_red, pstn_near)
-                    zb = - np.dot(np.array([1,prea_tar]), b)
-                    reapop_stn[rr, gg, tt] = 1 / (1 + np.exp(zb))
+                    if np.all(b==0) or np.any(np.isnan(b)):
+                        reapop_stn[rr, gg, tt] = np.dot(nearweight, pstn_near)
+                    else:
+                        zb = - np.dot(np.array([1,prea_tar]), b)
+                        reapop_stn[rr, gg, tt] = 1 / (1 + np.exp(zb))
     np.savez_compressed(file_popt, reapop_stn=reapop_stn)
 
 ########################################################################################################################
