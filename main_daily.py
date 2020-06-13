@@ -13,19 +13,11 @@ import sys
 # date_cal_end = int(sys.argv[2])
 
 # 0. read/define configuration information
-# setting: file and path names of inputs
-FileStnInfo = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'  # station basic information (lists)
-FileGridInfo = '/Users/localuser/GMET/pyGMET_NA/gridinfo_whole.nc'  # study area information
-PathStn = '/Users/localuser/GMET/StnInput_daily'
-# Plato
-# FileStnInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'  # station basic information (lists)
-# FileGridInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/gridinfo_whole.nc'  # study area information
-# PathStn = '/home/gut428/GMET/StnInput_daily'
 
 # setting: start and end date
 # calculation start/end date:
-date_cal_start = 19900101  # yyyymmdd: start date
-date_cal_end = 19900131  # yyyymmdd: end date
+date_cal_start = 19790101  # yyyymmdd: start date
+date_cal_end = 19790131  # yyyymmdd: end date
 # station data (in PathStn) start/end date:
 date_stn_start = 19790101  # yyyymmdd: start date
 date_stn_end = 20181231  # yyyymmdd: end date
@@ -51,16 +43,30 @@ ow_stn = 0
 
 # setting: output files
 datestr = str(date_cal_start) + '-' + str(date_cal_end)
+
+### Plato settings
+# FileStnInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/stnlist_whole.txt'  # station basic information (lists)
+# FileGridInfo = '/home/gut428/GMET/eCAI_EMDNA/StnGridInfo/gridinfo_whole.nc'  # study area information
+# PathStn = '/home/gut428/GMET/StnInput_daily'
+
 # FileStnData = '/home/gut428/GMET/PyGMETout/stndata_' + datestr + '.npz'
 # FileWeight = '/home/gut428/GMET/PyGMETout/weight.npz'
 # FileRegError_daily = '/home/gut428/GMET/PyGMETout/error_' + datestr + '.npz'  # regression error at station points
 # FileRegError_daily_corr = '/home/gut428/GMET/PyGMETout/error_rescorr' + datestr + '.npz'  # regression error after residual correction
 # FileRegression_daily = '/home/gut428/GMET/PyGMETout/output_' + datestr + '.npz'
-FileStnData = '/Users/localuser/GMET/error_compare/stndata_' + datestr + '.npz'
-FileWeight = '/Users/localuser/Downloads/old/weight.npz'
-FileRegError_daily = '/Users/localuser/GMET/error_compare/error_notrans_' + datestr + '.npz'  # regression error at station points
-FileRegError_daily_corr = '//Users/localuser/Downloads/error_rescorr' + datestr + '.npz'
-FileRegression_daily = '/Users/localuser/Downloads/output_' + datestr + '.npz'
+### Plato settings
+
+### Mac settings
+FileStnInfo = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'  # station basic information (lists)
+FileGridInfo = '/Users/localuser/GMET/pyGMET_NA/gridinfo_whole.nc'  # study area information
+PathStn = '/Users/localuser/GMET/StnInput_daily'
+
+FileStnData = '/Users/localuser/Research/EMDNA/regression/stndata_' + datestr + '.npz'
+FileWeight = '/Users/localuser/Research/EMDNA/regression/weight_nearstn.npz'
+FileRegError_daily = '/Users/localuser/Research/EMDNA/regression/error_notrans_' + datestr + '.npz'  # regression error at station points
+FileRegError_daily_corr = '/Users/localuser/Research/EMDNA/regression/error_rescorr' + datestr + '.npz'
+FileRegression_daily = '/Users/localuser/Research/EMDNA/regression/output_' + datestr + '.npz'
+### Mac settings
 
 ########################################################################################################################
 
@@ -203,12 +209,12 @@ if os.path.isfile(FileRegError_daily) and ow_daily != 1:
     del datatemp
 else:
     print('Estimate daily regression error at station points')
-    pcp_err_stn_daily, tmean_err_stn_daily, trange_err_stn_daily = \
+    pcp_err_stn_daily, tmean_err_stn_daily, trange_err_stn_daily, pop_err_stn_daily = \
         reg.station_error(prcp_stn_daily, tmean_stn_daily, trange_stn_daily, stninfo, near_stn_prcpLoc,
                           near_stn_prcpWeight, near_stn_tempLoc, near_stn_tempWeight, trans_exp_daily,
                           trans_mode, nearstn_min)
     np.savez_compressed(FileRegError_daily, pcp_err_stn=pcp_err_stn_daily, tmean_err_stn=tmean_err_stn_daily,
-                        trange_err_stn=trange_err_stn_daily, stninfo=stninfo)
+                        trange_err_stn=trange_err_stn_daily, pop_err_stn=pop_err_stn_daily, stninfo=stninfo)
 
 ########################################################################################################################
 

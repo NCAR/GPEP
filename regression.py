@@ -86,17 +86,20 @@ def weightedmean(data, weight):
 def station_error(prcp_stn, tmean_stn, trange_stn, stninfo, near_stn_prcpLoc, near_stn_prcpWeight, near_stn_tempLoc,
                   near_stn_tempWeight, trans_exp, trans_mode, nearstn_min):
     nstn, ntimes = np.shape(prcp_stn)
+    pop_err_stn = -999 * np.ones([nstn, ntimes], dtype=np.float32)
     pcp_err_stn = -999 * np.ones([nstn, ntimes], dtype=np.float32)
     tmean_err_stn = -999 * np.ones([nstn, ntimes], dtype=np.float32)
     trange_err_stn = -999 * np.ones([nstn, ntimes], dtype=np.float32)
 
-    for t in range(ntimes):
+    for t in range(3):
         print('Current time:', t, 'Total times:', ntimes)
         # assign vectors of station alues for prcp_stn, temp, for current time step
         # transform prcp_stn to approximate normal distribution
         y_prcp = au.transform(prcp_stn[:, t], trans_exp, trans_mode)
         y_tmean = tmean_stn[:, t]
         y_trange = trange_stn[:, t]
+        y_pop = np.zeros(nstn)
+        y_pop[prcp_stn[:, t] > 0] = 1
 
         for gg in range(nstn):
             if prcp_stn[gg, t] > -1:
@@ -114,17 +117,21 @@ def station_error(prcp_stn, tmean_stn, trange_stn, stninfo, near_stn_prcpLoc, ne
                     yp_red = np.zeros(nstn_prcp)  # pop: 0/1
                     yp_red[prcp_stn[w_pcp_1d_loc, t] > 0] = 1
                     ndata = np.sum(yp_red == 1)  # number of prcp_stn>0
+                    nodata = np.sum(yp_red == 0)
                 else:
                     # there are not enough nearby stations
                     x_red = 0  # not really necessary. just to stop warming from Pycharm
                     w_pcp_red = 0  # not really necessary. just to stop warming from Pycharm
+                    w_pcp_1d = 0
                     yp_red = 0  # not really necessary. just to stop warming from Pycharm
                     y_prcp_red = 0  # not really necessary. just to stop warming from Pycharm
                     ndata = 0
+                    nodata = 0
 
                 # prcp processing
                 if ndata == 0:
                     # nearby stations do not have positive prcp data
+                    pop_err_stn[gg, t] = 0
                     pcp_err_stn[gg, t] = 0
                 else:
                     # tmp needs to be matmul(TX, X) where TX = TWX_red and X = X_red
@@ -148,6 +155,18 @@ def station_error(prcp_stn, tmean_stn, trange_stn, stninfo, near_stn_prcpLoc, ne
 
                     tx_red = np.transpose(x_red_use)
                     twx_red = np.matmul(tx_red, w_pcp_red)
+
+                    # calculate pop
+                    if nodata == 0:
+                        popgg = 1
+                    else:
+                        b = logistic_regression(x_red_use, twx_red, yp_red)
+                        if np.all(b == 0):
+                            popgg = 0
+                        else:
+                            zb = - np.dot(stninfo_use, b)
+                            popgg = 1 / (1 + np.exp(zb))
+                    pop_err_stn[gg, t] = popgg - y_pop[gg]
 
                     # calculate pcp
                     b = least_squares(x_red_use, y_prcp_red, twx_red)
@@ -174,6 +193,7 @@ def station_error(prcp_stn, tmean_stn, trange_stn, stninfo, near_stn_prcpLoc, ne
                 else:
                     x_red_t = 0  # not really necessary. just to stop warming from Pycharm
                     w_temp_red = 0  # not really necessary. just to stop warming from Pycharm
+                    w_temp_1d = 0
                     y_tmean_red = 0  # not really necessary. just to stop warming from Pycharm
                     y_trange_red = 0  # not really necessary. just to stop warming from Pycharm
                     ndata_t = 0
@@ -198,8 +218,7 @@ def station_error(prcp_stn, tmean_stn, trange_stn, stninfo, near_stn_prcpLoc, ne
                     trangegg = np.dot(stninfo_use, b)
                     trangegg = regressioncheck(trangegg, y_trange_red, w_temp_1d, 'trange', transmode='None')
                     trange_err_stn[gg, t] = trangegg - y_trange[gg]
-
-    return pcp_err_stn, tmean_err_stn, trange_err_stn
+    return pcp_err_stn, tmean_err_stn, trange_err_stn, pop_err_stn
 
 
 def station_rea_error(prcp_stn, tmean_stn, trange_stn, stninfo, near_stn_prcpLoc, near_stn_prcpWeight, near_stn_tempLoc,
@@ -561,7 +580,7 @@ def regressioncheck(datareg, datastn, weightstn, varname, transmode='None'):
             datastn0 = au.retransform(datastn, 4, 'box-cox')
             upb = au.transform(np.max(datastn0) * 1.5, 4, 'box-cox')
             lwb = -3
-        elif transmode == 'None':
+        elif transmode == 'None' or transmode == 'none':
             upb = np.max(datastn) * 1.5
             lwb = 0
         else:
