@@ -107,7 +107,7 @@ for i=1:length(time)-1
     fprintf(fidout,['#SBATCH --time=1-00:00:00\n']);
     fprintf(fidout,'#SBATCH --mem=10G\n');
     fprintf(fidout,'module load python/3.7.4\n');
-    fprintf(fidout,['srun python -u reanalysis_pop.py ',num2str(time(i)),' ',num2str(time(i+1)),'\n']);
+    fprintf(fidout,['srun python -u temprun.py ',num2str(time(i)),' ',num2str(time(i+1)),'\n']);
     %         fprintf(fidout,'rm *.out\n');
     fclose(fidout);
 end
