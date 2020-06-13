@@ -4,6 +4,7 @@ from scipy import io
 from auxiliary_merge import m_DateList
 import os, sys
 from bma_merge import bma
+from auxiliary_merge import extrapolation
 
 
 # read from inputs
@@ -177,6 +178,7 @@ if os.path.isfile(file_popmerge_stn):
     datatemp = np.load(file_popmerge_stn)
     bmaweight_stn = datatemp['datatemp']
     mergepop_stn = datatemp['mergepop_stn']
+    bmaweight_grid = datatemp['bmaweight_grid']
     del datatemp
 else:
     # estimate bma merging weights for pop
@@ -220,7 +222,13 @@ else:
             reapop_merge_i[indm] = np.nansum(reapop_stn_im * weight_im, axis=0) / np.nansum(weight_im, axis=0)
 
         mergepop_stn[i, :] = reapop_merge_i
-    np.savez_compressed(file_popmerge_stn, bmaweight_stn=bmaweight_stn, mergepop_stn=mergepop_stn)
+
+    # interpolate weights to grids
+    bmaweight_grid  = np.nan * np.zeros([12, reanum, nrows, ncols], dtype=np.float32)
+    for m in range(12):
+        for rr in range(reanum):
+            bmaweight_grid[m, rr, :, :] = extrapolation(bmaweight_stn[m, :, rr], near_loc_grid, near_dist_grid)
+    np.savez_compressed(file_popmerge_stn, bmaweight_stn=bmaweight_stn, bmaweight_grid=bmaweight_grid, mergepop_stn=mergepop_stn)
 
 ########################################################################################################################
 
@@ -323,7 +331,7 @@ for y in range(year[0], year[1] + 1):
                             # logistic regression
                             if np.all(pstn_near == 1):
                                 reapop_grid[rr, r, c, tt] = 1
-                            elif np.all(pstn_near == 0) or np.all(prea_near == 0):
+                            elif np.all(pstn_near == 0) or np.all(prea_near < 0.01):
                                 reapop_grid[rr, r, c, tt] = 0
                             else:
                                 x_red[:, 1] = prea_near
@@ -340,23 +348,22 @@ for y in range(year[0], year[1] + 1):
         ################################################################################################################
         print('Reanalysis merging')
         # start BMA-based merging
-        if not os.path.isfile(filebma_merge):
+        if not os.path.isfile(file_bmapop):
             # initialization
             bma_data = np.nan * np.zeros([nrows, ncols, mmdays], dtype=np.float32)
-            # bma_error = np.nan * np.zeros([nrows, ncols, mmdays], dtype=np.float32)
 
             # (1) estimate the error of corrected data by interpolating stations
-            bma_error = extrapolation(reamerge_stn[:, indmmy2] - stndata[:, indmmy2], neargrid_loc, neargrid_dist)
+            obs = stndata[:, indmy].copy()
+            obs[obs>0]=1
+            bma_error = extrapolation(mergepop_stn[:, indmy] - obs, near_loc_grid, near_dist_grid)
 
             # (2) estimate the value of merged data
-            reamerge_weight_gridm = reamerge_weight_grid[m, :, :, :].copy()
+            reamerge_weight_gridm = bmaweight_grid[m, :, :, :].copy()
             for i in range(mmdays):
-                datai = corr_data[:, :, :, i]
+                datai = reapop_grid[:, :, :, i]
                 weighti = reamerge_weight_gridm.copy()
                 weighti[np.isnan(datai)] = np.nan
                 bma_data[:, :, i] = np.nansum(weighti * datai, axis=0) / np.nansum(weighti, axis=0)
-            np.savez_compressed(filebma_merge, bma_data=bma_data, bma_error=bma_error,
+            np.savez_compressed(file_bmapop, bma_data=bma_data, bma_error=bma_error,
                                 reaname=prefix, latitude=lattar, longitude=lontar)
-
             del bma_error, bma_data
-    del ecdf_rea, ecdf_stn
