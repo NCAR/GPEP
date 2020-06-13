@@ -91,7 +91,7 @@ def station_error(prcp_stn, tmean_stn, trange_stn, stninfo, near_stn_prcpLoc, ne
     tmean_err_stn = -999 * np.ones([nstn, ntimes], dtype=np.float32)
     trange_err_stn = -999 * np.ones([nstn, ntimes], dtype=np.float32)
 
-    for t in range(3):
+    for t in range(ntimes):
         print('Current time:', t, 'Total times:', ntimes)
         # assign vectors of station alues for prcp_stn, temp, for current time step
         # transform prcp_stn to approximate normal distribution
