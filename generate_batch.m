@@ -103,7 +103,7 @@ for i=1:length(time)-1
     fidout=fopen(outfile,'w');
     fprintf(fidout,'#!/bin/bash\n');
     fprintf(fidout,['#SBATCH --job-name=pop',num2str(i),'\n']);
-    fprintf(fidout,['#SBATCH --time=1-00:00:00\n']);
+    fprintf(fidout,['#SBATCH --time=0-14:00:00\n']);
     fprintf(fidout,'#SBATCH --mem=15G\n');
     fprintf(fidout,'module load python/3.7.4\n');
     fprintf(fidout,['srun python -u temprun.py ',num2str(time(i)),' ',num2str(time(i+1)),'\n']);
