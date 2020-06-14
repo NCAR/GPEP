@@ -45,13 +45,12 @@ file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds/ERA5_dow
 near_path = '/home/gut428/ReanalysisCorrMerge'  # path to save near station for each grid/cell
 path_ecdf = '/datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/ECDF'
 path_pop = '/home/gut428/ReanalysisCorrMerge/pop'
-file_pop1 = '/home/gut428/ReanalysisCorrMerge/reanalysis_pop1.npz'
 file_popmerge_stn = '/home/gut428/ReanalysisCorrMerge/pop/bmamerge_pop_stn.npz'
 ### Plato settings
 
 near_stnfile = near_path + '/near_stn_prcp.npz'
 near_gridfile = near_path + '/near_grid_prcp.npz'
-file_pop1 = path_pop + '/reanalysis_pop1.npz'
+file_reapop_stn = path_pop + '/reanalysis_pop_stn.npz'
 
 ########################################################################################################################
 
@@ -113,9 +112,9 @@ readata_stn[readata_stn < 0] = 0
 ########################################################################################################################
 
 # method-1: estimate pop using a univariate regression between station occurrence (0-1) and reanalysis precipitation
-file_popt = path_pop + '/reapop_stn_' + str(time1) + '-' + str(time2) + '.npz'
-if os.path.isfile(file_popt):
-    datatemp = np.load(file_popt)
+# file_popt = path_pop + '/reapop_stn_' + str(time1) + '-' + str(time2) + '.npz'
+if os.path.isfile(file_reapop_stn):
+    datatemp = np.load(file_reapop_stn)
     reapop_stn = datatemp['reapop_stn']
     del datatemp
 else:
@@ -142,8 +141,8 @@ else:
 
             x_red = np.ones([nstn_prcp, 2])
 
-            # for tt in range(ntimes):
-            for tt in range(time1-1, time2):
+            for tt in range(ntimes):
+            # for tt in range(time1-1, time2): # to accelerate speed
                 prea_tar = readata_stn[rr, gg, tt]
                 if np.isnan(prea_tar):
                     continue
@@ -170,7 +169,7 @@ else:
                     else:
                         zb = - np.dot(np.array([1,prea_tar]), b)
                         reapop_stn[rr, gg, tt] = 1 / (1 + np.exp(zb))
-    np.savez_compressed(file_popt, reapop_stn=reapop_stn)
+    np.savez_compressed(file_reapop_stn, reapop_stn=reapop_stn, stnlle=stnlle)
 
 ########################################################################################################################
 
