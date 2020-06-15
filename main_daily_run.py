@@ -50,7 +50,7 @@ FileGridInfo = '/datastore/GLOBALWATER/CommonData/EMDNA/StnGridInfo/gridinfo_who
 PathStn = '/home/gut428/GMET/StnInput_daily'
 
 FileStnData = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/stndata_' + datestr + '.npz'
-FileWeight = '/datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout/weight.npz'
+FileWeight = '/home/gut428/GMET/PyGMETout/weight.npz'
 FileRegError_daily = '/home/gut428/GMET/PyGMETout/error_' + datestr + '.npz'  # regression error at station points
 ## Plato settings
 

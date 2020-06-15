@@ -464,6 +464,14 @@ dist2coast_tar = np.reshape(dist2coast_tar, np.shape(lattarm))
 # read all station data and save to facilitate analysis in the future
 if not os.path.isfile(gmet_stndatafile):
     prcp_stn, tmean_stn, trange_stn = readstndata(gmet_stnpath, stn_ID, ndays)
+    # basic control of prcp_stn
+    for i in range(nstn):
+        if np.isnan(prcp_stn[i, 0]):
+            continue
+        if (np.sum(prcp_stn[i, :]>0) / np.shape(prcp_stn)[1]) < 0.005:
+            prcp_stn[i, :] = np.nan
+        if len(np.unique(prcp_stn[i, :])) < 15:
+            prcp_stn[i, :] = np.nan
     np.savez_compressed(gmet_stndatafile, prcp_stn=prcp_stn, tmean_stn=tmean_stn, trange_stn=trange_stn,
                         stn_ID=stn_ID, stn_lle=stn_lle, stn_row=stn_row, stn_col=stn_col)
 

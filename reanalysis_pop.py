@@ -8,9 +8,14 @@ from auxiliary_merge import extrapolation
 
 
 # read from inputs
-time1 = int(sys.argv[1])
-time2 = int(sys.argv[2])
-print(time1,time2)
+# time1 = int(sys.argv[1])
+# time2 = int(sys.argv[2])
+# print(time1,time2)
+
+yearin = int(sys.argv[1])
+monthin = int(sys.argv[2])
+print(yearin,monthin)
+
 
 prefix = ['ERA5_', 'MERRA2_', 'JRA55_']
 
@@ -20,12 +25,14 @@ prefix = ['ERA5_', 'MERRA2_', 'JRA55_']
 # gmet_stndatafile = '/Users/localuser/Research/EMDNA/stndata_whole.npz'
 # file_mask = './DEM/NA_DEM_010deg_trim.mat'
 # near_file_GMET = '/Users/localuser/Research/EMDNA/regression/weight_nearstn.npz' # near station of stations/grids
+# path_readowngrid = ['/Users/localuser/Research/EMDNA/downscale/ERA5',  # downscaled gridded data
+#                     '/Users/localuser/Research/EMDNA/downscale/MERRA2',
+#                     '/Users/localuser/Research/EMDNA/downscale/JRA55']
 # file_readownstn = ['/Users/localuser/Research/EMDNA/downscale/ERA5_downto_stn_nearest.npz', # downscaled to stn points
 #                    '/Users/localuser/Research/EMDNA/downscale/MERRA2_downto_stn_nearest.npz',
 #                    '/Users/localuser/Research/EMDNA/downscale/JRA55_downto_stn_nearest.npz']
 #
 # # output files/paths (can also be used as inputs once generated)
-# near_path = '/Users/localuser/Research/EMDNA/correction'  # path to save near station for each grid/cell
 # path_ecdf = '/Users/localuser/Research/EMDNA/merge/ECDF'
 # path_pop = '/Users/localuser/Research/EMDNA/pop'
 # ### Local Mac settings
@@ -42,15 +49,12 @@ path_readowngrid = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds',  # do
 file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA/ERA5_day_ds/ERA5_downto_stn_GWR.npz', # downscaled to stn points
                    '/datastore/GLOBALWATER/CommonData/EMDNA/MERRA2_day_ds/MERRA2_downto_stn_GWR.npz',
                    '/datastore/GLOBALWATER/CommonData/EMDNA/JRA55_day_ds/JRA55_downto_stn_GWR.npz']
-near_path = '/home/gut428/ReanalysisCorrMerge'  # path to save near station for each grid/cell
 path_ecdf = '/datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/ECDF'
 path_pop = '/home/gut428/ReanalysisCorrMerge/pop'
-file_popmerge_stn = '/home/gut428/ReanalysisCorrMerge/pop/bmamerge_pop_stn.npz'
 ### Plato settings
 
-near_stnfile = near_path + '/near_stn_prcp.npz'
-near_gridfile = near_path + '/near_grid_prcp.npz'
 file_reapop_stn = path_pop + '/reanalysis_pop_stn.npz'
+file_popmerge_stn = path_pop + '/bmamerge_pop_stn.npz'
 
 ########################################################################################################################
 
@@ -89,9 +93,9 @@ near_dist_stn = datatemp['near_stn_prcpDist']
 near_loc_grid = datatemp['near_grid_prcpLoc']
 near_weight_grid = datatemp['near_grid_prcpWeight']
 near_dist_grid = datatemp['near_grid_prcpDist']
-near_loc = np.flipud(near_loc_grid)
-near_weight = np.flipud(near_weight_grid)
-near_dist = np.flipud(near_dist_grid)
+near_loc_grid = np.flipud(near_loc_grid)
+near_weight_grid = np.flipud(near_weight_grid)
+near_dist_grid = np.flipud(near_dist_grid)
 
 # probability bins for QM
 binprob = 500
@@ -181,8 +185,10 @@ if os.path.isfile(file_popmerge_stn):
     del datatemp
 else:
     # estimate bma merging weights for pop
+    print('estimate bma merging weights for pop')
     bmaweight_stn = np.nan * np.zeros([12, nstn, reanum], dtype=np.float32)
     for m in range(12):
+        print('month',m)
         indm = date_number['mm'] == (m+1)
         for i in range(nstn):
             if np.isnan(stndata[i, 0]):
@@ -196,6 +202,8 @@ else:
     # use cross validation to calculate independent merged pop which can be evaluated using station data
     mergepop_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)
     for i in range(nstn):
+        if np.mod(i,5000)==0:
+            print(i)
         if np.isnan(stndata[i, 0]):
             continue
         nearloc = near_loc_stn[i, :]
@@ -270,10 +278,12 @@ else:
 ########################################################################################################################
 
 # gridded pop estimation, bma-based merging and error estimation
-year = [1979, 2018]
-
-for y in range(year[0], year[1] + 1):
-    for m in range(12):
+# year=[1979,2018]
+# for y in range(year[0], year[1] + 1):
+#     for m in range(12):
+for y in range(yearin, yearin + 1):
+    for m in range(monthin-1, monthin):
+        print('year,month',y,m+1)
         file_reapop = path_pop + '/rea_pop_' + str(y * 100 + m + 1) + '.npz'
         file_bmapop = path_pop + '/bmamerge_pop_' + str(y * 100 + m + 1) + '.npz'
         if os.path.isfile(file_bmapop):
@@ -302,8 +312,9 @@ for y in range(year[0], year[1] + 1):
             del datatemp
         else:
             for r in range(nrows):
-                for c in range(ncols):
+                if np.mod(r,100)==0:
                     print(r, nrows)
+                for c in range(ncols):
                     if np.isnan(mask[r, c]):
                         continue
                     nearloc = near_loc_grid[r, c, :]
