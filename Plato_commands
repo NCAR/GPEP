@@ -6,9 +6,9 @@ do
 for (( m=1; m<=12; m++ ))
 do
 if ((m<10)); then
-sbatch Plato_"$y"0"$m".sh
+sbatch Plato_reg_"$y"0"$m".sh
 else
-sbatch Plato_"$y""$m".sh
+sbatch Plato_reg_"$y""$m".sh
 fi
 done
 done
