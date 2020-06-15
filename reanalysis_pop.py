@@ -179,7 +179,7 @@ else:
 
 if os.path.isfile(file_popmerge_stn):
     datatemp = np.load(file_popmerge_stn)
-    bmaweight_stn = datatemp['datatemp']
+    bmaweight_stn = datatemp['bmaweight_stn']
     mergepop_stn = datatemp['mergepop_stn']
     bmaweight_grid = datatemp['bmaweight_grid']
     del datatemp
