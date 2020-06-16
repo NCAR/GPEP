@@ -320,7 +320,7 @@ for y in range(yearin, yearin + 1):
             reapop_grid = datatemp['reapop_grid']
             del datatemp
         else:
-            for r in range(50, 51):
+            for r in range(nrows):
                 if np.mod(r, 10) == 0:
                     print(r, nrows)
                 for c in range(1000, 1001):
@@ -340,7 +340,7 @@ for y in range(yearin, yearin + 1):
                         w_pcp_red[i, i] = nearweight[i]  # eye matrix: stn weight in one-one lien
 
                     x_red = np.ones([nstn_prcp, 2])
-                    for rr in range(1,2):
+                    for rr in range(reanum):
                         for tt in range(mmdays):
                             prea_tar = readata_raw[rr, r, c, tt]
                             if np.isnan(prea_tar):
