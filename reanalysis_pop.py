@@ -337,8 +337,8 @@ for y in range(yearin, yearin + 1):
                         w_pcp_red[i, i] = nearweight[i]  # eye matrix: stn weight in one-one lien
 
                     x_red = np.ones([nstn_prcp, 2])
-                    for rr in range(1):
-                        for tt in range(1):
+                    for rr in range(reanum):
+                        for tt in range(mmdays):
                             prea_tar = readata_raw[rr, r, c, tt]
                             if np.isnan(prea_tar):
                                 continue
