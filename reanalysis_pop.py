@@ -309,6 +309,9 @@ for y in range(yearin, yearin + 1):
                 readata_raw[rr, :, :, :] = d['data']
                 del d
 
+        readata_stnym = readata_stn[:, :, indmy].copy()
+        stndataym = stndata[:, indmy].copy()
+
         ################################################################################################################
         print('estimate pop for all grids')
         reapop_grid = np.nan * np.zeros([reanum, nrows, ncols, mmdays], dtype=np.float32)
@@ -317,10 +320,10 @@ for y in range(yearin, yearin + 1):
             reapop_grid = datatemp['reapop_grid']
             del datatemp
         else:
-            for r in range(nrows):
-                if np.mod(r,10)==0:
+            for r in range(50, 51):
+                if np.mod(r, 10) == 0:
                     print(r, nrows)
-                for c in range(ncols):
+                for c in range(1000, 1001):
                     if np.isnan(mask[r, c]):
                         continue
                     nearloc = near_loc_grid[r, c, :]
@@ -337,13 +340,13 @@ for y in range(yearin, yearin + 1):
                         w_pcp_red[i, i] = nearweight[i]  # eye matrix: stn weight in one-one lien
 
                     x_red = np.ones([nstn_prcp, 2])
-                    for rr in range(reanum):
+                    for rr in range(1,2):
                         for tt in range(mmdays):
                             prea_tar = readata_raw[rr, r, c, tt]
                             if np.isnan(prea_tar):
                                 continue
-                            prea_near = readata_stn[rr, nearloc, tt]
-                            pstn_near = stndata[nearloc, tt]
+                            prea_near = readata_stnym[rr, nearloc, tt]
+                            pstn_near = stndataym[nearloc, tt]
                             pstn_near[pstn_near > 0] = 1
 
                             # logistic regression
