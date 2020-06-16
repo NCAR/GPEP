@@ -6,6 +6,12 @@ import os, sys
 from bma_merge import bma
 from auxiliary_merge import extrapolation
 
+# other choices for logistic regression
+# LogisticRegression with solver='lbfgs' is two times faster than the least-square iterations
+# SGDClassifier with default setting is sevent times faster, but not as accurate
+# more testing would be needed
+from sklearn.linear_model import LogisticRegression, SGDClassifier
+
 
 # read from inputs
 # time1 = int(sys.argv[1])
@@ -312,7 +318,7 @@ for y in range(yearin, yearin + 1):
             del datatemp
         else:
             for r in range(nrows):
-                if np.mod(r,100)==0:
+                if np.mod(r,10)==0:
                     print(r, nrows)
                 for c in range(ncols):
                     if np.isnan(mask[r, c]):
@@ -334,6 +340,8 @@ for y in range(yearin, yearin + 1):
                     for rr in range(reanum):
                         for tt in range(mmdays):
                             prea_tar = readata_raw[rr, r, c, tt]
+                            if np.isnan(prea_tar):
+                                continue
                             prea_near = readata_stn[rr, nearloc, tt]
                             pstn_near = stndata[nearloc, tt]
                             pstn_near[pstn_near > 0] = 1
@@ -353,6 +361,13 @@ for y in range(yearin, yearin + 1):
                                 else:
                                     zb = - np.dot(np.array([1, prea_tar]), b)
                                     reapop_grid[rr, r, c, tt] = 1 / (1 + np.exp(zb))
+
+                                # # another choice for logistic regression
+                                # # model=SGDClassifier(loss='log')
+                                # model = LogisticRegression(solver='lbfgs')
+                                # model.fit(np.reshape(prea_near, [-1, 1]), pstn_near, sample_weight=nearweight)
+                                # reapop_grid[rr, r, c, tt] = model.predict_proba(np.reshape(prea_tar, [-1, 1]))[0][1]
+
             np.savez_compressed(file_reapop, reapop_grid=reapop_grid, prefix=prefix)
 
         ################################################################################################################

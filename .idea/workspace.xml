@@ -5,8 +5,9 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/reanalysis_pop-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/reanalysis_pop-checkpoint.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Plato_commands" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_commands" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/generate_batch.m" beforeDir="false" afterPath="$PROJECT_DIR$/generate_batch.m" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reanalysis_pop.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_pop.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reanalysis_pop.py" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_pop.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/temprun.py" beforeDir="false" afterPath="$PROJECT_DIR$/temprun.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
