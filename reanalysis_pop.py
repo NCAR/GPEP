@@ -323,7 +323,7 @@ for y in range(yearin, yearin + 1):
             for r in range(nrows):
                 if np.mod(r, 10) == 0:
                     print(r, nrows)
-                for c in range(1000, 1001):
+                for c in range(ncols):
                     if np.isnan(mask[r, c]):
                         continue
                     nearloc = near_loc_grid[r, c, :]
