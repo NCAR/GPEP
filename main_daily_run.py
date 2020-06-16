@@ -7,11 +7,16 @@ from matplotlib import pyplot as plt
 from scipy import io
 import os
 import sys
+from auxiliary_merge import m_DateList
+
 
 ########################################################################################################################
-date_cal_start = int(sys.argv[1]) # yyyymmdd
-date_cal_end = int(sys.argv[2])
 
+year = int(sys.argv[1])
+date_cal_start = year*10000+100+1
+date_cal_end = year*10000+1200+31
+date_list, date_number = m_DateList(1979, 2018, 'ByYear')
+indy = date_number['yyyy'] == year
 # 0. read/define configuration information
 
 # setting: start and end date
@@ -129,21 +134,11 @@ del gridlat, gridlon, gridele, gridgns, gridgwe
 
 # 3. read data (prcp, tmin, tmax) from station files
 print('Read station precipitation and temperature data')
-if os.path.isfile(FileStnData) and ow_stn != 1:
-    print('FileStnData exists. loading ...')
-    with np.load(FileStnData) as datatemp:
-        prcp_stn_daily = datatemp['prcp_stn_daily']
-        tmean_stn_daily = datatemp['tmean_stn_daily']
-        trange_stn_daily = datatemp['trange_stn_daily']
-else:
-    cai_mode = 0
-    prcp_stn_daily, tmean_stn_daily, trange_stn_daily, \
-    prcp_stn_climo, tmean_stn_climo, trange_stn_climo, \
-    prcp_stn_anom, tmean_stn_anom, trange_stn_anom \
-        = au.read_station(PathStn, stnID, loc_start, loc_end, cai_mode, yyyymm)
-    np.savez_compressed(FileStnData,
-                        prcp_stn_daily=prcp_stn_daily, tmean_stn_daily=tmean_stn_daily, trange_stn_daily=trange_stn_daily)
-    del prcp_stn_climo, tmean_stn_climo, trange_stn_climo, prcp_stn_anom, tmean_stn_anom, trange_stn_anom
+gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA/stndata_whole.npz'
+datatemp = np.load(gmet_stndatafile)
+prcp_stn_daily = datatemp['prcp_stn'][:,indy]
+tmean_stn_daily = datatemp['tmean_stn'][:,indy]
+trange_stn_daily = datatemp['trange_stn'][:,indy]
 
 ########################################################################################################################
 
@@ -185,5 +180,5 @@ else:
     prcp_stn_daily[prcp_stn_daily>0] = 1
     pop_reg_stn = pop_err_stn_daily + prcp_stn_daily
 
-    np.savez_compressed(FileRegError_daily, pcp_reg_stn=pcp_reg_stn, tmean_reg_stn=tmean_reg_stn,
-                        trange_reg_stn=trange_reg_stn, pop_reg_stn=pop_reg_stn)
+    np.savez_compressed(FileRegError_daily, pcp=pcp_reg_stn, tmean=tmean_reg_stn,
+                        trange=trange_reg_stn, pop=pop_reg_stn)
