@@ -1,7 +1,7 @@
 sbatch --array=2-39%38 Plato_readown.sh
 sbatch --array=1-1%1 Plato_readown1.sh
 
-for (( y=1979; y<=1990; y++))
+for (( y=2001; y<=2018; y++))
 do
 for (( m=1; m<=12; m++ ))
 do
@@ -27,9 +27,9 @@ sbatch Plato_tmean_${y}.sh
 sbatch Plato_trange_${y}.sh
 done
 
-for y in {1981..2017..2}
+for y in {1980..2017..1}
 do
-sbatch Plato_${y}.sh
+sbatch Plato_reg_${y}.sh
 done
 
 
