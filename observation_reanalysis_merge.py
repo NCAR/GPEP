@@ -21,6 +21,8 @@ month = int(sys.argv[2])
 # vars = [vars]
 # month = 2
 
+print(vars,month)
+
 ########################################################################################################################
 
 # basic settings
@@ -140,7 +142,6 @@ for v in range(len(vars)):
             for i in range(nstn):
                 if np.mod(i,100)==0:
                     print('station',i,nstn)
-
                 if np.isnan(observation_stn[i, 0]):
                     continue
 
@@ -167,12 +168,15 @@ for v in range(len(vars)):
                 merge_est = b_tar.copy()
                 for id in range(nday):
                     merge_est[id] = merge_est[id] + np.dot(weight, diff[:, id])
-
                 oimerge_stn[i, indm] = merge_est
 
             if vars[v] == 'pop':
                 oimerge_stn[oimerge_stn < 0] = 0
                 oimerge_stn[oimerge_stn > 1] = 1
+            if vars[v] == 'prcp':
+                oimerge_stn[oimerge_stn < 0] = 0
+            if vars[v] == 'trange':
+                oimerge_stn = np.abs(oimerge_stn)
             np.savez_compressed(filemerge_stnm, oimerge_stn=oimerge_stn)
 
 

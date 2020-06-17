@@ -113,7 +113,7 @@ clc;clear
 %     end
 % end
 
-vars={'prcp','tmean','trange'};
+vars={'prcp','tmean','trange','pop'};
 flag=1;
 for v=1:3
     for m=1:12
