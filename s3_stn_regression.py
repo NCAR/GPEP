@@ -22,10 +22,10 @@ trans_exp_daily = np.nan
 
 # infiles
 gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_whole.npz'
-file_nearstn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_regression/nearstn_catalog.npz'
+file_nearstn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_original/nearstn_catalog.npz'
 
 # outfiles
-outpath = '/home/gut428/GMET/PyGMETout'
+outpath = '/home/gut428/stn_reg_original'
 filereg_year = outpath + '/daily_regression_stn_' + str(year) + '.npz'  # regression error at station points
 filereg_all = outpath + '/daily_regression_stn.npz'  # regression error at station points
 
