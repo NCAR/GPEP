@@ -21,7 +21,6 @@ filestn_new = '/home/gut428/stndata_aftercheck.npz'
 var = 'prcp'
 d = np.load(filestn)
 dstn = d[var + '_stn']
-stn_lle = d['stn_lle']
 d = np.load(filereg)
 dreg = d[var]
 
@@ -68,7 +67,6 @@ for v in range(len(vart)):
     var = vart[v]
     d = np.load(filestn)
     dstn = d[var + '_stn']
-    stn_lle = d['stn_lle']
     d = np.load(filereg)
     dreg = d[var]
 
