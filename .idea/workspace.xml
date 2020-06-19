@@ -2,62 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
-      <change afterPath="$PROJECT_DIR$/s1_prepare_stndata.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/s2_find_nearstn.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/s3_stn_regression.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/random_test-checkpoint.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_1.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_10.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_11.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_12.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_13.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_14.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_15.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_16.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_17.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_18.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_19.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_2.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_20.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_21.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_22.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_23.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_24.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_25.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_26.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_27.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_28.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_29.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_3.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_30.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_31.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_32.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_33.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_34.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_35.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_36.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_37.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_38.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_39.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_4.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_40.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_41.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_42.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_43.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_44.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_45.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_46.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_47.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_48.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_5.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_6.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_7.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_8.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_9.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_commands" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_commands" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Plato_pyGMET.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_pyGMET.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gmet_datapre.py" beforeDir="false" afterPath="$PROJECT_DIR$/gmet_datapre.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/random_test.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/temprun.py" beforeDir="false" afterPath="$PROJECT_DIR$/temprun.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -88,10 +36,10 @@
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
+    <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
     </key>
-    <key name="CopyFile.RECENT_KEYS">
+    <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>

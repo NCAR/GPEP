@@ -14,7 +14,7 @@
 module load python/3.7.4
 
 # run the application
-srun python -u s1_prepare_stndata.py
+srun python -u s2_find_nearstn.py
 
 
 
