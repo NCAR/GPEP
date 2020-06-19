@@ -383,7 +383,7 @@ weightmode = sys.argv[2]
 corrmode = sys.argv[3]
 y1 = int(sys.argv[4])
 y2 = int(sys.argv[5])
-year = [y1, y2]
+year = [y1, y2] # this is only useful for gridded correction/merge
 
 # embeded
 # var = 'prcp'
