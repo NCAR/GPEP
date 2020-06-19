@@ -1,15 +1,12 @@
 # perform locally weighted regression for all stations using leave-one-out
 # regression estimates can support further screening of stations and Optimal Interpolation
+# calculation time: 11 hours when submitted as 40 Jobs (40 years)
+
 
 import numpy as np
-import netCDF4 as nc
-import auxiliary as au
 import regression as reg
-import datetime as dt
 import os
 import sys
-from auxiliary_merge import m_DateList
-
 
 ########################################################################################################################
 
@@ -89,7 +86,7 @@ if not os.path.isfile(filereg_year):
 # check whether it is time to merge all years
 flag = 1
 for y in range(yearall[0], yearall[1]+1):
-    filey = outpath + '/daily_regression_stn_' + str(y) + '.npz'
+    filey = outpath + '/regression_stn_' + str(y) + '.npz'
     if not os.path.isfile(filey):
         flag = 0
         break
@@ -105,7 +102,7 @@ else:
     trange = np.nan * np.zeros([nstn, ndays], dtype=np.float32)
     for y in range(yearall[0], yearall[1]+1):
         print('year',y,'/// all year', yearall)
-        filey = outpath + '/daily_regression_stn_' + str(y) + '.npz'
+        filey = outpath + '/regression_stn_' + str(y) + '.npz'
         indy = yyyy == y
         d = np.load(filey)
         prcp[:, indy] = d['prcp']

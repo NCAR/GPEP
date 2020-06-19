@@ -1,4 +1,5 @@
 # for each target station and target grid cell, find its nearby stations
+# calculation time: ~2 hours
 
 import numpy as np
 import netCDF4 as nc
