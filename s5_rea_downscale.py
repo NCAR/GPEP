@@ -1,9 +1,9 @@
+# downscale reanalysis from original resolution to the target resolution (0.1 degree) and also station points
+
 import numpy as np
 import netCDF4 as nc
 import auxiliary as au
 import regression as reg
-import datetime as dt
-from matplotlib import pyplot as plt
 from scipy import io
 from scipy.interpolate import interp2d
 import os

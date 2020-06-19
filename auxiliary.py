@@ -286,7 +286,8 @@ def station_weight(prcp_stn_daily, tmean_stn_daily, stninfo, gridinfo, mask,
     latlon_prcp[:, 0:2] = stninfo[:, 1:3]
     latlon_tmean[:, 0:2] = stninfo[:, 1:3]
     for i in range(nstn):
-        print('station',i,nstn)
+        if np.mod(i,1000)==0:
+            print('station',i,nstn)
         # this is for serially complete station data. if stations have missing values, this should be modified
         if np.isnan(prcp_stn_daily[i, 0]):
             latlon_prcp[i, 0:2] = np.array([np.nan, np.nan])

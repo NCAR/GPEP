@@ -18,11 +18,11 @@ trans_mode = 'none'  # box-cox or power-law or none
 trans_exp_daily = np.nan
 
 # infiles
-gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_original.npz'
-file_nearstn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_original/nearstn_catalog.npz'
+gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_aftercheck.npz'
+file_nearstn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_aftercheck/nearstn_catalog.npz'
 
 # outfiles
-outpath = '/home/gut428/stn_reg_original'
+outpath = '/home/gut428/stn_reg_aftercheck'
 filereg_year = outpath + '/regression_stn_' + str(year) + '.npz'  # regression error at station points
 filereg_all = outpath + '/regression_stn.npz'  # regression error at station points
 
