@@ -32,11 +32,6 @@ else:
         if d > 0:
             dated = dated + datetime.timedelta(days=1)
         date_ymd[d] = int(dated.strftime("%Y%m%d"))
-    date_number = {'yyyymmdd': date_ymd,
-                   'yyyymm': np.floor(date_ymd / 100).astype(int),
-                   'yyyy': np.floor(date_ymd / 10000).astype(int),
-                   'mm': np.floor(np.mod(date_ymd, 10000) / 100).astype(int),
-                   'dd': np.mod(date_ymd, 100).astype(int)}
 
     # read station information
     stn_ID = np.genfromtxt(gmet_stnfile, dtype='str', skip_header=1, comments='#', delimiter=',', usecols=(0), unpack=False)
@@ -76,4 +71,4 @@ else:
 
     # save output data
     np.savez_compressed(gmet_stndatafile, prcp_stn=prcp_stn, tmean_stn=tmean_stn, trange_stn=trange_stn,
-                        date_number=date_number, stn_ID=stn_ID, stn_lle=stn_lle)
+                        date_ymd=date_ymd, stn_ID=stn_ID, stn_lle=stn_lle)

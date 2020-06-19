@@ -21,7 +21,7 @@ trans_mode = 'none'  # box-cox or power-law or none
 trans_exp_daily = np.nan
 
 # infiles
-gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_whole.npz'
+gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_original.npz'
 file_nearstn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_original/nearstn_catalog.npz'
 
 # outfiles
@@ -40,8 +40,9 @@ else:
     datatemp=np.load(gmet_stndatafile)
     stn_lle=datatemp['stn_lle']
     stn_ID=datatemp['stn_ID']
-    date_number = datatemp['date_number']
-    indy = date_number['yyyy'] == year
+    date_ymd = datatemp['date_ymd']
+    yyyy = (date_ymd / 10000).astype(int)
+    indy = yyyy == year
     prcp_stn_daily = datatemp['prcp_stn'][:, indy]
     tmean_stn_daily = datatemp['tmean_stn'][:, indy]
     trange_stn_daily = datatemp['trange_stn'][:, indy]
@@ -97,7 +98,7 @@ if os.path.isfile(filereg_all):
     print('file for merged data exists')
 else:
     print('merge data for all years')
-    ndays = len(date_number['yyyy'])
+    ndays = len(date_ymd['yyyy'])
     nstn = np.shape(stn_lle)[0]
     prcp = np.nan * np.zeros([nstn, ndays], dtype=np.float32)
     pop = np.nan * np.zeros([nstn, ndays], dtype=np.float32)
@@ -106,7 +107,7 @@ else:
     for y in range(yearall[0], yearall[1]+1):
         print('year',y,'/// all year', yearall)
         filey = outpath + '/daily_regression_stn_' + str(y) + '.npz'
-        indy = date_number['yyyy'] == y
+        indy = yyyy == y
         d = np.load(filey)
         prcp[:, indy] = d['prcp']
         pop[:, indy] = d['pop']
@@ -114,4 +115,4 @@ else:
         trange[:, indy] = d['trange']
         del d
     np.savez_compressed(filereg_all, prcp=prcp, tmean=tmean, trange=trange, pop=pop,
-                        stn_lle=stn_lle, stn_ID=stn_ID, date_number=date_number)
+                        stn_lle=stn_lle, stn_ID=stn_ID, date_ymd=date_ymd)

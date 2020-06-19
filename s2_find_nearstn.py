@@ -15,7 +15,7 @@ max_dist = 100  # max_distance in distance-based weight calculation
 # input files
 FileStnInfo = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/stnlist_whole.txt'  # station basic information (lists)
 FileGridInfo = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/gridinfo_whole.nc'  # study area information
-gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_whole.npz'
+gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_original.npz'
 
 # outfile
 file_nearstn = '/home/gut428/nearstn_catalog.npz'
