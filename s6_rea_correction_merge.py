@@ -5,11 +5,7 @@
 # from matplotlib import pyplot as plt
 from scipy import io
 import os
-# import sys
-# import h5py
-# import time
-# import random
-# import datetime
+import netCDF4 as nc
 from bma_merge import bma
 from auxiliary_merge import *
 
@@ -421,7 +417,6 @@ prefix = ['ERA5_', 'MERRA2_', 'JRA55_']
 # # file_readownstn = ['/Users/localuser/Research/EMDNA/downscale/JRA55_downto_stn_nearest.npz']
 #
 # # output files/paths (can also be used as inputs once generated)
-# near_path = '/Users/localuser/Research/EMDNA/correction'  # path to save near station for each grid/cell
 # path_reacorr = '/Users/localuser/Research/EMDNA/correction' # path to save corrected reanalysis data at station points
 # path_merge = '/Users/localuser/Research/EMDNA/merge'
 # path_ecdf = '/Users/localuser/Research/EMDNA/merge/ECDF'
@@ -430,20 +425,19 @@ prefix = ['ERA5_', 'MERRA2_', 'JRA55_']
 
 ### Plato settings
 # input files/paths
+FileGridInfo = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/gridinfo_whole.nc'
 gmet_stnfile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/stnlist_whole.txt'
 gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_aftercheck.npz'
 file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA_new/DEM/NA_DEM_010deg_trim.mat'
-path_readowngrid = ['/datastore/GLOBALWATER/CommonData/EMDNA_new/ERA5_day_ds',  # downscaled gridded data
+path_readowngrid = ['/datastore/GLOBALWATER/CommonData/EMDNA_new/ERA5_day_ds',
                     '/datastore/GLOBALWATER/CommonData/EMDNA_new/MERRA2_day_ds',
                     '/datastore/GLOBALWATER/CommonData/EMDNA_new/JRA55_day_ds']
 file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA_new/ERA5_day_ds/ERA5_downto_stn_GWR.npz',
-                   # downscaled to stn points
                    '/datastore/GLOBALWATER/CommonData/EMDNA_new/MERRA2_day_ds/MERRA2_downto_stn_GWR.npz',
                    '/datastore/GLOBALWATER/CommonData/EMDNA_new/JRA55_day_ds/JRA55_downto_stn_GWR.npz']
 file_nearstn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_aftercheck/nearstn_catalog.npz'
 
 # output files/paths (can also be used as inputs once generated)
-near_path = '/home/gut428/ReanalysisCorrMerge'  # path to save near station for each grid/cell
 path_reacorr = '/home/gut428/ReanalysisCorrMerge/Reanalysis_corr'  # path to save corrected reanalysis data at station points
 path_merge = '/home/gut428/ReanalysisCorrMerge/Reanalysis_merge'
 path_ecdf = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/ECDF'
@@ -456,31 +450,35 @@ file_corrmerge_stn = path_merge + '/mergecorr_stn_' + var + '_GWRQM_' + weightmo
 
 # basic processing
 print('start basic processing')
-
-lontar = np.arange(-180 + 0.05, -50, 0.1)
-lattar = np.arange(85 - 0.05, 5, -0.1)
+reanum = len(file_readownstn)
 
 # mask
 mask = io.loadmat(file_mask)
 mask = mask['DEM']
 mask[~np.isnan(mask)] = 1  # 1: valid pixels
+nrows, ncols = np.shape(mask)
 
 # meshed lat/lon of the target region
-reanum = len(file_readownstn)
-nrows, ncols = np.shape(mask)
-lontarm, lattarm = np.meshgrid(lontar, lattar)
+ncfid = nc.Dataset(FileGridInfo)
+lattarm = ncfid.variables['latitude'][:].data
+lattarm = np.flipud(lattarm)
+lontarm = ncfid.variables['longitude'][:].data
+ncfid.close()
 lontarm[np.isnan(mask)] = np.nan
 lattarm[np.isnan(mask)] = np.nan
-
-# date list
-date_list, date_number = m_DateList(1979, 2018, 'ByYear')
+lontar = lontarm[0, :]
+lattar = lattarm[:, 0]
 
 # load observations for all stations
 datatemp = np.load(gmet_stndatafile)
 stndata = datatemp[var + '_stn']
-stnlle = datatemp['stn_lle']
+stninfo = datatemp['stninfo']
+stnlle = stninfo[:,1:4]
+date_ymd = datatemp['date_ymd']
 nstn, ntimes = np.shape(stndata)
 del datatemp
+date_yyyy = (date_ymd/10000).astype(int)
+date_mm = (np.mod(date_ymd, 10000)/100).astype(int)
 
 # probability bins for QM
 binprob = 500
@@ -488,8 +486,7 @@ ecdf_prob = np.arange(0, 1 + 1 / binprob, 1 / binprob)
 
 ########################################################################################################################
 
-# find near stations
-# find near stations for all stations
+# load near station information
 if not os.path.isfile(file_nearstn):
     print(file_nearstn, 'does not exist')
     sys.exit()
@@ -524,15 +521,15 @@ if var == 'prcp':
 
 ########################################################################################################################
 
-# correction reanalysis at station points
-# this step is to support comparison between different methods. In practice, this step is not very necessary.
+# Not necessary for actual application.
+# correction reanalysis at station points. this step is to support comparison between different methods.
 
 # filecorrstn = path_reacorr + '/corrstn_nearest_' + var + '_' + corrmode + '.npz'
 # if not os.path.isfile(filecorrstn):
 #     reacorr_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
 #     for m in range(12):
 #         print('month', m + 1)
-#         indm = date_number['mm'] == (m + 1)
+#         indm = date_mm == (m + 1)
 #         corrm = correction_rea(stndata[:, indm], ecdf_prob, readata_stn[:, :, indm],
 #                                nearstn_loc, nearstn_dist, corrmode)
 #         reacorr_stn[:, :, indm] = corrm
@@ -541,7 +538,6 @@ if var == 'prcp':
 ########################################################################################################################
 
 # get merged and corrected reanalysis data at all station points using two-layer cross-validation
-
 if os.path.isfile(file_corrmerge_stn):
     print('load independent merged/corrected data at station points')
     datatemp = np.load(file_corrmerge_stn)
@@ -557,7 +553,7 @@ else:
     # for each month
     for m in range(12):
         print('month', m + 1)
-        indm = date_number['mm'] == (m + 1)
+        indm = date_mm == (m + 1)
         reamerge_stnm, reamerge_weight_stnm, reacorr_stnm = \
             correction_merge_stn(stndata[:, indm], ecdf_prob, readata_stn[:, :, indm], nearstn_loc, nearstn_dist,
                                  var, corrmode, weightmode)
@@ -567,15 +563,14 @@ else:
 
     # the variables are independent with their concurrent stations. thus, station data can be used to evaluate them
     np.savez_compressed(file_corrmerge_stn, reamerge_stn=reamerge_stn, reamerge_weight_stn=reamerge_weight_stn,
-                        reacorr_stn=reacorr_stn, date_list=date_list)
+                        reacorr_stn=reacorr_stn, date_ymd=date_ymd, prefix=prefix, stninfo=stninfo)
 
 ########################################################################################################################
 
 # if QM is used, we have to derive the CDF curve for all grids before correction
 print('Calculate ecdf of station and reanalysis if files are not generated')
 for m in range(12):
-    indm = date_number['mm'] == (m + 1)
-
+    indm = date_mm == (m + 1)
     # calculate the ecdf of station data
     file_ecdf = path_ecdf + '/ecdf_stn_' + var + '_month_' + str(m + 1) + '.npz'
     if not os.path.isfile(file_ecdf):
@@ -597,8 +592,8 @@ for m in range(12):
         datam_rea = np.nan * np.zeros([nrows, ncols, np.sum(indm)], dtype=np.float32)
         flag = 0
         for y in range(1979, 2019):
-            mmy = date_number['mm'].copy()
-            mmy = mmy[date_number['yyyy'] == y]
+            mmy = date_mm.copy()
+            mmy = mmy[date_yyyy == y]
             indmmy = mmy == (m + 1)
             mmdays = np.sum(indmmy)
             if not (prefix[rr] == 'MERRA2_' and y == 1979):
@@ -670,10 +665,10 @@ for m in range(11, 12):
             continue
 
         # date processing
-        mmy = date_number['mm'].copy()
-        mmy = mmy[date_number['yyyy'] == y]
+        mmy = date_mm.copy()
+        mmy = mmy[date_yyyy == y]
         indmmy = mmy == (m + 1)
-        indmmy2 = (date_number['yyyy'] == y) & (date_number['mm'] == m + 1)
+        indmmy2 = (date_yyyy == y) & (date_mm == m + 1)
         mmdays = np.sum(indmmy)
 
         # read raw gridded reanalysis data
@@ -754,151 +749,3 @@ for m in range(11, 12):
 
             del bma_error, bma_data
     del ecdf_rea, ecdf_stn
-########################################################################################################################
-
-# pcptrans = True
-#
-# # produce the mean square error of each grid from nearby stations in normal space
-# # to support the production of final probabilistic estimation
-# for y in range(year[0], year[1] + 1):
-#     print('estimate mse: year',y)
-#     # process for each month
-#     for m in range(12):
-#         print('Correction and Merge: month', m+1)
-#         filemse = path_merge + '/mserror_' + var + '_' + str(y*100+m+1) + weightmode + '.npz'
-#         if os.path.isfile(filemse):
-#             print('file exists ... continue')
-#             continue
-#
-#         indym = (date_number['yyyy'] == y) & (date_number['mm'] == m+1)
-#         ym = date_number['mm'][date_number['yyyy'] == y]
-#         indm = ym == m+1
-#
-#         mse_error = mse_error(stndata[:, indym], reacorr_stn[:, :, indym],
-#                               reamerge_stn[:, indym], neargrid_loc, neargrid_dist, merge_choice[m,:,:], mask, var, pcptrans)
-#
-#         np.savez_compressed(filemse, mse_error=mse_error)
-
-
-########################################################################################################################
-
-# probability of precipitation
-
-# def threshold_for_occurrence(dref, dtar, mode=1, upperbound=2):
-#     # dref is station prcp and >0 means positive precipitation
-#     # mode 1: objective is that dref and dtar have the same number of precipitation events
-#     # mode 2: objective is to get max CSI of dtar
-#
-#     indnan = (np.isnan(dref)) | (np.isnan(dtar))
-#     if np.sum(indnan)>0:
-#         dref = dref[~indnan]
-#         dtar = dtar[~indnan]
-#
-#     if len(dtar) < 1:
-#         threshold = np.nan
-#     else:
-#         num1 = np.sum(dref > 0)
-#         if num1 == 0:
-#             threshold = np.max(dtar) + 0.1
-#         else:
-#             if mode == 1:
-#                 indnan = (dtar == 0) | (np.isnan(dtar))
-#                 dtar = dtar[~indnan]
-#                 if len(dtar)<=num1:
-#                     threshold = 0
-#                 else:
-#                     dtars = np.flip(np.sort(dtar))
-#                     threshold = (dtars[num1] + dtars[num1-1]) / 2
-#             elif mode == 2:
-#                 step = 0.05
-#                 num = int(upperbound / step) + 1
-#                 csi = np.zeros(num)
-#                 for i in range(num):
-#                     threi = i * step
-#                     n11 = np.sum((dref > 0) & (dtar > threi))
-#                     n10 = np.sum((dref <= 0) & (dtar > threi))
-#                     n01 = np.sum((dref > 0) & (dtar <= threi))
-#                     csii = n11 / (n11 + n01 + n10)
-#                     csi[i] = csii
-#                 indi = np.nanargmax(csi)
-#                 threshold = indi * step
-#             else:
-#                 sys.exit('Unknown mode for threshold')
-#
-#     if threshold > upperbound:
-#         threshold = upperbound
-#
-#     return threshold
-#
-#
-# def cal_csi(Obs, Pre, Tre=0):
-#     # Tre: rain/no rain threshold
-#     # POD(Probability of Detection),FOH(frequency of hit)
-#     # FAR(False Alarm Ratio), CSI(Critical Success Index)
-#     # HSS(Heidke skillscore),Ebert et al. [2007]
-#     if len(Obs) > 1:
-#         n11 = np.sum((Obs > Tre) & (Pre > Tre))
-#         n10 = np.sum((Obs <= Tre) & (Pre > Tre))
-#         n01 = np.sum((Obs > Tre) & (Pre <= Tre))
-#         # n00 = np.sum((Obs <= Tre) & (Pre <= Tre))
-#     # try:
-#     #     POD = n11 / (n11 + n01)
-#     # except:
-#     #     POD = np.nan
-#     # try:
-#     #     FOH = n11 / (n11 + n10)
-#     #     FAR = n10 / (n11 + n10)
-#     # except:
-#     #     FOH = np.nan
-#     #     FAR = np.nan
-#     try:
-#         CSI = n11 / (n11 + n01 + n10)
-#     except:
-#         CSI = np.nan
-#     # try:
-#     #     HSS = 2 * (n11 * n00 - n10 * n01) / ((n11 + n01) *
-#     #                                          (n01 + n00) + (n11 + n10) * (n10 + n00))
-#     # except:
-#     #     HSS = np.nan
-#     #
-#     # contingency_group = {'POD': POD, 'FOH': FOH, 'FAR': FAR,
-#     #                      'CSI': CSI, 'HSS': HSS}
-#     return CSI
-#
-# def pop_estimate(stndata,readata):
-#     reanum, nstn, ntimes = np.shape(readata)
-#     # 1. get threshold for precipitation occurrence
-#     rea_threshold = np.nan * np.zeros([nstn, reanum])
-#     for r in range(reanum):
-#         for i in range(nstn):
-#             if not np.isnan(stndata[i, 0]):
-#                 rea_threshold[i, r] = threshold_for_occurrence(stndata[i,:], readata[r, i, :], mode=2, upperbound = 2)
-#     # 2. calculate CSI
-#     rea_csi = np.nan * np.zeros([nstn, reanum])
-#     for r in range(reanum):
-#         for i in range(nstn):
-#             if not np.isnan(stndata[i, 0]):
-#                 dobs = stndata[i, :]
-#                 drea = readata[r, i, :].copy()
-#                 drea[drea < rea_threshold[i, r]] = 0
-#                 rea_csi[i, r] = cal_csi(dobs, drea)
-#
-#     # 3. estimate pop by merging reanalysis at station points
-#     pop_reamerge = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)
-#     for i in range(nstn):
-#         if not np.isnan(stndata[i, 0]):
-#             csii = rea_csi[i, :]
-#             weighti = csii ** 2 # weight formulation
-#             weighti = np.tile(weighti, (ntimes,1)).T
-#             popi = np.zeros([reanum, ntimes], dtype=int)
-#             for r in range(reanum):
-#                 pr = readata[r, i, :].copy()
-#                 pr[pr < rea_threshold[i, r]] = 0
-#                 pr[pr >= rea_threshold[i, r]] = 0
-#                 popi[r, :] = pr
-#             weighti[np.isnan(popi)] = 0 # MERRA2 does not have data for 1979
-#             popi2 = np.sum(weighti * popi, axis=0) / np.sum(weighti, axis=0)
-#             pop_reamerge[i, :] = popi2
-#
-#     return rea_threshold, rea_csi, pop_reamerge
-#

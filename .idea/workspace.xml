@@ -2,12 +2,52 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
-      <change afterPath="$PROJECT_DIR$/s5_rea_downscale.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/s6_rea_correction_merge.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auxiliary.py" beforeDir="false" afterPath="$PROJECT_DIR$/auxiliary.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_downscale.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s3_stn_regression.py" beforeDir="false" afterPath="$PROJECT_DIR$/s3_stn_regression.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/toxicstation_prcp_test-Copy1-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/toxicstation_prcp_test-Copy1-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1979.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1980.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1981.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1982.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1983.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1984.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1985.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1986.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1987.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1988.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1989.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1990.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1991.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1992.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1993.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1994.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1995.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1996.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1997.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1998.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_1999.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2000.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2001.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2002.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2003.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2004.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2005.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2006.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2007.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2008.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2009.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2010.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2011.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2012.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2013.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2014.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2015.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2016.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2017.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_reg_2018.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_temprun.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_temprun.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/s6_rea_correction_merge.py" beforeDir="false" afterPath="$PROJECT_DIR$/s6_rea_correction_merge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/temprun.py" beforeDir="false" afterPath="$PROJECT_DIR$/temprun.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/toxicstation_prcp_test-Copy1.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/toxicstation_prcp_test-Copy1.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

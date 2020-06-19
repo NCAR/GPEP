@@ -4,7 +4,7 @@
 # See: https://www.acrc.bris.ac.uk/protected/bc4-docs/scheduler/index.html
 
 #SBATCH --job-name=reapop
-#SBATCH --time=0-2:00:00
+#SBATCH --time=0-12:00:00
 #SBATCH --mem-per-cpu=20G
 
 #! add the python module
