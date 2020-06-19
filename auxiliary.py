@@ -299,11 +299,11 @@ def station_weight(prcp_stn_daily, tmean_stn_daily, stninfo, gridinfo, mask,
 
     # initialization
     near_grid_prcpLoc = -999 * np.ones([nrows, ncols, nearstn_max], dtype=int)
-    near_grid_prcpDist = -999 * np.ones([nrows, ncols, nearstn_max], dtype=float)
-    near_grid_prcpWeight = -999 * np.ones([nrows, ncols, nearstn_max], dtype=float)
+    near_grid_prcpDist = np.nan * np.ones([nrows, ncols, nearstn_max], dtype=float)
+    near_grid_prcpWeight = np.nan * np.ones([nrows, ncols, nearstn_max], dtype=float)
     near_grid_tempLoc = -999 * np.ones([nrows, ncols, nearstn_max], dtype=int)
-    near_grid_tempDist = -999 * np.ones([nrows, ncols, nearstn_max], dtype=float)
-    near_grid_tempWeight = -999 * np.ones([nrows, ncols, nearstn_max], dtype=float)
+    near_grid_tempDist = np.nan * np.ones([nrows, ncols, nearstn_max], dtype=float)
+    near_grid_tempWeight = np.nan * np.ones([nrows, ncols, nearstn_max], dtype=float)
 
     for rr in range(nrows):
         for cc in range(ncols):
