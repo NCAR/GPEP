@@ -3,8 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_temprun.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_temprun.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/s6_rea_correction_merge.py" beforeDir="false" afterPath="$PROJECT_DIR$/s6_rea_correction_merge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/generate_batch.m" beforeDir="false" afterPath="$PROJECT_DIR$/generate_batch.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/temprun.py" beforeDir="false" afterPath="$PROJECT_DIR$/temprun.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

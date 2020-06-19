@@ -381,9 +381,7 @@ def correction_rea(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_dist, c
 var = sys.argv[1]
 weightmode = sys.argv[2]
 corrmode = sys.argv[3]
-y1 = int(sys.argv[4])
-y2 = int(sys.argv[5])
-year = [y1, y2]
+month = int(sys.argv[4])
 
 # embeded
 # var = 'prcp'
@@ -395,7 +393,7 @@ year = [y1, y2]
 
 print('var is ', var)
 print('weightmode is ', weightmode)
-print('years are ', y1, y2)
+print('month are ', month)
 
 ########################################################################################################################
 
@@ -440,14 +438,13 @@ file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA_new/ERA5_day_ds/ERA5
 file_nearstn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_aftercheck/nearstn_catalog.npz'
 
 # output files/paths (can also be used as inputs once generated)
-near_path = '/home/gut428/ReanalysisCorrMerge'  # path to save near station for each grid/cell
 path_reacorr = '/home/gut428/ReanalysisCorrMerge/Reanalysis_corr'  # path to save corrected reanalysis data at station points
 path_merge = '/home/gut428/ReanalysisCorrMerge/Reanalysis_merge'
 path_ecdf = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/ECDF'
 ### Plato settings
 
 
-file_corrmerge_stn = path_merge + '/mergecorr_stn_' + var + '_GWRQM_' + weightmode + '.npz'  # file of indepedent corrected/merging data and merging weights
+file_corrmerge_stn = path_merge + '/mergecorr_stn_' + var + '_GWRQM_' + weightmode + '_' + str(month) + '.npz'  # file of indepedent corrected/merging data and merging weights
 
 ########################################################################################################################
 
@@ -554,7 +551,7 @@ else:
     reamerge_weight_stn = np.nan * np.zeros([12, nstn, reanum], dtype=np.float32)
     reacorr_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
     # for each month
-    for m in range(12):
+    for m in range(month-1,month):
         print('month', m + 1)
         indm = date_mm == (m + 1)
         reamerge_stnm, reamerge_weight_stnm, reacorr_stnm = \
