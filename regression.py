@@ -84,12 +84,12 @@ def weightedmean(data, weight):
 
 
 def station_error(prcp_stn, tmean_stn, trange_stn, stninfo, near_stn_prcpLoc, near_stn_prcpWeight, near_stn_tempLoc,
-                  near_stn_tempWeight, trans_exp, trans_mode, nearstn_min):
+                  near_stn_tempWeight, trans_exp, trans_mode, nearstn_min=0):
     nstn, ntimes = np.shape(prcp_stn)
-    pop_err_stn = -999 * np.ones([nstn, ntimes], dtype=np.float32)
-    pcp_err_stn = -999 * np.ones([nstn, ntimes], dtype=np.float32)
-    tmean_err_stn = -999 * np.ones([nstn, ntimes], dtype=np.float32)
-    trange_err_stn = -999 * np.ones([nstn, ntimes], dtype=np.float32)
+    pop_err_stn = np.nan * np.ones([nstn, ntimes], dtype=np.float32)
+    pcp_err_stn = np.nan * np.ones([nstn, ntimes], dtype=np.float32)
+    tmean_err_stn = np.nan * np.ones([nstn, ntimes], dtype=np.float32)
+    trange_err_stn = np.nan * np.ones([nstn, ntimes], dtype=np.float32)
 
     for t in range(ntimes):
         print('Current time:', t, 'Total times:', ntimes)

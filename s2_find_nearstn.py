@@ -18,7 +18,7 @@ FileGridInfo = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/gridinfo
 gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_whole.npz'
 
 # outfile
-FileWeight = '/home/gut428/nearstn_catalog.npz'
+file_nearstn = '/home/gut428/nearstn_catalog.npz'
 
 ########################################################################################################################
 
@@ -72,7 +72,7 @@ near_stn_tempLoc, near_stn_tempDist, near_stn_tempWeight \
                         search_radius, nearstn_min, nearstn_max, max_dist)
 
 # save data
-np.savez_compressed(FileWeight, near_grid_prcpLoc=near_grid_prcpLoc, near_grid_prcpDist=near_grid_prcpDist,
+np.savez_compressed(file_nearstn, near_grid_prcpLoc=near_grid_prcpLoc, near_grid_prcpDist=near_grid_prcpDist,
                     near_grid_prcpWeight=near_grid_prcpWeight, near_grid_tempLoc=near_grid_tempLoc,
                     near_grid_tempDist=near_grid_tempDist, near_grid_tempWeight=near_grid_tempWeight,
                     near_stn_prcpLoc=near_stn_prcpLoc, near_stn_prcpDist=near_stn_prcpDist,

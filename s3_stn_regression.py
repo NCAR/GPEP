@@ -14,41 +14,20 @@ from auxiliary_merge import m_DateList
 ########################################################################################################################
 
 year = int(sys.argv[1])
-date_cal_start = year*10000+100+1
-date_cal_end = year*10000+1200+31
-
-# 0. read/define configuration information
-
-# setting: start and end date
-# calculation start/end date:
-# date_cal_start = 19790101  # yyyymmdd: start date
-# date_cal_end = 19790131  # yyyymmdd: end date
-# station data (in PathStn) start/end date:
-date_stn_start = 19790101  # yyyymmdd: start date
-date_stn_end = 20181231  # yyyymmdd: end date
-
-# setting: searching nearby stations
-nearstn_min = 20  # nearby stations: minimum number
-nearstn_max = 30  # nearby stations: maximum number
-search_radius = 400  # km. only search stations within this radius even nearstn_max cannot be reached
-max_dist = 100  # max_distance in distance-based weight calculation
+yearall = [1979, 2018] # this is used for merging data for all years
 
 # setting: parameters for transforming temp to approximate normal distribution
 trans_mode = 'none'  # box-cox or power-law or none
-trans_exp_daily = 4
+trans_exp_daily = np.nan
 
-# setting: output files
-datestr = str(date_cal_start) + '-' + str(date_cal_end)
+# infiles
+gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_whole.npz'
+file_nearstn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_regression/nearstn_catalog.npz'
 
-## Plato settings
-FileStnInfo = '/datastore/GLOBALWATER/CommonData/EMDNA/StnGridInfo/stnlist_whole.txt'  # station basic information (lists)
-FileGridInfo = '/datastore/GLOBALWATER/CommonData/EMDNA/StnGridInfo/gridinfo_whole.nc'  # study area information
-PathStn = '/home/gut428/GMET/StnInput_daily'
-
-gmet_stndatafile = '/home/gut428/stndata_whole.npz'
-FileWeight = '/home/gut428/GMET/PyGMETout/weight.npz'
-FileRegError_daily = '/home/gut428/GMET/PyGMETout/error_' + datestr + '.npz'  # regression error at station points
-## Plato settings
+# outfiles
+outpath = '/home/gut428/GMET/PyGMETout'
+filereg_year = outpath + '/daily_regression_stn_' + str(year) + '.npz'  # regression error at station points
+filereg_all = outpath + '/daily_regression_stn.npz'  # regression error at station points
 
 ########################################################################################################################
 
@@ -59,6 +38,8 @@ if not os.path.isfile(gmet_stndatafile):
 else:
     print('load station data')
     datatemp=np.load(gmet_stndatafile)
+    stn_lle=datatemp['stn_lle']
+    stn_ID=datatemp['stn_ID']
     date_number = datatemp['date_number']
     indy = date_number['yyyy'] == year
     prcp_stn_daily = datatemp['prcp_stn'][:, indy]
@@ -68,61 +49,69 @@ else:
 ########################################################################################################################
 
 # find neighboring stations and calculate distance-based weights
-if os.path.isfile(FileWeight):
-    print('FileWeight exists. loading ...')
-    with np.load(FileWeight) as datatemp:
-        near_grid_prcpLoc = datatemp['near_grid_prcpLoc']
-        near_grid_prcpWeight = datatemp['near_grid_prcpWeight']
-        near_grid_tempLoc = datatemp['near_grid_tempLoc']
-        near_grid_tempWeight = datatemp['near_grid_tempWeight']
+if not os.path.isfile(file_nearstn):
+    print(file_nearstn, 'does not exist')
+    sys.exit()
+else:
+    print('file_nearstn exists. loading ...')
+    with np.load(file_nearstn) as datatemp:
         near_stn_prcpLoc = datatemp['near_stn_prcpLoc']
         near_stn_prcpWeight = datatemp['near_stn_prcpWeight']
         near_stn_tempLoc = datatemp['near_stn_tempLoc']
         near_stn_tempWeight = datatemp['near_stn_tempWeight']
     del datatemp
-else:
-    near_grid_prcpLoc, near_grid_prcpDist, near_grid_prcpWeight, \
-    near_grid_tempLoc, near_grid_tempDist, near_grid_tempWeight, \
-    near_stn_prcpLoc, near_stn_prcpDist, near_stn_prcpWeight, \
-    near_stn_tempLoc, near_stn_tempDist, near_stn_tempWeight \
-        = au.station_weight(prcp_stn_daily, tmean_stn_daily, stninfo, gridinfo, mask,
-                            search_radius, nearstn_min, nearstn_max, max_dist)
-
-    # save data
-    np.savez_compressed(FileWeight, near_grid_prcpLoc=near_grid_prcpLoc, near_grid_prcpDist=near_grid_prcpDist,
-                        near_grid_prcpWeight=near_grid_prcpWeight, near_grid_tempLoc=near_grid_tempLoc,
-                        near_grid_tempDist=near_grid_tempDist, near_grid_tempWeight=near_grid_tempWeight,
-                        near_stn_prcpLoc=near_stn_prcpLoc, near_stn_prcpDist=near_stn_prcpDist,
-                        near_stn_prcpWeight=near_stn_prcpWeight, near_stn_tempLoc=near_stn_tempLoc,
-                        near_stn_tempDist=near_stn_tempDist, near_stn_tempWeight=near_stn_tempWeight)
 
 ########################################################################################################################
 
-# 6. start spatial regression
-
-########################################################################################################################
-
-# 6.1 estimate regression error at station points
-if os.path.isfile(FileRegError_daily):
-    print('FileRegError_daily exists. loading ...')
-    with np.load(FileRegError_daily) as datatemp:
-        pcp_err_stn_daily = datatemp['pcp_err_stn']
-        tmean_err_stn_daily = datatemp['tmean_err_stn']
-        trange_err_stn_daily = datatemp['trange_err_stn']
-    del datatemp
-else:
+if not os.path.isfile(filereg_year):
     print('Estimate daily regression error at station points')
-    pcp_err_stn_daily, tmean_err_stn_daily, trange_err_stn_daily, pop_err_stn_daily = \
+    stninfo=np.ones([np.shape(stn_lle)[0],4])
+    stninfo[:,1:]=stn_lle
+    prcp_err_stn_daily, tmean_err_stn_daily, trange_err_stn_daily, pop_err_stn_daily = \
         reg.station_error(prcp_stn_daily, tmean_stn_daily, trange_stn_daily, stninfo, near_stn_prcpLoc,
                           near_stn_prcpWeight, near_stn_tempLoc, near_stn_tempWeight, trans_exp_daily,
-                          trans_mode, nearstn_min)
+                          trans_mode, 10)
 
-    pcp_reg_stn = pcp_err_stn_daily + prcp_stn_daily
+    prcp_reg_stn = prcp_err_stn_daily + prcp_stn_daily
+    prcp_reg_stn[prcp_reg_stn < 0] = 0
     tmean_reg_stn = tmean_err_stn_daily + tmean_stn_daily
     trange_reg_stn = trange_err_stn_daily + trange_stn_daily
 
     prcp_stn_daily[prcp_stn_daily>0] = 1
     pop_reg_stn = pop_err_stn_daily + prcp_stn_daily
 
-    np.savez_compressed(FileRegError_daily, pcp=pcp_reg_stn, tmean=tmean_reg_stn,
+    np.savez_compressed(filereg_year, prcp=prcp_reg_stn, tmean=tmean_reg_stn,
                         trange=trange_reg_stn, pop=pop_reg_stn)
+
+########################################################################################################################
+
+# check whether it is time to merge all years
+flag = 1
+for y in range(yearall[0], yearall[1]+1):
+    filey = outpath + '/daily_regression_stn_' + str(y) + '.npz'
+    if not os.path.isfile(filey):
+        flag = 0
+        break
+
+if os.path.isfile(filereg_all):
+    print('file for merged data exists')
+else:
+    print('merge data for all years')
+    ndays = len(date_number['yyyy'])
+    nstn = np.shape(stn_lle)[0]
+    prcp = np.nan * np.zeros([nstn, ndays], dtype=np.float32)
+    pop = np.nan * np.zeros([nstn, ndays], dtype=np.float32)
+    tmean = np.nan * np.zeros([nstn, ndays], dtype=np.float32)
+    trange = np.nan * np.zeros([nstn, ndays], dtype=np.float32)
+    for y in range(yearall[0], yearall[1]+1):
+        print('year',y,'/// all year', yearall)
+        filey = outpath + '/daily_regression_stn_' + str(y) + '.npz'
+        indy = date_number['yyyy'] == y
+        d = np.load(filey)
+        prcp[:, indy] = d['prcp']
+        pop[:, indy] = d['pop']
+        tmean[:, indy] = d['tmean']
+        trange[:, indy] = d['trange']
+        del d
+    np.savez_compressed(filereg_all, prcp=prcp, tmean=tmean, trange=trange, pop=pop,
+                        stn_lle=stn_lle, stn_ID=stn_ID, date_number=date_number)
