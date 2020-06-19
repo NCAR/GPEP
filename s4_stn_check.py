@@ -49,8 +49,8 @@ for i in range(nstn):
 # with heavy precipitation to benefit extreme precipitation estimation
 p1 = np.nanpercentile(ratio_vsreg, 99.9)
 p2 = np.nanpercentile(ratio_vsnear, 99.9)
-p3 = np.nanpercentile(ratio_vsreg, 1)
-p4 = np.nanpercentile(ratio_vsnear, 1)
+p3 = np.nanpercentile(ratio_vsreg, 2)
+p4 = np.nanpercentile(ratio_vsnear, 2)
 
 # toxic_prcp=np.where(((ratio_vsreg<p3) & (ratio_vsnear<p4)))[0]
 toxic_prcp = np.where(((ratio_vsreg > p1) & (ratio_vsnear > p2)) |
