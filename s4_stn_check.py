@@ -1,15 +1,19 @@
 # check the quality of station data based on regression estimates to ensure that some toxic stations are excluded
+# note: s2_ and s3_ must be re-run after executing this step because stations are changed
 
 import numpy as np
 
-# filestn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_whole.npz'
-# filereg = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_regression/daily_regression_stn.npz'
-# file_nearstn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_regression/nearstn_catalog.npz'
-
-filestn = '/Users/localuser/Research/EMDNA/stndata_whole.npz'
-filereg = '/Users/localuser/Research/EMDNA/regression/daily_regression_stn.npz'
-file_nearstn = '/Users/localuser/Research/EMDNA/regression/weight_nearstn.npz'
 nearnum = 10  # compare target station with its nearby stations to determine climatological anomaly
+
+filestn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_original.npz'
+filereg = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_original/regression_stn.npz'
+file_nearstn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_original/nearstn_catalog.npz'
+# filestn = '/Users/localuser/Research/EMDNA/stndata_whole.npz'
+# filereg = '/Users/localuser/Research/EMDNA/regression/daily_regression_stn.npz'
+# file_nearstn = '/Users/localuser/Research/EMDNA/regression/weight_nearstn.npz'
+
+# outfiles
+filestn_new = '/home/gut428/stndata_aftercheck.npz'
 
 ########################################################################################################################
 
@@ -89,3 +93,22 @@ for v in range(len(vart)):
     p1 = np.nanpercentile(diff_vsreg, 99)
     p2 = np.nanpercentile(diff_vsnear, 95)
     toxic_temp[v] = np.where((diff_vsreg > p1) & (diff_vsnear > p2))[0]
+toxic_temp = np.union1d(toxic_temp[0], toxic_temp[1])
+
+########################################################################################################################
+
+# save station data in a new file
+d = np.load(filestn)
+prcp_stn = d['prcp_stn']
+tmean_stn = d['tmean_stn']
+trange_stn = d['trange_stn']
+date_ymd = d['date_ymd']
+stnID = d['stnID']
+stninfo = d['stninfo']
+
+prcp_stn[toxic_prcp, :] = np.nan
+tmean_stn[toxic_temp, :] = np.nan
+trange_stn[toxic_temp, :] = np.nan
+
+np.savez_compressed(filestn_new, prcp_stn=prcp_stn, tmean_stn=tmean_stn, trange_stn=trange_stn,
+                    date_ymd=date_ymd, stnID=stnID, stninfo=stninfo, toxic_prcp=toxic_prcp, toxic_temp=toxic_temp)
