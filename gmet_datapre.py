@@ -90,9 +90,6 @@ del gridlat, gridlon, gridele, gridgns, gridgwe
 
 # load near station information
 datatemp = np.load(near_file_GMET)
-near_loc_stn = datatemp['near_stn_prcpLoc']
-near_weight_stn = datatemp['near_stn_prcpWeight']
-near_dist_stn = datatemp['near_stn_prcpDist']
 near_loc_grid = datatemp['near_grid_prcpLoc']
 near_weight_grid = datatemp['near_grid_prcpWeight']
 near_dist_grid = datatemp['near_grid_prcpDist']
@@ -113,7 +110,7 @@ stnlle = datatemp['stn_lle']
 nstn, ntimes = np.shape(stndata)
 del datatemp
 
-y_max = np.zeros([nrows, ncols, ntimes], dtype=np.float32)
+y_max = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
 for r in range(nrows):
     for c in range(ncols):
         if near_loc_grid[r, c, 0] < 0:
@@ -157,8 +154,9 @@ datatemp = np.load(fileoi)
 trange = datatemp['oi_value']
 trange_err = datatemp['oi_error']
 
-
-# flip data to accommodate grid information
+########################################################################################################################
+# save to netcdf
+y_max = np.flipud(y_max)
 pop = np.flipud(pop)
 prcp = np.flipud(prcp)
 prcp_err = np.flipud(prcp_err)
@@ -167,7 +165,5 @@ tmean_err = np.flipud(tmean_err)
 trange = np.flipud(trange)
 trange_err = np.flipud(trange_err)
 
-########################################################################################################################
-# save to netcdf
 au.save_output_nc(FileRegression, gridinfo, seconds, mean_autocorr, mean_tp_corr, pop, prcp, tmean, trange,
                   prcp_err, tmean_err, trange_err, y_max)
