@@ -26,8 +26,8 @@ file_nearstn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_original/nea
 
 # outfiles
 outpath = '/home/gut428/stn_reg_original'
-filereg_year = outpath + '/daily_regression_stn_' + str(year) + '.npz'  # regression error at station points
-filereg_all = outpath + '/daily_regression_stn.npz'  # regression error at station points
+filereg_year = outpath + '/regression_stn_' + str(year) + '.npz'  # regression error at station points
+filereg_all = outpath + '/regression_stn.npz'  # regression error at station points
 
 ########################################################################################################################
 
@@ -38,8 +38,10 @@ if not os.path.isfile(gmet_stndatafile):
 else:
     print('load station data')
     datatemp=np.load(gmet_stndatafile)
-    stn_lle=datatemp['stn_lle']
-    stn_ID=datatemp['stn_ID']
+    stninfo=datatemp['stninfo']
+    stnID=datatemp['stnID']
+    nstn = len(stnID)
+
     date_ymd = datatemp['date_ymd']
     yyyy = (date_ymd / 10000).astype(int)
     indy = yyyy == year
@@ -66,8 +68,6 @@ else:
 
 if not os.path.isfile(filereg_year):
     print('Estimate daily regression error at station points')
-    stninfo=np.ones([np.shape(stn_lle)[0],4])
-    stninfo[:,1:]=stn_lle
     prcp_err_stn_daily, tmean_err_stn_daily, trange_err_stn_daily, pop_err_stn_daily = \
         reg.station_error(prcp_stn_daily, tmean_stn_daily, trange_stn_daily, stninfo, near_stn_prcpLoc,
                           near_stn_prcpWeight, near_stn_tempLoc, near_stn_tempWeight, trans_exp_daily,
@@ -99,7 +99,6 @@ if os.path.isfile(filereg_all):
 else:
     print('merge data for all years')
     ndays = len(date_ymd['yyyy'])
-    nstn = np.shape(stn_lle)[0]
     prcp = np.nan * np.zeros([nstn, ndays], dtype=np.float32)
     pop = np.nan * np.zeros([nstn, ndays], dtype=np.float32)
     tmean = np.nan * np.zeros([nstn, ndays], dtype=np.float32)
@@ -115,4 +114,4 @@ else:
         trange[:, indy] = d['trange']
         del d
     np.savez_compressed(filereg_all, prcp=prcp, tmean=tmean, trange=trange, pop=pop,
-                        stn_lle=stn_lle, stn_ID=stn_ID, date_ymd=date_ymd)
+                        stninfo=stninfo, stnID=stnID, date_ymd=date_ymd)

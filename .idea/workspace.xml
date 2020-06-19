@@ -4,9 +4,8 @@
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/s1_prepare_stndata.py" beforeDir="false" afterPath="$PROJECT_DIR$/s1_prepare_stndata.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/s2_find_nearstn.py" beforeDir="false" afterPath="$PROJECT_DIR$/s2_find_nearstn.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/s3_stn_regression.py" beforeDir="false" afterPath="$PROJECT_DIR$/s3_stn_regression.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/toxicstation_prcp_test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/toxicstation_prcp_test.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/temprun.py" beforeDir="false" afterPath="$PROJECT_DIR$/temprun.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

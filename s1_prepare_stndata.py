@@ -3,6 +3,7 @@ import numpy as np
 import os
 import netCDF4 as nc
 import datetime
+import auxiliary as au
 
 ########################################################################################################################
 # basic settings
@@ -34,10 +35,8 @@ else:
         date_ymd[d] = int(dated.strftime("%Y%m%d"))
 
     # read station information
-    stn_ID = np.genfromtxt(gmet_stnfile, dtype='str', skip_header=1, comments='#', delimiter=',', usecols=(0), unpack=False)
-    stn_lle = np.loadtxt(gmet_stnfile, dtype=float, skiprows=1, comments='#', delimiter=',', usecols=(1, 2, 3),
-                         unpack=False)
-    nstn = len(stn_ID)
+    stnID, stninfo = au.readstnlist(gmet_stnfile)
+    nstn = len(stnID)
 
     # read data from input path according to station list
     prcp_stn = np.nan * np.zeros([nstn, daynum], dtype=np.float32)
@@ -46,7 +45,7 @@ else:
     for i in range(nstn):
         if np.mod(i, 1000) == 0:
             print('reading station', i, nstn)
-        file = gmet_stnpath + '/' + stn_ID[i] + '.nc'
+        file = gmet_stnpath + '/' + stnID[i] + '.nc'
         fid = nc.Dataset(file)
         varlist = fid.variables.keys()
         if 'prcp' in varlist:
@@ -71,4 +70,4 @@ else:
 
     # save output data
     np.savez_compressed(gmet_stndatafile, prcp_stn=prcp_stn, tmean_stn=tmean_stn, trange_stn=trange_stn,
-                        date_ymd=date_ymd, stn_ID=stn_ID, stn_lle=stn_lle)
+                        date_ymd=date_ymd, stnID=stnID, stninfo=stninfo)
