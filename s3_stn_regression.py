@@ -98,7 +98,7 @@ if os.path.isfile(filereg_all):
     print('file for merged data exists')
 else:
     print('merge data for all years')
-    ndays = len(date_ymd['yyyy'])
+    ndays = len(date_ymd)
     prcp = np.nan * np.zeros([nstn, ndays], dtype=np.float32)
     pop = np.nan * np.zeros([nstn, ndays], dtype=np.float32)
     tmean = np.nan * np.zeros([nstn, ndays], dtype=np.float32)

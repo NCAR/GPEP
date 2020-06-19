@@ -3,9 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/s1_prepare_stndata.py" beforeDir="false" afterPath="$PROJECT_DIR$/s1_prepare_stndata.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/toxicstation_prcp_test-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/toxicstation_prcp_test-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/toxicstation_tmean_test-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/toxicstation_tmean_test-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_commands" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_commands" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/s3_stn_regression.py" beforeDir="false" afterPath="$PROJECT_DIR$/s3_stn_regression.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/temprun.py" beforeDir="false" afterPath="$PROJECT_DIR$/temprun.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/s4_stn_check.py" beforeDir="false" afterPath="$PROJECT_DIR$/s4_stn_check.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/toxicstation_tmean_test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/toxicstation_tmean_test.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -290,10 +293,10 @@
       <screen x="0" y="23" width="1680" height="942" />
     </state>
     <state x="154" y="128" width="1136" height="738" key="dock-window-1/0.23.1680.942@0.23.1680.942" timestamp="1588185413708" />
-    <state x="815" y="226" width="670" height="672" key="search.everywhere.popup" timestamp="1591674395184">
+    <state x="815" y="226" width="670" height="672" key="search.everywhere.popup" timestamp="1592543246507">
       <screen x="0" y="23" width="1680" height="942" />
     </state>
-    <state x="815" y="226" width="670" height="672" key="search.everywhere.popup/0.23.1680.942@0.23.1680.942" timestamp="1591674395184" />
+    <state x="815" y="226" width="670" height="672" key="search.everywhere.popup/0.23.1680.942@0.23.1680.942" timestamp="1592543246507" />
     <state x="815" y="226" width="670" height="674" key="search.everywhere.popup/0.23.1680.944@0.23.1680.944" timestamp="1589912548165" />
     <state x="815" y="227" width="670" height="676" key="search.everywhere.popup/0.23.1680.947@0.23.1680.947" timestamp="1589145890020" />
     <state x="815" y="228" width="670" height="676" key="search.everywhere.popup/0.23.1680.949@0.23.1680.949" timestamp="1588692212728" />
