@@ -1,5 +1,8 @@
 # optimal interpolation merging
 # merge background (reanalysis) and observation (regression estimates)
+# computation time:
+# oi-merge for stations: 3 variables adn 12 months = 36 jobs. ~0.5 hour per job
+# oi-merge for grids: 3 variables adn 12 months = 36 jobs. ~0.5 hour per job
 
 import numpy as np
 from scipy import io
