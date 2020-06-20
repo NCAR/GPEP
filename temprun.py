@@ -87,6 +87,7 @@ lattar = lattarm[:, 0]
 datatemp = np.load(gmet_stndatafile)
 stndata = datatemp['prcp_stn']
 stninfo = datatemp['stninfo']
+stnID = datatemp['stnID']
 date_ymd = datatemp['date_ymd']
 nstn, ntimes = np.shape(stndata)
 del datatemp
@@ -94,17 +95,10 @@ date_yyyy = (date_ymd/10000).astype(int)
 date_mm = (np.mod(date_ymd, 10000)/100).astype(int)
 
 ########################################################################################################################
-# OI-merging at station scale
-
-# this function use nearby stations to get OI-merged estimate at the target station
-# to save time, this part is run month by month, and then monthly files are combined to one
-# this part should be revised if re-running is needed.
+# OI-merging at grid scale
 
 for v in range(len(vars)):
-    print('OI merge at stations:', vars[v])
-    filemerge_stn = path_oimerge + '/OImerge_stn_GWRQMBMA_' + vars[v] + '.npz'
-    if os.path.isfile(filemerge_stn):
-        continue
+    print('OI merge at grids:', vars[v])
 
     # load station original observations
     datatemp = np.load(gmet_stndatafile)
@@ -112,7 +106,8 @@ for v in range(len(vars)):
         observation_stn = datatemp['prcp_stn']
         observation_stn[observation_stn > 0] = 1
     else:
-        observation_stn = datatemp[vars[v]+'_stn']
+        observation_stn = datatemp[vars[v] + '_stn']
+    del datatemp
 
     # load station regression estimates (obs)
     datatemp = np.load(file_regression_stn)
@@ -128,81 +123,65 @@ for v in range(len(vars)):
     # load near station information
     datatemp = np.load(near_file_GMET)
     if vars[v] == 'prcp' or vars[v] == 'pop':
-        near_loc = datatemp['near_stn_prcpLoc']
-        near_weight = datatemp['near_stn_prcpWeight']
+        near_loc = datatemp['near_grid_prcpLoc']
+        near_weight = datatemp['near_grid_prcpWeight']
+        near_dist = datatemp['near_grid_prcpDist']
     else:
-        near_loc = datatemp['near_stn_tempLoc']
-        near_weight = datatemp['near_stn_tempWeight']
+        near_loc = datatemp['near_grid_tempLoc']
+        near_weight = datatemp['near_grid_tempWeight']
+        near_dist = datatemp['near_grid_tempDist']
+    near_loc = np.flipud(near_loc)
+    near_weight = np.flipud(near_weight)
+    near_dist = np.flipud(near_dist)
     del datatemp
 
     # start OI merging
-    oimerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)
     for m in range(month-1, month):
         print('month', m + 1)
         indm = (date_mm == m + 1)
         nday = sum(indm)
+        datem = date_yyyy[indm]
 
-        filemerge_stnm = path_oimerge + '/OImerge_stn_GWRQMBMA_' + vars[v] + '_' + str(m+1) + '.npz'
-        if not os.path.isfile(filemerge_stnm):
-            # use optimal interpolation to get OI-merged estimate at each station points
-            for i in range(nstn):
-                if np.mod(i,100)==0:
-                    print('station',i,nstn)
-                if np.isnan(observation_stn[i, 0]):
-                    continue
+        # load gridded merged reanalysis data for all years
+        print('load gridded merged data')
+        reagrid_value = np.nan * np.zeros([nrows, ncols, nday], dtype=np.float32)
+        reagrid_error = np.nan * np.zeros([nrows, ncols, nday], dtype=np.float32)
+        for y in range(1979, 2019):
+            indym = datem == y
+            filey = path_bac + '/bmamerge_' + vars[v] + '_' + str(y*100+m+1) + '.npz'
+            datatemp = np.load(filey)
+            reagrid_value[:, :, indym] = datatemp['bma_data']
+            reagrid_error[:, :, indym] = datatemp['bma_error']
+            del datatemp
 
-                near_loci = near_loc[i, :]
-                near_loci = near_loci[near_loci > -1]
+        # calculate OI-merging weights for every grids
+        print('calculate OI merging weights')
+        file_oiweight = path_oimerge + '/oiweight_' + vars[v] + '_month_' + str(m+1) + '.npz'
+        if os.path.isfile(file_oiweight):
+            datatemp = np.load(file_oiweight)
+            oiweight = datatemp['oiweight']
+            del datatemp
+        else:
+            oiweight = np.nan * np.zeros([nrows, ncols, np.shape(near_loc)[2]], dtype=np.float32)
+            for r in range(nrows):
+                if np.mod(r,10)==0:
+                    print(r)
+                for c in range(ncols):
+                    if np.isnan(mask[r, c]):
+                        continue
+                    near_loci = near_loc[r, c, :]
+                    near_loci = near_loci[near_loci > -1]
 
-                b_tar = reafinal_stn[i, indm]
-                o_tar = regression_stn[i, indm]
-                b_near = reafinal_stn[near_loci,:][:, indm]
-                o_near = regression_stn[near_loci,:][:, indm]
+                    b_near = reafinal_stn[near_loci, :][:, indm]
+                    o_near = regression_stn[near_loci, :][:, indm]
+                    # this error is from weighted mean. if using nearest neighbor to obtain gridded error, this weight will be more similar to stn-OI
+                    tar_err_b = reagrid_error[r, c, :]
+                    near_err_b = b_near - observation_stn[near_loci, :][:, indm]
+                    near_err_o = o_near - observation_stn[near_loci, :][:, indm]
 
-                tar_err_b = b_tar - observation_stn[i, indm]
-                near_err_b = b_near - observation_stn[near_loci,:][:, indm]
-                near_err_o = o_near - observation_stn[near_loci,:][:, indm]
+                    # delete possible nan values
+                    induse = ~np.isnan(tar_err_b + np.sum(near_err_b, axis=0) + np.sum(near_err_o, axis=0))
+                    weight = OImerge(tar_err_b[induse], near_err_b[:, induse], near_err_o[:, induse], eye_o=0)
 
-                # delete possible nan values
-                indnan = ~np.isnan(tar_err_b + np.sum(near_err_b,axis=0) + np.sum(near_err_o,axis=0) )
-                weight = OImerge(tar_err_b[indnan], near_err_b[:, indnan], near_err_o[:, indnan], eye_o=0)
-                if np.any(np.isnan(weight)) or np.any(abs(weight) > 2):
-                    weight = near_weight[i, 0:len(near_loci)]
-                    weight = weight / np.sum(weight)
-
-                diff = o_near - b_near
-                merge_est = b_tar.copy()
-                for id in range(nday):
-                    merge_est[id] = merge_est[id] + np.dot(weight, diff[:, id])
-                oimerge_stn[i, indm] = merge_est
-
-            if vars[v] == 'pop':
-                oimerge_stn[oimerge_stn < 0] = 0
-                oimerge_stn[oimerge_stn > 1] = 1
-            if vars[v] == 'prcp':
-                oimerge_stn[oimerge_stn < 0] = 0
-            if vars[v] == 'trange':
-                oimerge_stn = np.abs(oimerge_stn)
-            np.savez_compressed(filemerge_stnm, oimerge_stn=oimerge_stn)
-
-
-# combine all months
-for v in range(len(vars)):
-    flag = 1
-    for m in range(12):
-        filemerge_stnm = path_oimerge + '/OImerge_stn_GWRQMBMA_' + vars[v] + '_' + str(m+1) + '.npz'
-        if not os.path.isfile(filemerge_stnm):
-            flag = 0
-    if flag==1:
-        print('Combine station OI merging data for 12 months')
-        oimerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)
-        filemerge_stn = path_oimerge + '/OImerge_stn_GWRQMBMA_' + vars[v] + '.npz'
-        for m in range(12):
-            indm = (date_mm == m + 1)
-            nday = sum(indm)
-            filemerge_stnm = path_oimerge + '/OImerge_stn_GWRQMBMA_' + vars[v] + '_' + str(m + 1) + '.npz'
-            datatemp = np.load(filemerge_stnm)
-            oimerge_stnm = datatemp['oimerge_stn']
-            oimerge_stn[:, indm] = oimerge_stnm[:, indm]
-            del oimerge_stnm
-        np.savez_compressed(filemerge_stn, oimerge_stn=oimerge_stn)
+                    oiweight[r, c, 0:len(weight)] = weight
+            np.savez_compressed(file_oiweight, oiweight=oiweight, lattar=lattar, lontar=lontar)

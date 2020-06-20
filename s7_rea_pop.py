@@ -91,7 +91,7 @@ lattar = lattarm[:, 0]
 datatemp = np.load(gmet_stndatafile)
 stndata = datatemp['prcp_stn']
 stninfo = datatemp['stninfo']
-stnlle = stninfo[:,1:4]
+stnID = datatemp['stnID']
 date_ymd = datatemp['date_ymd']
 nstn, ntimes = np.shape(stndata)
 del datatemp
@@ -109,10 +109,11 @@ near_dist_grid = datatemp['near_grid_prcpDist']
 near_loc_grid = np.flipud(near_loc_grid)
 near_weight_grid = np.flipud(near_weight_grid)
 near_dist_grid = np.flipud(near_dist_grid)
+del datatemp
 
-# probability bins for QM
-binprob = 500
-ecdf_prob = np.arange(0, 1 + 1 / binprob, 1 / binprob)
+# # probability bins for QM # used in method 2
+# binprob = 500
+# ecdf_prob = np.arange(0, 1 + 1 / binprob, 1 / binprob)
 
 ########################################################################################################################
 
@@ -186,7 +187,8 @@ else:
                     else:
                         zb = - np.dot(np.array([1,prea_tar]), b)
                         reapop_stn[rr, gg, tt] = 1 / (1 + np.exp(zb))
-    np.savez_compressed(file_reapop_stn, reapop_stn=reapop_stn, stnlle=stnlle)
+    np.savez_compressed(file_reapop_stn, reapop_stn=reapop_stn, stninfo=stninfo,
+                        stnID=stnID, date_ymd=date_ymd, prefix=prefix)
 
 ########################################################################################################################
 
@@ -248,7 +250,8 @@ else:
     for m in range(12):
         for rr in range(reanum):
             bmaweight_grid[m, rr, :, :] = extrapolation(bmaweight_stn[m, :, rr], near_loc_grid, near_dist_grid)
-    np.savez_compressed(file_popmerge_stn, bmaweight_stn=bmaweight_stn, bmaweight_grid=bmaweight_grid, mergepop_stn=mergepop_stn)
+    np.savez_compressed(file_popmerge_stn, bmaweight_stn=bmaweight_stn, bmaweight_grid=bmaweight_grid,
+                        mergepop_stn=mergepop_stn, stninfo=stninfo, stnID=stnID, date_ymd=date_ymd, prefix=prefix)
 
 ########################################################################################################################
 
@@ -378,7 +381,7 @@ for y in range(yearin, yearin + 1):
                                 # model.fit(np.reshape(prea_near, [-1, 1]), pstn_near, sample_weight=nearweight)
                                 # reapop_grid[rr, r, c, tt] = model.predict_proba(np.reshape(prea_tar, [-1, 1]))[0][1]
 
-            np.savez_compressed(file_reapop, reapop_grid=reapop_grid, prefix=prefix)
+            np.savez_compressed(file_reapop, reapop_grid=reapop_grid, latitude=lattar, longitude=lontar, prefix=prefix)
 
         ################################################################################################################
         print('Reanalysis merging')
