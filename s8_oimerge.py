@@ -282,7 +282,7 @@ for v in range(len(vars)):
             oiweight = np.nan * np.zeros([nrows, ncols, np.shape(near_loc)[2]], dtype=np.float32)
             for r in range(nrows):
                 if np.mod(r,10)==0:
-                    print(r)
+                    print(r,nrows)
                 for c in range(ncols):
                     if np.isnan(mask[r, c]):
                         continue

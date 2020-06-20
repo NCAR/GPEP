@@ -1,72 +1,76 @@
-# optimal interpolation merging
-# merge background (reanalysis) and observation (regression estimates)
+# pop estimation using logistic regression
+# computation time: long due to logistic regression
 
 import numpy as np
+import regression as reg
 from scipy import io
-import os
+import os, sys
+from bma_merge import bma
+from auxiliary_merge import extrapolation
 import netCDF4 as nc
-from optimal_interpolation import OImerge
-from auxiliary_merge import *
 
-########################################################################################################################
+########### other choices for logistic regression
+# LogisticRegression with solver='lbfgs' is two times faster than the least-square iterations
+# SGDClassifier with default setting is sevent times faster, but not as accurate
+# more testing would be needed
+from sklearn.linear_model import LogisticRegression, SGDClassifier
+########### other choices for logistic regression
 
-# time periods and methods
-vars = sys.argv[1]
-vars = [vars]
-month = int(sys.argv[2])
+# read from inputs
+time1 = int(sys.argv[1])
+time2 = int(sys.argv[2])
+print(time1,time2)
 
-# vars = 'prcp'
-# vars = [vars]
-# month = 2
+# yearin = int(sys.argv[1])
+# monthin = int(sys.argv[2])
+# print(yearin,monthin)
 
-print(vars,month)
-
-########################################################################################################################
-
-# basic settings
-weightmode = 'BMA' # method used to merge different reanalysis products
-# vars = ['prcp', 'tmean', 'trange']
+prefix = ['ERA5_', 'MERRA2_', 'JRA55_']
 
 # ### Local Mac settings
 # # input files/paths
-# path_bac = '/Users/localuser/Research/EMDNA/merge' # data that will be used as background
-# path_obs = '/Users/localuser/Research/EMDNA/regression' # data that will be used as observation
-# near_file_GMET = '/Users/localuser/Research/EMDNA/regression/weight_nearstn.npz' # near station of stations/grids
-# file_mask = './DEM/NA_DEM_010deg_trim.mat'
-# FileStnInfo = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'
+# gmet_stnfile = '/Users/localuser/Research/EMDNA/basicinfo/stnlist_whole.txt'
 # gmet_stndatafile = '/Users/localuser/Research/EMDNA/stndata_whole.npz'
+# file_mask = './DEM/NA_DEM_010deg_trim.mat'
+# near_file_GMET = '/Users/localuser/Research/EMDNA/regression/weight_nearstn.npz' # near station of stations/grids
+# path_readowngrid = ['/Users/localuser/Research/EMDNA/downscale/ERA5',  # downscaled gridded data
+#                     '/Users/localuser/Research/EMDNA/downscale/MERRA2',
+#                     '/Users/localuser/Research/EMDNA/downscale/JRA55']
+# file_readownstn = ['/Users/localuser/Research/EMDNA/downscale/ERA5_downto_stn_nearest.npz', # downscaled to stn points
+#                    '/Users/localuser/Research/EMDNA/downscale/MERRA2_downto_stn_nearest.npz',
+#                    '/Users/localuser/Research/EMDNA/downscale/JRA55_downto_stn_nearest.npz']
 #
 # # output files/paths (can also be used as inputs once generated)
-# path_oimerge = '/Users/localuser/Research/EMDNA/oimerge'
-#
+# path_pop = '/Users/localuser/Research/EMDNA/pop'
 # ### Local Mac settings
 
 
 ### Plato settings
-# input files/paths
 FileGridInfo = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/gridinfo_whole.nc'
-FileStnInfo = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/stnlist_whole.txt'
+gmet_stnfile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/stnlist_whole.txt'
 gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_aftercheck.npz'
-path_bac = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/Reanalysis_merge'
-path_obs = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_aftercheck'
-near_file_GMET = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_aftercheck/nearstn_catalog.npz'
 file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA_new/DEM/NA_DEM_010deg_trim.mat'
-
-# output files/paths (can also be used as inputs once generated)
-path_oimerge = '/home/gut428/OImerge'
+near_file_GMET = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_aftercheck/nearstn_catalog.npz'
+path_readowngrid = ['/datastore/GLOBALWATER/CommonData/EMDNA_new/ERA5_day_ds',  # downscaled gridded data
+                   '/datastore/GLOBALWATER/CommonData/EMDNA_new/MERRA2_day_ds',
+                   '/datastore/GLOBALWATER/CommonData/EMDNA_new/JRA55_day_ds']
+file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA_new/ERA5_day_ds/ERA5_downto_stn_GWR.npz', # downscaled to stn points
+                   '/datastore/GLOBALWATER/CommonData/EMDNA_new/MERRA2_day_ds/MERRA2_downto_stn_GWR.npz',
+                   '/datastore/GLOBALWATER/CommonData/EMDNA_new/JRA55_day_ds/JRA55_downto_stn_GWR.npz']
+path_pop = '/home/gut428/ReanalysisCorrMerge/pop'
 ### Plato settings
 
-file_regression_stn = path_obs + '/regression_stn.npz'
-file_corrmerge_stn = [''] * len(vars)
-for i in range(len(vars)):
-    if vars[i] == 'pop':
-        file_corrmerge_stn[i] = path_bac + '/merge_stn_' + vars[i] + '_GWR_' + weightmode + '.npz'
-    else:
-        file_corrmerge_stn[i] = path_bac + '/mergecorr_stn_' + vars[i] + '_GWRQM_' + weightmode + '.npz'
+file_reapop_stn = path_pop + '/reanalysis_pop_stn.npz'
+file_popmerge_stn = path_pop + '/merge_stn_pop_GWR_BMA.npz'
 
 ########################################################################################################################
 
 # basic processing
+print('start basic processing')
+
+reanum = len(prefix)
+
+# mask
 mask = io.loadmat(file_mask)
 mask = mask['DEM']
 mask[~np.isnan(mask)] = 1  # 1: valid pixels
@@ -94,94 +98,94 @@ del datatemp
 date_yyyy = (date_ymd/10000).astype(int)
 date_mm = (np.mod(date_ymd, 10000)/100).astype(int)
 
+# load near station information
+datatemp = np.load(near_file_GMET)
+near_loc_stn = datatemp['near_stn_prcpLoc']
+near_weight_stn = datatemp['near_stn_prcpWeight']
+near_dist_stn = datatemp['near_stn_prcpDist']
+near_loc_grid = datatemp['near_grid_prcpLoc']
+near_weight_grid = datatemp['near_grid_prcpWeight']
+near_dist_grid = datatemp['near_grid_prcpDist']
+near_loc_grid = np.flipud(near_loc_grid)
+near_weight_grid = np.flipud(near_weight_grid)
+near_dist_grid = np.flipud(near_dist_grid)
+del datatemp
+
+# # probability bins for QM # used in method 2
+# binprob = 500
+# ecdf_prob = np.arange(0, 1 + 1 / binprob, 1 / binprob)
+
 ########################################################################################################################
-# OI-merging at grid scale
 
-for v in range(len(vars)):
-    print('OI merge at grids:', vars[v])
+# load downscaled reanalysis at station points
+print('load downscaled reanalysis data at station points')
+readata_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
+for rr in range(reanum):
+    dr = np.load(file_readownstn[rr])
+    temp = dr['prcp_readown']
+    readata_stn[rr, :, :] = temp
+    del dr, temp
+readata_stn[readata_stn < 0] = 0
 
-    # load station original observations
-    datatemp = np.load(gmet_stndatafile)
-    if vars[v] == 'pop':
-        observation_stn = datatemp['prcp_stn']
-        observation_stn[observation_stn > 0] = 1
-    else:
-        observation_stn = datatemp[vars[v] + '_stn']
+########################################################################################################################
+
+# method-1: estimate pop using a univariate regression between station occurrence (0-1) and reanalysis precipitation
+file_popt = path_pop + '/reapop_stn_' + str(time1) + '-' + str(time2) + '.npz'
+if os.path.isfile(file_popt):
+    datatemp = np.load(file_popt)
+    reapop_stn = datatemp['reapop_stn']
     del datatemp
+else:
+    reapop_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
+    for rr in range(reanum):
+        print('reanalysis',rr)
+        for gg in range(nstn):
+            if np.mod(gg,10)==0:
+                print(gg,nstn)
+            if np.isnan(stndata[gg, 0]):
+                continue
+            nearloc = near_loc_stn[gg, :]
+            neardist = near_dist_stn[gg, :]
+            nearweight = near_weight_stn[gg, :]
+            neardist = neardist[nearloc > -1]
+            nearweight = nearweight[nearloc > -1]
+            nearweight = nearweight/np.sum(nearweight)
+            nearloc = nearloc[nearloc > -1]
 
-    # load station regression estimates (obs)
-    datatemp = np.load(file_regression_stn)
-    regression_stn = datatemp[vars[v]]
-    del datatemp
+            nstn_prcp = len(nearloc)
+            w_pcp_red = np.zeros([nstn_prcp, nstn_prcp])
+            for i in range(nstn_prcp):
+                w_pcp_red[i, i] = nearweight[i]  # eye matrix: stn weight in one-one lien
 
-    # load corrected/merged reanalysis data at all station points (those are totally independent with station observations)
-    datatemp = np.load(file_corrmerge_stn[v])
-    reafinal_stn = datatemp['reamerge_stn']
-    nstn, ntimes = np.shape(reafinal_stn)
-    del datatemp
+            x_red = np.ones([nstn_prcp, 2])
 
-    # load near station information
-    datatemp = np.load(near_file_GMET)
-    if vars[v] == 'prcp' or vars[v] == 'pop':
-        near_loc = datatemp['near_grid_prcpLoc']
-        near_weight = datatemp['near_grid_prcpWeight']
-        near_dist = datatemp['near_grid_prcpDist']
-    else:
-        near_loc = datatemp['near_grid_tempLoc']
-        near_weight = datatemp['near_grid_tempWeight']
-        near_dist = datatemp['near_grid_tempDist']
-    near_loc = np.flipud(near_loc)
-    near_weight = np.flipud(near_weight)
-    near_dist = np.flipud(near_dist)
-    del datatemp
+            # for tt in range(ntimes):
+            for tt in range(time1-1, time2): # to accelerate speed
+                prea_tar = readata_stn[rr, gg, tt]
+                if np.isnan(prea_tar):
+                    continue
+                if stndata[gg, tt]>0:
+                    pstn_tar = 1
+                else:
+                    pstn_tar = 0
+                prea_near = readata_stn[rr, nearloc, tt]
+                pstn_near = stndata[nearloc, tt]
+                pstn_near[pstn_near > 0] = 1
 
-    # start OI merging
-    for m in range(month-1, month):
-        print('month', m + 1)
-        indm = (date_mm == m + 1)
-        nday = sum(indm)
-        datem = date_yyyy[indm]
-
-        # load gridded merged reanalysis data for all years
-        print('load gridded merged data')
-        reagrid_value = np.nan * np.zeros([nrows, ncols, nday], dtype=np.float32)
-        reagrid_error = np.nan * np.zeros([nrows, ncols, nday], dtype=np.float32)
-        for y in range(1979, 2019):
-            indym = datem == y
-            filey = path_bac + '/bmamerge_' + vars[v] + '_' + str(y*100+m+1) + '.npz'
-            datatemp = np.load(filey)
-            reagrid_value[:, :, indym] = datatemp['bma_data']
-            reagrid_error[:, :, indym] = datatemp['bma_error']
-            del datatemp
-
-        # calculate OI-merging weights for every grids
-        print('calculate OI merging weights')
-        file_oiweight = path_oimerge + '/oiweight_' + vars[v] + '_month_' + str(m+1) + '.npz'
-        if os.path.isfile(file_oiweight):
-            datatemp = np.load(file_oiweight)
-            oiweight = datatemp['oiweight']
-            del datatemp
-        else:
-            oiweight = np.nan * np.zeros([nrows, ncols, np.shape(near_loc)[2]], dtype=np.float32)
-            for r in range(nrows):
-                if np.mod(r,10)==0:
-                    print(r)
-                for c in range(ncols):
-                    if np.isnan(mask[r, c]):
-                        continue
-                    near_loci = near_loc[r, c, :]
-                    near_loci = near_loci[near_loci > -1]
-
-                    b_near = reafinal_stn[near_loci, :][:, indm]
-                    o_near = regression_stn[near_loci, :][:, indm]
-                    # this error is from weighted mean. if using nearest neighbor to obtain gridded error, this weight will be more similar to stn-OI
-                    tar_err_b = reagrid_error[r, c, :]
-                    near_err_b = b_near - observation_stn[near_loci, :][:, indm]
-                    near_err_o = o_near - observation_stn[near_loci, :][:, indm]
-
-                    # delete possible nan values
-                    induse = ~np.isnan(tar_err_b + np.sum(near_err_b, axis=0) + np.sum(near_err_o, axis=0))
-                    weight = OImerge(tar_err_b[induse], near_err_b[:, induse], near_err_o[:, induse], eye_o=0)
-
-                    oiweight[r, c, 0:len(weight)] = weight
-            np.savez_compressed(file_oiweight, oiweight=oiweight, lattar=lattar, lontar=lontar)
+                # logistic regression
+                if np.all(pstn_near == 1):
+                    reapop_stn[rr, gg, tt] = 1
+                elif np.all(pstn_near == 0) or np.all(prea_near < 0.01):
+                    reapop_stn[rr, gg, tt] = 0
+                else:
+                    x_red[:, 1] = prea_near
+                    tx_red = np.transpose(x_red)
+                    twx_red = np.matmul(tx_red, w_pcp_red)
+                    b = reg.logistic_regression(x_red, twx_red, pstn_near)
+                    if np.all(b==0) or np.any(np.isnan(b)):
+                        reapop_stn[rr, gg, tt] = np.dot(nearweight, pstn_near)
+                    else:
+                        zb = - np.dot(np.array([1,prea_tar]), b)
+                        reapop_stn[rr, gg, tt] = 1 / (1 + np.exp(zb))
+    np.savez_compressed(file_popt, reapop_stn=reapop_stn, stninfo=stninfo,
+                        stnID=stnID, date_ymd=date_ymd, prefix=prefix)

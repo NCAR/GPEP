@@ -61,7 +61,7 @@ path_pop = '/home/gut428/ReanalysisCorrMerge/pop'
 ### Plato settings
 
 file_reapop_stn = path_pop + '/reanalysis_pop_stn.npz'
-file_popmerge_stn = path_pop + '/bmamerge_pop_stn.npz'
+file_popmerge_stn = path_pop + '/merge_stn_pop_GWR_BMA.npz'
 
 ########################################################################################################################
 
