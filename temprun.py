@@ -443,7 +443,7 @@ path_merge = '/home/gut428/ReanalysisCorrMerge/Reanalysis_merge'
 path_ecdf = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/ECDF'
 ### Plato settings
 
-file_corrmerge_stn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/Reanalysis_merge' +\
+file_corrmerge_stn = path_merge +\
                      '/mergecorr_stn_' + var + '_GWRLS_' + weightmode + '.npz'  # file of indepedent corrected/merging data and merging weights
 
 ########################################################################################################################
