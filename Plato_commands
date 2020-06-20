@@ -21,10 +21,9 @@ mv error_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout_update
 done
 
 
-for (( y=1979; y<=2018; y++))
+for (( y=1981; y<=2018; y++))
 do
-sbatch Plato_tmean_${y}.sh
-sbatch Plato_trange_${y}.sh
+sbatch Plato_prcp_${y}.sh
 done
 
 for y in {1980..2018..1}
