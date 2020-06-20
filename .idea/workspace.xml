@@ -2,12 +2,49 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
-      <change afterPath="$PROJECT_DIR$/Plato_2_1.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Plato_2_2.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Plato_2_3.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/temprun2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/s6_rea_correction_merge.py" beforeDir="false" afterPath="$PROJECT_DIR$/s6_rea_correction_merge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_1.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_10.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_11.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_12.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_13.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_14.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_15.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_16.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_17.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_18.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_19.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_20.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_21.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_22.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_23.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_24.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_25.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_26.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_27.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_28.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_29.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2_1.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2_2.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2_3.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_3.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_30.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_31.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_32.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_33.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_34.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_35.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_36.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_4.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_5.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_6.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_7.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_8.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_9.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/temprun.py" beforeDir="false" afterPath="$PROJECT_DIR$/temprun.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/temprun2.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/toxicstation_prcp_test-Copy1.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/toxicstation_prcp_test-Copy1.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
