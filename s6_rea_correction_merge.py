@@ -445,8 +445,8 @@ path_merge = '/home/gut428/ReanalysisCorrMerge/Reanalysis_merge'
 path_ecdf = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/ECDF'
 ### Plato settings
 
-
-file_corrmerge_stn = path_merge + '/mergecorr_stn_' + var + '_GWRQM_' + weightmode + '.npz'  # file of indepedent corrected/merging data and merging weights
+file_corrmerge_stn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/Reanalysis_merge' +\
+                     '/mergecorr_stn_' + var + '_GWRQM_' + weightmode + '.npz'  # file of indepedent corrected/merging data and merging weights
 
 ########################################################################################################################
 
@@ -641,7 +641,7 @@ else:
 # BMA-based merging
 
 # process for each month
-for m in range(11, 12):
+for m in range(12):
     print('Correction and Merge: month', m + 1)
 
     # load ecdf of stations and reanalysis for this month
@@ -706,6 +706,8 @@ for m in range(11, 12):
                 if (prefix[rr] == 'MERRA2_' and y == 1979):
                     continue
                 for r in range(nrows):
+                    if np.mod(r,100)==0:
+                        print(r)
                     for c in range(ncols):
                         if np.isnan(mask[r, c]):
                             continue
