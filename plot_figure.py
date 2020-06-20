@@ -23,7 +23,7 @@ for m in range(month[0], month[1] + 1):
         nday = nday + np.shape(dy)[2]
 
     data = data / nday
-    plt.imshow(np.mean(data, axis=2), cmap='nipy_spectral')
+    plt.imshow(data, cmap='nipy_spectral')
     plt.colorbar(orientation='horizontal', shrink=0.6, pad=0.05)
     plt.clim([-40, 40])
     plt.axis('off')
