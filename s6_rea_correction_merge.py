@@ -447,7 +447,7 @@ path_ecdf = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/ECD
 ### Plato settings
 
 file_corrmerge_stn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/Reanalysis_merge' +\
-                     '/mergecorr_stn_' + var + '_GWRQM_' + weightmode + '.npz'  # file of indepedent corrected/merging data and merging weights
+                     '/mergecorr_stn_' + var + '_GWR' + corrmode + '_' + weightmode + '.npz'  # file of indepedent corrected/merging data and merging weights
 
 ########################################################################################################################
 
@@ -700,7 +700,6 @@ for m in range(12):
             for rr in range(reanum):
                 corr_error[rr, :, :, :] = extrapolation(reacorr_stn[rr, :, indmmy2].T - stndata[:, indmmy2],
                                                         neargrid_loc, neargrid_dist)
-
             # (2) estimate the value of corrected data
             # error correction
             for rr in range(reanum):

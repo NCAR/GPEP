@@ -9,7 +9,6 @@ def m_DateList(year_start, year_end, mode):
     date_start = datetime.date(year_start, 1, 1)
     date_end = datetime.date(year_end, 12, 31)
     daynum = (date_end - date_start).days + 1
-
     # generate date in format: yyyymmdd
     date_ymd = np.zeros(daynum, dtype=int)
     dated = date_start
@@ -22,7 +21,6 @@ def m_DateList(year_start, year_end, mode):
                    'yyyy': np.floor(date_ymd / 10000).astype(int),
                    'mm': np.floor(np.mod(date_ymd, 10000) / 100).astype(int),
                    'dd': np.mod(date_ymd, 100).astype(int)}
-
     # generate file list
     if mode == 'ByDay':
         datemode = date_number['yyyymmdd']
@@ -32,11 +30,9 @@ def m_DateList(year_start, year_end, mode):
         elif mode == 'ByYear':
             datemode = date_number['yyyy']
         datemode = np.unique(datemode)
-
     date_list = [' '] * len(datemode)
     for i in range(len(datemode)):
         date_list[i] = str(datemode[i])
-
     return date_list, date_number
 
 def box_cox_transform(data, exp=0.25):
