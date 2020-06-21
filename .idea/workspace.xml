@@ -3,9 +3,82 @@
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/Untitled-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/Untitled-checkpoint.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Untitled.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Untitled.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/temprun.py" beforeDir="false" afterPath="$PROJECT_DIR$/temprun.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_commands" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_commands" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_1.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_10.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_11.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_12.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_13.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_14.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_15.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_16.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_17.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_18.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_19.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_2.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_20.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_21.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_22.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_23.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_24.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_25.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_26.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_27.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_28.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_29.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_3.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_30.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_31.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_32.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_33.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_34.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_35.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_36.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_37.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_38.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_39.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_4.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_40.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_41.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_42.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_43.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_44.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_45.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_46.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_47.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_48.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_49.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_5.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_50.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_51.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_52.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_53.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_54.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_55.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_56.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_57.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_58.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_59.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_6.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_60.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_61.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_62.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_63.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_64.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_65.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_66.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_67.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_68.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_69.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_7.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_70.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_71.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_72.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_73.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_74.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_8.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_pop_9.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s8_oimerge.py" beforeDir="false" afterPath="$PROJECT_DIR$/s8_oimerge.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
