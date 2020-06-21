@@ -137,7 +137,7 @@ if os.path.isfile(file_reapop_stn):
     reapop_stn = datatemp['reapop_stn']
     del datatemp
 else:
-    file_reapop_stn = path_pop + '/reapop_stn' + str(time1) + '-' + str(time2) + '.npz'
+    file_reapop_stn = path_pop + '/reapop_stn_' + str(time1) + '-' + str(time2) + '.npz'
     if os.path.isfile(file_reapop_stn):
         sys.exit()
     reapop_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
