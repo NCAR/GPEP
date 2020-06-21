@@ -616,11 +616,13 @@ else:
 
 if corrmode[0:3] == 'Mul' or corrmode[0:3] == 'Add':
     # multplicative correction or additive correction
+    print('Load correction factor')
     if os.path.isfile(file_corrfactor):
         datatemp = np.load(file_corrfactor)
         corrfactor = datatemp['corrfactor']
         del datatemp
     else:
+        print('Calculate correction factor')
         corrfactor = np.nan * np.zeros([12, reanum, nrows, ncols], dtype=np.float32)
         for m in range(12):
             for rr in range(reanum):
