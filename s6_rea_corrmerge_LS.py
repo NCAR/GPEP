@@ -206,7 +206,7 @@ def correction_merge_stn(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_d
     reamerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)  # merged reanalysis at station points
 
     for i1 in range(nstn):  # layer-1
-        if np.mod(i1, 100) == 0:
+        if np.mod(i1, 1000) == 0:
             print(i1)
         if np.isnan(stndata[i1, 0]):
             continue
@@ -593,3 +593,188 @@ else:
             reamerge_weight_stn[m, :, :] = datatemp['reamerge_weight_stn'][m, :, :]
         np.savez_compressed(file_corrmerge_stn, reamerge_stn=reamerge_stn, reamerge_weight_stn=reamerge_weight_stn,
                             reacorr_stn=reacorr_stn, date_ymd=date_ymd, prefix=prefix, stninfo=stninfo)
+########################################################################################################################
+
+# if QM is used, we have to derive the CDF curve for all grids before correction
+print('Calculate ecdf of station and reanalysis if files are not generated')
+for m in range(12):
+    indm = date_mm == (m + 1)
+    # calculate the ecdf of station data
+    file_ecdf = path_ecdf + '/ecdf_stn_' + var + '_month_' + str(m + 1) + '.npz'
+    if not os.path.isfile(file_ecdf):
+        print('month', m + 1, 'estimate ecdf of stations')
+        ecdf_stn = np.nan * np.zeros([nstn, binprob + 1], dtype=np.float32)
+        for i in range(nstn):
+            if not np.isnan(stndata[i, 0]):
+                ecdf_stn[i, :] = empirical_cdf(stndata[i, indm], ecdf_prob)
+        np.savez_compressed(file_ecdf, ecdf=ecdf_stn, prob=ecdf_prob, stnlle=stnlle)
+        del ecdf_stn
+
+    # calculate the ecdf of reanalysis data
+    for rr in range(reanum):
+        file_ecdf = path_ecdf + '/ecdf_' + prefix[rr] + var + '_month_' + str(m + 1) + '.npz'
+        if os.path.isfile(file_ecdf):
+            continue
+        print('month', m + 1, 'estimate ecdf of reanalysis', rr + 1, '/', reanum)
+        # read raw gridded reanalysis data
+        datam_rea = np.nan * np.zeros([nrows, ncols, np.sum(indm)], dtype=np.float32)
+        flag = 0
+        for y in range(1979, 2019):
+            mmy = date_mm.copy()
+            mmy = mmy[date_yyyy == y]
+            indmmy = mmy == (m + 1)
+            mmdays = np.sum(indmmy)
+            if not (prefix[rr] == 'MERRA2_' and y == 1979):
+                filer = path_readowngrid[rr] + '/' + prefix[rr] + 'ds_' + var + '_' + str(y * 100 + m + 1) + '.npz'
+                d = np.load(filer)
+                datam_rea[:, :, flag:flag + mmdays] = d['data']
+                del d
+            flag = flag + mmdays
+
+        # calculate ecdf
+        ecdf_rea = np.nan * np.zeros([nrows, ncols, binprob + 1], dtype=np.float32)
+        for i in range(nrows):
+            for j in range(ncols):
+                if not np.isnan(mask[i, j]):
+                    ecdf_rea[i, j, :] = empirical_cdf(datam_rea[i, j, :], ecdf_prob)
+
+        np.savez_compressed(file_ecdf, ecdf=ecdf_rea, prob=ecdf_prob)
+        del ecdf_rea
+
+########################################################################################################################
+
+# interpolate merging weights to grids
+filebma_merge_weight = path_merge + '/mergeweight_' + var + '_' + weightmode + '.npz'
+if os.path.isfile(filebma_merge_weight):
+    print('Load merging weight')
+    datatemp = np.load(filebma_merge_weight)
+    reamerge_weight_grid = datatemp['reamerge_weight_grid']
+    del datatemp
+else:
+    print('Interpolate merging weight')
+    reamerge_weight_grid = np.nan * np.zeros([12, reanum, nrows, ncols], dtype=np.float32)
+    for m in range(12):
+        for rr in range(reanum):
+            reamerge_weight_grid[m, rr, :, :] = extrapolation(reamerge_weight_stn[m, :, rr], neargrid_loc,
+                                                              neargrid_dist)
+    np.savez_compressed(filebma_merge_weight, reamerge_weight_grid=reamerge_weight_grid, reaname=prefix,
+                        latitude=lattar, longitude=lontar)
+
+########################################################################################################################
+
+# start final correction and merging
+# QM-based correction
+# BMA-based merging
+
+# process for each month
+for m in range(12):
+    print('Correction and Merge: month', m + 1)
+
+    # load ecdf of stations and reanalysis for this month
+    print('load ecdf data')
+    file_ecdf = path_ecdf + '/ecdf_stn_' + var + '_month_' + str(m + 1) + '.npz'
+    datatemp = np.load(file_ecdf)
+    ecdf_stn = datatemp['ecdf']
+    del datatemp
+    ecdf_rea = np.nan * np.zeros([reanum, nrows, ncols, binprob + 1], dtype=np.float32)
+    for rr in range(reanum):
+        file_ecdf = path_ecdf + '/ecdf_' + prefix[rr] + var + '_month_' + str(m + 1) + '.npz'
+        datatemp = np.load(file_ecdf)
+        ecdf_rea[rr, :, :, :] = datatemp['ecdf']
+        del datatemp
+
+    # correction and merging for each year
+    for y in range(year[0], year[1] + 1):
+        print('Year', y)
+        filebma_merge = path_merge + '/bmamerge_' + var + '_' + str(y * 100 + m + 1) + '.npz'
+        filecorr = path_reacorr + '/reacorrdata_' + var + '_' + str(y * 100 + m + 1) + '.npz'
+        if os.path.isfile(filebma_merge) and os.path.isfile(filecorr):
+            print('file exists ... continue')
+            continue
+
+        # date processing
+        mmy = date_mm.copy()
+        mmy = mmy[date_yyyy == y]
+        indmmy = mmy == (m + 1)
+        indmmy2 = (date_yyyy == y) & (date_mm == m + 1)
+        mmdays = np.sum(indmmy)
+
+        # read raw gridded reanalysis data
+        readata_raw = np.nan * np.zeros([reanum, nrows, ncols, mmdays], dtype=np.float32)
+        for rr in range(reanum):
+            if not (prefix[rr] == 'MERRA2_' and y == 1979):
+                filer = path_readowngrid[rr] + '/' + prefix[rr] + 'ds_' + var + '_' + str(y * 100 + m + 1) + '.npz'
+                d = np.load(filer)
+                readata_raw[rr, :, :, :] = d['data']
+                del d
+
+        ################################################################################################################
+        print('Reanalysis correction')
+        # start QM-based error correction
+        if os.path.isfile(filecorr):
+            datatemp = np.load(filecorr)
+            corr_data = datatemp['corr_data']
+            corr_error = datatemp['corr_error']
+            del datatemp
+        else:
+            # initialization
+            corr_data = np.nan * np.zeros([reanum, nrows, ncols, mmdays], dtype=np.float32)
+            corr_error = np.nan * np.zeros([reanum, nrows, ncols, mmdays], dtype=np.float32)
+
+            # (1) estimate the error of corrected data by interpolating stations
+            for rr in range(reanum):
+                corr_error[rr, :, :, :] = extrapolation(reacorr_stn[rr, :, indmmy2].T - stndata[:, indmmy2],
+                                                        neargrid_loc, neargrid_dist)
+            # (2) estimate the value of corrected data
+            # error correction
+            for rr in range(reanum):
+                if (prefix[rr] == 'MERRA2_' and y == 1979):
+                    continue
+                for r in range(nrows):
+                    if np.mod(r,100)==0:
+                        print(r)
+                    for c in range(ncols):
+                        if np.isnan(mask[r, c]):
+                            continue
+                        nearloc_rc = neargrid_loc[r, c, :]
+                        neardist_rc = neargrid_dist[r, c, :]
+                        maxdist = np.max([np.max(neardist_rc) + 1, 100])
+                        nearweight_rc = au.distanceweight(neardist_rc, maxdist, 4)
+                        nearweight_rc = np.tile(nearweight_rc, [mmdays, 1]).T
+
+                        reacorr_rc = np.zeros([nearnum, mmdays])
+                        for i in range(nearnum):
+                            reacorr_rc[i, :] = cdf_correction(ecdf_prob, ecdf_stn[nearloc_rc[i], :],
+                                                              ecdf_prob, ecdf_rea[rr, r, c, :],
+                                                              readata_raw[rr, r, c, :])
+                        nearweight_rc[np.isnan(reacorr_rc)] = np.nan
+                        corr_data[rr, r, c, :] = \
+                            np.nansum(reacorr_rc * nearweight_rc, axis=0) / np.nansum(nearweight_rc, axis=0)
+
+            np.savez_compressed(filecorr, corr_data=corr_data, corr_error=corr_error,
+                                reaname=prefix, latitude=lattar, longitude=lontar)
+
+            del corr_error, readata_raw
+        ################################################################################################################
+        print('Reanalysis merging')
+        # start BMA-based merging
+        if not os.path.isfile(filebma_merge):
+            # initialization
+            bma_data = np.nan * np.zeros([nrows, ncols, mmdays], dtype=np.float32)
+            # bma_error = np.nan * np.zeros([nrows, ncols, mmdays], dtype=np.float32)
+
+            # (1) estimate the error of corrected data by interpolating stations
+            bma_error = extrapolation(reamerge_stn[:, indmmy2] - stndata[:, indmmy2], neargrid_loc, neargrid_dist)
+
+            # (2) estimate the value of merged data
+            reamerge_weight_gridm = reamerge_weight_grid[m, :, :, :].copy()
+            for i in range(mmdays):
+                datai = corr_data[:, :, :, i]
+                weighti = reamerge_weight_gridm.copy()
+                weighti[np.isnan(datai)] = np.nan
+                bma_data[:, :, i] = np.nansum(weighti * datai, axis=0) / np.nansum(weighti, axis=0)
+            np.savez_compressed(filebma_merge, bma_data=bma_data, bma_error=bma_error,
+                                reaname=prefix, latitude=lattar, longitude=lontar)
+
+            del bma_error, bma_data
+    del ecdf_rea, ecdf_stn

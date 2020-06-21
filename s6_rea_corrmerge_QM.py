@@ -1,4 +1,6 @@
 # correct the bias in reanalysis products and merge different reanalysis products
+# the correction method is QM (not good in scarcely gauged regions)
+
 # computation time:
 # correction/merge at station points: 3 variable and 12 months = 36 jobs. ~1.5 hours per job.
 # correction at grids: 3 variable and 40 years = 120 jobs. ~2 hours per job
@@ -447,7 +449,7 @@ path_ecdf = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/ECD
 ### Plato settings
 
 file_corrmerge_stn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/Reanalysis_merge' +\
-                     '/mergecorr_stn_' + var + '_GWR' + corrmode + '_' + weightmode + '.npz'  # file of indepedent corrected/merging data and merging weights
+                     '/mergecorr_stn_' + var + '_GWRQM_' + weightmode + '.npz'  # file of indepedent corrected/merging data and merging weights
 
 ########################################################################################################################
 
