@@ -65,7 +65,7 @@ for i in range(len(vars)):
     if vars[i] == 'pop':
         file_corrmerge_stn[i] = path_bac + '/merge_stn_' + vars[i] + '_GWR_' + weightmode + '.npz'
     else:
-        file_corrmerge_stn[i] = path_bac + '/mergecorr_stn_' + vars[i] + '_GWRQM_' + weightmode + '.npz'
+        file_corrmerge_stn[i] = path_bac + '/mergecorr_stn_' + vars[i] + '_GWRLS_' + weightmode + '.npz'
 
 ########################################################################################################################
 
