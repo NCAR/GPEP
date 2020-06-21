@@ -405,33 +405,13 @@ year = [y1, y2] # this is only useful for gridded correction/merge
 
 print('var is ', var)
 print('weightmode is ', weightmode)
-# print('years are ', y1, y2)
+print('years are ', y1, y2)
 
 ########################################################################################################################
 
 # basic settings
 nearnum = 10  # the number of nearby stations used to extrapolate points to grids (for correction and merging)
 prefix = ['ERA5_', 'MERRA2_', 'JRA55_']
-
-# ### Local Mac settings
-# # input files/paths
-# gmet_stnfile = '/Users/localuser/Research/EMDNA/basicinfo/stnlist_whole.txt'
-# gmet_stndatafile = '/Users/localuser/Research/EMDNA/stndata_whole.npz'
-# file_mask = './DEM/NA_DEM_010deg_trim.mat'
-# path_readowngrid = ['/Users/localuser/Research/EMDNA/downscale/ERA5',  # downscaled gridded data
-#                     '/Users/localuser/Research/EMDNA/downscale/MERRA2',
-#                     '/Users/localuser/Research/EMDNA/downscale/JRA55']
-# file_readownstn = ['/Users/localuser/Research/EMDNA/downscale/ERA5_downto_stn_nearest.npz', # downscaled to stn points
-#                    '/Users/localuser/Research/EMDNA/downscale/MERRA2_downto_stn_nearest.npz',
-#                    '/Users/localuser/Research/EMDNA/downscale/JRA55_downto_stn_nearest.npz']
-# # file_readownstn = ['/Users/localuser/Research/EMDNA/downscale/JRA55_downto_stn_nearest.npz']
-#
-# # output files/paths (can also be used as inputs once generated)
-# path_reacorr = '/Users/localuser/Research/EMDNA/correction' # path to save corrected reanalysis data at station points
-# path_merge = '/Users/localuser/Research/EMDNA/merge'
-# path_ecdf = '/Users/localuser/Research/EMDNA/merge/ECDF'
-# ### Local Mac settings
-
 
 ### Plato settings
 # input files/paths
@@ -450,7 +430,6 @@ file_nearstn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_aftercheck/n
 # output files/paths (can also be used as inputs once generated)
 path_reacorr = '/home/gut428/ReanalysisCorrMerge/GWRLS_corr'  # path to save corrected reanalysis data at station points
 path_merge = '/home/gut428/ReanalysisCorrMerge/GWRLSBMA_merge'
-path_ecdf = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/ECDF'
 ### Plato settings
 
 file_corrfactor = path_reacorr + '/LScorrfactor_' + var + '.npz'
@@ -743,4 +722,3 @@ for m in range(12):
                                 reaname=prefix, latitude=lattar, longitude=lontar)
 
             del bma_error, bma_data
-    del ecdf_rea, ecdf_stn

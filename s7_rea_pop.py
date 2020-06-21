@@ -1,6 +1,6 @@
 # pop estimation using logistic regression
 # computation time:
-# pop estimation for all stations: 74 jobs. ~7 hours per job
+# pop estimation for all stations: 74 jobs. ~7 to 9 hours per job
 
 import numpy as np
 import regression as reg
