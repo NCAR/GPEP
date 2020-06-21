@@ -141,7 +141,7 @@ for v=1:3
         fprintf(fidout,'#!/bin/bash\n');
         fprintf(fidout,['#SBATCH --job-name=',vars{v},num2str(m),'\n']);
         fprintf(fidout,['#SBATCH --time=0-4:00:00\n']);
-        fprintf(fidout,'#SBATCH --mem=15G\n');
+        fprintf(fidout,'#SBATCH --mem=35G\n');
         fprintf(fidout,'module load python/3.7.4\n');
         fprintf(fidout,['srun python -u temprun.py ',vars{v},' BMA ',method{v},' ',num2str(m),'\n']);
         %         fprintf(fidout,'rm *.out\n');
