@@ -387,7 +387,7 @@ month = int(sys.argv[4])
 
 print('var is ', var)
 print('weightmode is ', weightmode)
-print('years are ', y1, y2)
+# print('years are ', y1, y2)
 
 ########################################################################################################################
 
