@@ -515,22 +515,22 @@ else:
                             reacorr_stn=reacorr_stn, date_ymd=date_ymd, prefix=prefix, stninfo=stninfo)
 ########################################################################################################################
 
-# interpolate merging weights to grids
-filebma_merge_weight = path_merge + '/mergeweight_' + var + '_' + weightmode + '.npz'
-if os.path.isfile(filebma_merge_weight):
-    print('Load merging weight')
-    datatemp = np.load(filebma_merge_weight)
-    reamerge_weight_grid = datatemp['reamerge_weight_grid']
-    del datatemp
-else:
-    print('Interpolate merging weight')
-    reamerge_weight_grid = np.nan * np.zeros([12, reanum, nrows, ncols], dtype=np.float32)
-    for m in range(12):
-        for rr in range(reanum):
-            reamerge_weight_grid[m, rr, :, :] = extrapolation(reamerge_weight_stn[m, :, rr], neargrid_loc,
-                                                              neargrid_dist)
-    np.savez_compressed(filebma_merge_weight, reamerge_weight_grid=reamerge_weight_grid, reaname=prefix,
-                        latitude=lattar, longitude=lontar)
+# # interpolate merging weights to grids
+# filebma_merge_weight = path_merge + '/mergeweight_' + var + '_' + weightmode + '.npz'
+# if os.path.isfile(filebma_merge_weight):
+#     print('Load merging weight')
+#     datatemp = np.load(filebma_merge_weight)
+#     reamerge_weight_grid = datatemp['reamerge_weight_grid']
+#     del datatemp
+# else:
+#     print('Interpolate merging weight')
+#     reamerge_weight_grid = np.nan * np.zeros([12, reanum, nrows, ncols], dtype=np.float32)
+#     for m in range(12):
+#         for rr in range(reanum):
+#             reamerge_weight_grid[m, rr, :, :] = extrapolation(reamerge_weight_stn[m, :, rr], neargrid_loc,
+#                                                               neargrid_dist)
+#     np.savez_compressed(filebma_merge_weight, reamerge_weight_grid=reamerge_weight_grid, reaname=prefix,
+#                         latitude=lattar, longitude=lontar)
 
 ########################################################################################################################
 
