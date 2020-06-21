@@ -627,7 +627,7 @@ if corrmode[0:3] == 'Mul' or corrmode[0:3] == 'Add':
         for m in range(12):
             for rr in range(reanum):
                 indm = date_mm == m+1
-                dtar = np.nanmean(readata_stn[rr, :, indm], axis=1)
+                dtar = np.nanmean(readata_stn[rr, :, indm].T, axis=1)
                 dtar = dtar[:, np.newaxis]
                 dref = np.nanmean(stndata[:, indm], axis=1)
                 dref = dref[:, np.newaxis]
