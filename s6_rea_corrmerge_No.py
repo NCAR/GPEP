@@ -327,17 +327,17 @@ def correction_rea(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_dist, c
 # year range for merging. note weight is calculated using all data not limited by year
 
 # read from inputs
-# var = sys.argv[1]
-# weightmode = sys.argv[2]
-# corrmode = sys.argv[3]
-# y1 = int(sys.argv[4])
-# y2 = int(sys.argv[5])
-# year = [y1, y2] # this is only useful for gridded correction/merge
-
 var = sys.argv[1]
 weightmode = sys.argv[2]
 corrmode = sys.argv[3]
-month = int(sys.argv[4])
+y1 = int(sys.argv[4])
+y2 = int(sys.argv[5])
+year = [y1, y2] # this is only useful for gridded correction/merge
+
+# var = sys.argv[1]
+# weightmode = sys.argv[2]
+# corrmode = sys.argv[3]
+# month = int(sys.argv[4])
 
 # embeded
 # var = 'prcp'
@@ -349,7 +349,7 @@ month = int(sys.argv[4])
 
 print('var is ', var)
 print('weightmode is ', weightmode)
-# print('years are ', y1, y2)
+print('years are ', y1, y2)
 
 ########################################################################################################################
 
@@ -465,123 +465,89 @@ else:
     reamerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)
     reamerge_weight_stn = np.nan * np.zeros([12, nstn, reanum], dtype=np.float32)
     reacorr_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
-    # # for each month
-    # for m in range(12):
-    #     print('month', m + 1)
-    #     indm = date_mm == (m + 1)
-    #     reamerge_stnm, reamerge_weight_stnm, reacorr_stnm = \
-    #         merge_stn(stndata[:, indm], readata_stn[:, :, indm], nearstn_loc, nearstn_dist, var, weightmode)
-    #     reamerge_stn[:, indm] = reamerge_stnm
-    #     reacorr_stn[:, :, indm] = reacorr_stnm
-    #     reamerge_weight_stn[m, :, :] = reamerge_weight_stnm
-    #
-    # # the variables are independent with their concurrent stations. thus, station data can be used to evaluate them
-    # np.savez_compressed(file_corrmerge_stn, reamerge_stn=reamerge_stn, reamerge_weight_stn=reamerge_weight_stn,
-    #                     reacorr_stn=reacorr_stn, date_ymd=date_ymd, prefix=prefix, stninfo=stninfo)
-
-    ##### run each month separately
-    for m in range(month-1, month):
+    # for each month
+    for m in range(12):
         print('month', m + 1)
-        filem = path_merge + '/mergecorr_stn_' + var + '_GWR_' + weightmode + '_' + str(m + 1) + '.npz'
-        if os.path.isfile(filem):
-            continue
         indm = date_mm == (m + 1)
-        reamerge_stnm, reamerge_weight_stnm, reacorr_stnm =\
+        reamerge_stnm, reamerge_weight_stnm, reacorr_stnm = \
             merge_stn(stndata[:, indm], readata_stn[:, :, indm], nearstn_loc, nearstn_dist, var, weightmode)
         reamerge_stn[:, indm] = reamerge_stnm
         reacorr_stn[:, :, indm] = reacorr_stnm
         reamerge_weight_stn[m, :, :] = reamerge_weight_stnm
-        np.savez_compressed(filem, reamerge_stn=reamerge_stn, reamerge_weight_stn=reamerge_weight_stn,
-                            reacorr_stn=reacorr_stn, date_ymd=date_ymd, prefix=prefix, stninfo=stninfo)
-    # merge 12 months
-    flag = 1
+
+    # the variables are independent with their concurrent stations. thus, station data can be used to evaluate them
+    np.savez_compressed(file_corrmerge_stn, reamerge_stn=reamerge_stn, reamerge_weight_stn=reamerge_weight_stn,
+                        reacorr_stn=reacorr_stn, date_ymd=date_ymd, prefix=prefix, stninfo=stninfo)
+
+########################################################################################################################
+
+# interpolate merging weights to grids
+filebma_merge_weight = path_merge + '/mergeweight_' + var + '_' + weightmode + '.npz'
+if os.path.isfile(filebma_merge_weight):
+    print('Load merging weight')
+    datatemp = np.load(filebma_merge_weight)
+    reamerge_weight_grid = datatemp['reamerge_weight_grid']
+    del datatemp
+else:
+    print('Interpolate merging weight')
+    reamerge_weight_grid = np.nan * np.zeros([12, reanum, nrows, ncols], dtype=np.float32)
     for m in range(12):
-        filem = path_merge + '/mergecorr_stn_' + var + '_GWR_' + weightmode + '_' + str(m + 1) + '.npz'
-        if not os.path.isfile(filem):
-            flag = 0
-    if flag == 1:
-        print('merge mergecorr_stn for 12 months')
-        reamerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)
-        reamerge_weight_stn = np.nan * np.zeros([12, nstn, reanum], dtype=np.float32)
-        reacorr_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
-        for m in range(12):
-            indm = date_mm == (m + 1)
-            filem = path_merge + '/mergecorr_stn_' + var + '_GWR_' + weightmode + '_' + str(m + 1) + '.npz'
-            datatemp = np.load(filem)
-            reamerge_stn[:, indm] = datatemp['reamerge_stn'][:, indm]
-            reacorr_stn[:, :, indm] = datatemp['reacorr_stn'][:, :, indm]
-            reamerge_weight_stn[m, :, :] = datatemp['reamerge_weight_stn'][m, :, :]
-        np.savez_compressed(file_corrmerge_stn, reamerge_stn=reamerge_stn, reamerge_weight_stn=reamerge_weight_stn,
-                            reacorr_stn=reacorr_stn, date_ymd=date_ymd, prefix=prefix, stninfo=stninfo)
-########################################################################################################################
+        for rr in range(reanum):
+            reamerge_weight_grid[m, rr, :, :] = extrapolation(reamerge_weight_stn[m, :, rr], neargrid_loc,
+                                                              neargrid_dist)
+    np.savez_compressed(filebma_merge_weight, reamerge_weight_grid=reamerge_weight_grid, reaname=prefix,
+                        latitude=lattar, longitude=lontar)
 
-# # interpolate merging weights to grids
-# filebma_merge_weight = path_merge + '/mergeweight_' + var + '_' + weightmode + '.npz'
-# if os.path.isfile(filebma_merge_weight):
-#     print('Load merging weight')
-#     datatemp = np.load(filebma_merge_weight)
-#     reamerge_weight_grid = datatemp['reamerge_weight_grid']
-#     del datatemp
-# else:
-#     print('Interpolate merging weight')
-#     reamerge_weight_grid = np.nan * np.zeros([12, reanum, nrows, ncols], dtype=np.float32)
-#     for m in range(12):
-#         for rr in range(reanum):
-#             reamerge_weight_grid[m, rr, :, :] = extrapolation(reamerge_weight_stn[m, :, rr], neargrid_loc,
-#                                                               neargrid_dist)
-#     np.savez_compressed(filebma_merge_weight, reamerge_weight_grid=reamerge_weight_grid, reaname=prefix,
-#                         latitude=lattar, longitude=lontar)
+#######################################################################################################################
 
-########################################################################################################################
 
-#
-# # start final correction and merging
-#
-# # process for each month
-# for m in range(12):
-#     print('Correction and Merge: month', m + 1)
-#     # correction and merging for each year
-#     for y in range(year[0], year[1] + 1):
-#         print('Year', y)
-#         filebma_merge = path_merge + '/bmamerge_' + var + '_' + str(y * 100 + m + 1) + '.npz'
-#         if os.path.isfile(filebma_merge):
-#             print('file exists ... continue')
-#             continue
-#         # date processing
-#         mmy = date_mm.copy()
-#         mmy = mmy[date_yyyy == y]
-#         indmmy = mmy == (m + 1)
-#         indmmy2 = (date_yyyy == y) & (date_mm == m + 1)
-#         mmdays = np.sum(indmmy)
-#
-#         # read raw gridded reanalysis data
-#         readata_raw = np.nan * np.zeros([reanum, nrows, ncols, mmdays], dtype=np.float32)
-#         for rr in range(reanum):
-#             if not (prefix[rr] == 'MERRA2_' and y == 1979):
-#                 filer = path_readowngrid[rr] + '/' + prefix[rr] + 'ds_' + var + '_' + str(y * 100 + m + 1) + '.npz'
-#                 d = np.load(filer)
-#                 readata_raw[rr, :, :, :] = d['data']
-#                 del d
-#
-#         ################################################################################################################
-#         print('Reanalysis merging')
-#         # start BMA-based merging
-#         if not os.path.isfile(filebma_merge):
-#             # initialization
-#             bma_data = np.nan * np.zeros([nrows, ncols, mmdays], dtype=np.float32)
-#             # bma_error = np.nan * np.zeros([nrows, ncols, mmdays], dtype=np.float32)
-#
-#             # (1) estimate the error of corrected data by interpolating stations
-#             bma_error = extrapolation(reamerge_stn[:, indmmy2] - stndata[:, indmmy2], neargrid_loc, neargrid_dist)
-#
-#             # (2) estimate the value of merged data
-#             reamerge_weight_gridm = reamerge_weight_grid[m, :, :, :].copy()
-#             for i in range(mmdays):
-#                 datai = readata_raw[:, :, :, i]
-#                 weighti = reamerge_weight_gridm.copy()
-#                 weighti[np.isnan(datai)] = np.nan
-#                 bma_data[:, :, i] = np.nansum(weighti * datai, axis=0) / np.nansum(weighti, axis=0)
-#             np.savez_compressed(filebma_merge, bma_data=bma_data, bma_error=bma_error,
-#                                 reaname=prefix, latitude=lattar, longitude=lontar)
-#
-#             del bma_error, bma_data
+# start final correction and merging
+
+# process for each month
+for m in range(12):
+    print('Correction and Merge: month', m + 1)
+    # correction and merging for each year
+    for y in range(year[0], year[1] + 1):
+        print('Year', y)
+        filebma_merge = path_merge + '/bmamerge_' + var + '_' + str(y * 100 + m + 1) + '.npz'
+        if os.path.isfile(filebma_merge):
+            print('file exists ... continue')
+            continue
+        # date processing
+        mmy = date_mm.copy()
+        mmy = mmy[date_yyyy == y]
+        indmmy = mmy == (m + 1)
+        indmmy2 = (date_yyyy == y) & (date_mm == m + 1)
+        mmdays = np.sum(indmmy)
+
+        # read raw gridded reanalysis data
+        readata_raw = np.nan * np.zeros([reanum, nrows, ncols, mmdays], dtype=np.float32)
+        for rr in range(reanum):
+            if not (prefix[rr] == 'MERRA2_' and y == 1979):
+                filer = path_readowngrid[rr] + '/' + prefix[rr] + 'ds_' + var + '_' + str(y * 100 + m + 1) + '.npz'
+                d = np.load(filer)
+                readata_raw[rr, :, :, :] = d['data']
+                del d
+
+        ################################################################################################################
+        print('Reanalysis merging')
+        # start BMA-based merging
+        if not os.path.isfile(filebma_merge):
+            # initialization
+            bma_data = np.nan * np.zeros([nrows, ncols, mmdays], dtype=np.float32)
+            # bma_error = np.nan * np.zeros([nrows, ncols, mmdays], dtype=np.float32)
+
+            # (1) estimate the error of corrected data by interpolating stations
+            bma_error = extrapolation(reamerge_stn[:, indmmy2] - stndata[:, indmmy2], neargrid_loc, neargrid_dist)
+
+            # (2) estimate the value of merged data
+            reamerge_weight_gridm = reamerge_weight_grid[m, :, :, :].copy()
+            for i in range(mmdays):
+                datai = readata_raw[:, :, :, i]
+                weighti = reamerge_weight_gridm.copy()
+                weighti[np.isnan(datai)] = np.nan
+                bma_data[:, :, i] = np.nansum(weighti * datai, axis=0) / np.nansum(weighti, axis=0)
+            np.savez_compressed(filebma_merge, bma_data=bma_data, bma_error=bma_error,
+                                reaname=prefix, latitude=lattar, longitude=lontar)
+
+            del bma_error, bma_data
