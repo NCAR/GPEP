@@ -150,36 +150,36 @@ clc;clear
 %     end
 % end
 
-vars={'prcp','tmean','trange'};
-method={'Mul_Climo','Add_Climo','Add_Climo'};
-flag=1;
-for v=1:3
-    for y=1979:2018
-        outfile=['Plato_',vars{v},'_',num2str(y),'.sh'];
-        fidout=fopen(outfile,'w');
-        fprintf(fidout,'#!/bin/bash\n');
-        fprintf(fidout,['#SBATCH --job-name=',vars{v},num2str(y),'\n']);
-        fprintf(fidout,['#SBATCH --time=0-6:00:00\n']);
-        fprintf(fidout,'#SBATCH --mem=20G\n');
-        fprintf(fidout,'module load python/3.7.4\n');
-        fprintf(fidout,['srun python -u s6_rea_corrmerge_LS.py ',vars{v},' BMA ',method{v},' ',num2str(y),' ',num2str(y),'\n']);
-        %         fprintf(fidout,'rm *.out\n');
-        fclose(fidout);
-        flag=flag+1;
-    end
-end
-
-
-% time=[1:200:14610,14610];
-% for i=1:length(time)-1
-%     outfile=['Plato_pop_',num2str(i),'.sh'];
-%     fidout=fopen(outfile,'w');
-%     fprintf(fidout,'#!/bin/bash\n');
-%     fprintf(fidout,['#SBATCH --job-name=pop',num2str(i),'\n']);
-%     fprintf(fidout,['#SBATCH --time=0-14:00:00\n']);
-%     fprintf(fidout,'#SBATCH --mem=15G\n');
-%     fprintf(fidout,'module load python/3.7.4\n');
-%     fprintf(fidout,['srun python -u temprun.py ',num2str(time(i)),' ',num2str(time(i+1)),'\n']);
-%     %         fprintf(fidout,'rm *.out\n');
-%     fclose(fidout);
+% vars={'prcp','tmean','trange'};
+% method={'Mul_Climo','Add_Climo','Add_Climo'};
+% flag=1;
+% for v=1:3
+%     for y=1979:2018
+%         outfile=['Plato_',vars{v},'_',num2str(y),'.sh'];
+%         fidout=fopen(outfile,'w');
+%         fprintf(fidout,'#!/bin/bash\n');
+%         fprintf(fidout,['#SBATCH --job-name=',vars{v},num2str(y),'\n']);
+%         fprintf(fidout,['#SBATCH --time=0-6:00:00\n']);
+%         fprintf(fidout,'#SBATCH --mem=20G\n');
+%         fprintf(fidout,'module load python/3.7.4\n');
+%         fprintf(fidout,['srun python -u s6_rea_corrmerge_LS.py ',vars{v},' BMA ',method{v},' ',num2str(y),' ',num2str(y),'\n']);
+%         %         fprintf(fidout,'rm *.out\n');
+%         fclose(fidout);
+%         flag=flag+1;
+%     end
 % end
+
+
+time=[1:200:14610,14610];
+for i=1:length(time)-1
+    outfile=['Plato_pop_',num2str(i),'.sh'];
+    fidout=fopen(outfile,'w');
+    fprintf(fidout,'#!/bin/bash\n');
+    fprintf(fidout,['#SBATCH --job-name=pop',num2str(i),'\n']);
+    fprintf(fidout,['#SBATCH --time=1-0:00:00\n']);
+    fprintf(fidout,'#SBATCH --mem=20\n');
+    fprintf(fidout,'module load python/3.7.4\n');
+    fprintf(fidout,['srun python -u temprun.py ',num2str(time(i)),' ',num2str(time(i+1)),'\n']);
+    %         fprintf(fidout,'rm *.out\n');
+    fclose(fidout);
+end

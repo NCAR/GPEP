@@ -1,34 +1,34 @@
 import numpy as np
 from matplotlib import pyplot as plt
-
 year = [1979, 2018]
 month = [1, 12]
 nrows = 800
 ncols = 1300
-vars=['prcp','tmean','trange']
+# vars=['prcp','tmean','trange']
+vars=['tmean']
 clims=[[0,10], [-40,40], [0,20]]
 
 for v in range(len(vars)):
     var = vars[v]
     varname = 'bma_data'
-    outpath = '/home/gut428/figures/bma_merge'
-    inpath = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/Reanalysis_merge'
+    outpath = '/home/gut428/figures/GWRLSBMA_merge'
+    inpath = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/GWRLSBMA_merge'
     # monthly
-    # for y in range(2018, 2019):
-    #     print('year', y)
-    #     for m in range(month[0], month[1] + 1):
-    #         file = inpath + '/bmamerge_' + var + '_' + str(y * 100 + m) + '.npz'
-    #         figm = outpath + '/' + var + '_' + str(y * 100 + m) + '.png'
-    #         d = np.load(file)
-    #         data = d[varname]
-    #         data = np.mean(data, axis=2)
-    #         plt.imshow(data, cmap='nipy_spectral')
-    #         plt.colorbar(orientation='horizontal', shrink=0.6, pad=0.05)
-    #         plt.clim(clims[v])
-    #         plt.title('Date:'+str(y * 100 + m))
-    #         plt.axis('off')
-    #         plt.savefig(figm, dpi=600)
-    #         plt.close()
+    for y in range(2018, 2019):
+        print('year', y)
+        for m in range(month[0], month[1] + 1):
+            file = inpath + '/bmamerge_' + var + '_' + str(y * 100 + m) + '.npz'
+            figm = outpath + '/' + var + '_' + str(y * 100 + m) + '.png'
+            d = np.load(file)
+            data = d[varname]
+            data = np.mean(data, axis=2)
+            plt.imshow(data, cmap='nipy_spectral')
+            plt.colorbar(orientation='horizontal', shrink=0.6, pad=0.05)
+            plt.clim(clims[1])
+            plt.title('Date:'+str(y * 100 + m))
+            plt.axis('off')
+            plt.savefig(figm, dpi=600)
+            plt.close()
     # monthly climatology
     for m in range(month[0], month[1] + 1):
         print('month',m)

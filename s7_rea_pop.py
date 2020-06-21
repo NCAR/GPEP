@@ -1,6 +1,6 @@
 # pop estimation using logistic regression
 # computation time:
-# pop estimation for all stations: 74 jobs. ~7 to 9 hours per job
+# pop estimation for all stations: 74 jobs. ~7 to 18 hours per job
 
 import numpy as np
 import regression as reg
@@ -139,10 +139,9 @@ if os.path.isfile(file_reapop_stn):
 else:
     reapop_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
     for rr in range(reanum):
-        print('reanalysis',rr)
         for gg in range(nstn):
-            if np.mod(gg,100)==0:
-                print(gg,nstn)
+            if np.mod(gg,1000)==0:
+                print('reanalysis',rr, 'station',gg,nstn)
             if np.isnan(stndata[gg, 0]):
                 continue
             nearloc = near_loc_stn[gg, :]

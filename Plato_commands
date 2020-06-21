@@ -20,10 +20,19 @@ mv output_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout_update
 mv error_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout_update
 done
 
-
-for (( y=1980; y<=2017; y++))
+for (( y=2001; y<=2006; y++))
 do
-sbatch Plato_trange_${y}.sh
+mv GWRLS_corr/reacorrdata_trange_${y}* /datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/GWRLS_corr
+done
+
+for (( y=2013; y<=2018; y++))
+do
+mv GWRLSBMA_merge/bmamerge_trange_${y}* /datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/GWRLSBMA_merge
+done
+
+for (( y=1980; y<=2018; y++))
+do
+sbatch Plato_prcp_${y}.sh
 done
 
 for y in {1980..2018..1}
