@@ -212,16 +212,37 @@ def weightmerge(data, weight):
     return dataout
 
 
-def correction_merge_stn(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_dist, var, corrmode, weightmode):
-    # corrmode = 'QM'  # QM, Mul_Climo, Mul_Daily, Add_Climo, Add_Climo
-    # use 2-layer cross-validation to estimate the weight and independent data of merge/correction data
+
+def merge_stn(stndata, readata_stn, nearstn_loc, nearstn_dist, var, weightmode):
     reanum, nstn, ntimes = np.shape(readata_stn)
 
     # initialization
-    reacorr_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)  # corrected reanalysis data
+    reacorr_stn = readata_stn  # corrected reanalysis data
     reamerge_weight_stn = np.nan * np.zeros([nstn, reanum], dtype=np.float32)  # weight used to obtain reamerge_stn
     reamerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)  # merged reanalysis at station points
 
+    # get merge weight for all stations
+    print('calculate merging weights')
+    for i1 in range(nstn):
+        if np.mod(i1, 1000) == 0:
+            print(i1)
+        stndata_i1 = stndata[i1, :]
+        corrdata_i1 = reacorr_stn[:, i1, :].T
+        # get the final merging weight
+        if weightmode == 'BMA' and var == 'prcp':
+            # exclude zero precipitation and carry out box-cox transformation
+            datatemp = np.zeros([ntimes, reanum + 1])
+            datatemp[:, 0] = stndata_i1
+            datatemp[:, 1:] = corrdata_i1
+            ind0 = np.sum(datatemp >= 0.01, axis=1) == (reanum + 1)  # positive hit events
+            dobs = box_cox_transform(stndata_i1[ind0])
+            drea = box_cox_transform(corrdata_i1[ind0, :])
+        else:
+            dobs = stndata_i1
+            drea = corrdata_i1
+        reamerge_weight_stn[i1, :] = calweight(dobs, drea, weightmode)
+
+    print('merge data using leave-one-out')
     for i1 in range(nstn):  # layer-1
         if np.mod(i1, 1000) == 0:
             print(i1)
@@ -236,49 +257,6 @@ def correction_merge_stn(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_d
         if nearstn_numi1 == 0:
             sys.exit('No near station for the target station (layer-1)')
 
-        # start layer-2
-        reamerge_weight_i2 = np.zeros([nearstn_numi1, reanum])
-        for i2 in range(nearstn_numi1):  # layer-2
-            nearstn_loci2 = nearstn_loc[nearstn_loci1[i2], :]
-            nearstn_disti2 = nearstn_dist[nearstn_loci1[i2], :]
-            induse = (nearstn_loci2 > -1) & (nearstn_loci2 != i1)  # i1 should be independent
-            nearstn_loci2 = nearstn_loci2[induse]
-            nearstn_disti2 = nearstn_disti2[induse]
-            maxd = np.max([np.max(nearstn_disti2) + 1, 100])
-            nearstn_weighti2 = au.distanceweight(nearstn_disti2, maxd, 3)
-            nearstn_weighti2 = nearstn_weighti2 / np.sum(nearstn_weighti2)
-
-            nearstn_numi2 = len(nearstn_loci2)
-            if nearstn_numi2 == 0:
-                sys.exit('No near station for the target station (layer-1)')
-
-            # data at i2 station
-            stndata_i2 = stndata[nearstn_loci1[i2], :]
-            stndata_i2_near = stndata[nearstn_loci2, :]
-            readata_stn_i2 = readata_stn[:, nearstn_loci1[i2], :]
-            readata_i2_near = readata_stn[:, nearstn_loci2, :]
-
-            # error correction for each reanalysis dataset using different modes
-            corrdata_i2 = np.zeros([ntimes, reanum])
-            for r in range(reanum):
-                corrdata_i2[:, r] = error_correction_stn(corrmode, stndata_i2_near, nearstn_weighti2,
-                                                         readata_stn_i2[r, :], readata_i2_near[r, :, :], ecdf_prob)
-
-            # calculate merging weight for i2
-            if weightmode == 'BMA' and var == 'prcp':
-                # exclude zero precipitation and carry out box-cox transformation
-                datatemp = np.zeros([ntimes, reanum + 1])
-                datatemp[:, 0] = stndata_i2
-                datatemp[:, 1:] = corrdata_i2
-                ind0 = np.sum(datatemp >= 0.01, axis=1) == (reanum + 1)  # positive hit events
-                dobs = box_cox_transform(stndata_i2[ind0])
-                drea = box_cox_transform(corrdata_i2[ind0, :])
-            else:
-                dobs = stndata_i2
-                drea = corrdata_i2
-            reamerge_weight_i2[i2, :] = calweight(dobs, drea, weightmode)
-        # end layer-2
-
         stndata_i1 = stndata[i1, :]
         stndata_i1_near = stndata[nearstn_loci1, :]
         readata_stn_i1 = readata_stn[:, i1, :]
@@ -287,12 +265,8 @@ def correction_merge_stn(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_d
         nearstn_weighti1 = au.distanceweight(nearstn_disti1, maxd, 3)
         nearstn_weighti1 = nearstn_weighti1 / np.sum(nearstn_weighti1)
 
-        # get corrected data at i1
-        corrdata_i1 = np.zeros([ntimes, reanum])
-        for r in range(reanum):
-            corrdata_i1[:, r] = error_correction_stn(corrmode, stndata_i1_near, nearstn_weighti1,
-                                                     readata_stn_i1[r, :], readata_i1_near[r, :, :], ecdf_prob)
-        reacorr_stn[:, i1, :] = corrdata_i1.T
+        reamerge_weight_i2 =
+
 
         # get merging weight at i1 and merge reanalysis
         # note: this weight is just for independent merging so we can estimate the error of merged reanalysis
@@ -312,20 +286,6 @@ def correction_merge_stn(stndata, ecdf_prob, readata_stn, nearstn_loc, nearstn_d
         #     reamerge_stni1 = np.nansum(weight_use * corrdata_i1, axis=1) / np.nansum(weight_use, axis=1)
         reamerge_stni1 = np.nansum(weight_use * corrdata_i1, axis=1) / np.nansum(weight_use, axis=1)
         reamerge_stn[i1, :] = reamerge_stni1
-
-        # get the final merging weight
-        if weightmode == 'BMA' and var == 'prcp':
-            # exclude zero precipitation and carry out box-cox transformation
-            datatemp = np.zeros([ntimes, reanum + 1])
-            datatemp[:, 0] = stndata_i1
-            datatemp[:, 1:] = corrdata_i1
-            ind0 = np.sum(datatemp >= 0.01, axis=1) == (reanum + 1)  # positive hit events
-            dobs = box_cox_transform(stndata_i1[ind0])
-            drea = box_cox_transform(corrdata_i1[ind0, :])
-        else:
-            dobs = stndata_i1
-            drea = corrdata_i1
-        reamerge_weight_stn[i1, :] = calweight(dobs, drea, weightmode)
 
     # note: reamerge_weight_stn is the final merging weight, and reacorr_stn is the final corrected data
     # but reamerge_stn is just independent merging estimates which is calculated from 2-layer cross validation
@@ -523,23 +483,7 @@ if var == 'prcp':
 
 ########################################################################################################################
 
-# Not necessary for actual application.
-# correction reanalysis at station points. this step is to support comparison between different methods.
-
-# filecorrstn = path_reacorr + '/corrstn_nearest_' + var + '_' + corrmode + '.npz'
-# if not os.path.isfile(filecorrstn):
-#     reacorr_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
-#     for m in range(12):
-#         print('month', m + 1)
-#         indm = date_mm == (m + 1)
-#         corrm = correction_rea(stndata[:, indm], ecdf_prob, readata_stn[:, :, indm],
-#                                nearstn_loc, nearstn_dist, corrmode)
-#         reacorr_stn[:, :, indm] = corrm
-#         np.savez_compressed(filecorrstn, reacorr_stn=reacorr_stn)
-
-########################################################################################################################
-
-# get merged and corrected reanalysis data at all station points using two-layer cross-validation
+# get merged reanalysis data at all station points using two-layer cross-validation
 if os.path.isfile(file_corrmerge_stn):
     print('load independent merged/corrected data at station points')
     datatemp = np.load(file_corrmerge_stn)
