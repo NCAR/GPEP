@@ -2,9 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
+      <change afterPath="$PROJECT_DIR$/plot_oi_map.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Plato_commands" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_commands" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/s6_rea_corrmerge_No.py" beforeDir="false" afterPath="$PROJECT_DIR$/s6_rea_corrmerge_No.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/plot_bma_map.py" beforeDir="false" afterPath="$PROJECT_DIR$/plot_bma_map.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/s8_oimerge.py" beforeDir="false" afterPath="$PROJECT_DIR$/s8_oimerge.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -275,10 +277,10 @@
       <screen x="0" y="23" width="1680" height="942" />
     </state>
     <state x="450" y="205" key="com.intellij.execution.console.ConsoleHistoryController$MyBrowseAction$1/0.23.1680.942@0.23.1680.942" timestamp="1590874632703" />
-    <state x="611" y="414" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1592683130402">
+    <state x="611" y="414" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1592785946573">
       <screen x="0" y="23" width="1680" height="942" />
     </state>
-    <state x="611" y="414" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.23.1680.942@0.23.1680.942" timestamp="1592683130402" />
+    <state x="611" y="414" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.23.1680.942@0.23.1680.942" timestamp="1592785946573" />
     <state x="611" y="416" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.23.1680.947@0.23.1680.947" timestamp="1588288524119" />
     <state x="696" y="259" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1590531417899">
       <screen x="0" y="23" width="1680" height="942" />

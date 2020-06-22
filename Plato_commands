@@ -33,6 +33,7 @@ done
 for (( y=1980; y<=2018; y++))
 do
 sbatch Plato_prcp_${y}.sh
+sbatch Plato_trange_${y}.sh
 done
 
 for y in {1980..2018..1}

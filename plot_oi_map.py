@@ -9,14 +9,14 @@ clims=[[0,10], [-40,40], [0,20]]
 
 for v in range(len(vars)):
     var = vars[v]
-    varname = 'bma_data'
-    outpath = '/home/gut428/figures/GWRLSBMA_merge'
-    inpath = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/GWRLSBMA_merge'
+    varname = 'oi_value'
+    outpath = '/home/gut428/figures/OImerge_GWRLSBMA'
+    inpath = '/datastore/GLOBALWATER/CommonData/EMDNA_new/OImerge_GWRLSBMA'
     # monthly
     for y in range(2018, 2019):
         print('year', y)
         for m in range(month[0], month[1] + 1):
-            file = inpath + '/bmamerge_' + var + '_' + str(y * 100 + m) + '.npz'
+            file = inpath + '/oimerge_' + var + str(y * 100 + m) + '.npz'
             figm = outpath + '/' + var + '_' + str(y * 100 + m) + '.png'
             d = np.load(file)
             data = d[varname]
@@ -35,7 +35,7 @@ for v in range(len(vars)):
         data = np.zeros([nrows, ncols])
         figm = outpath + '/' + var + '_' + str(m) + '.png'
         for y in range(year[0], year[1] + 1):
-            file = inpath + '/bmamerge_' + var + '_' + str(y * 100 + m) + '.npz'
+            file = inpath + '/oimerge_' + var + str(y * 100 + m) + '.npz'
             d = np.load(file)
             dy = d[varname]
             data = data + np.sum(dy, axis=2)
