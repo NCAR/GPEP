@@ -68,5 +68,5 @@ done
 
 for m in {2..36..1}
 do
-sbatch Plato_s6_${m}.sh
+sbatch Plato_oi_${m}.sh
 done
