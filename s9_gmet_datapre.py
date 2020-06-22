@@ -191,7 +191,7 @@ for year in range(yearall[0],yearall[1]+1):
         lim2 = (prcp - prcp_min) ** 2
         ind = lim1 < lim2
         lim = lim1
-        lim[ind] = lim2[lim1]
+        lim[ind] = lim2[ind]
         ind = prcp_err > lim
         prcp_err[ind] = lim[ind]
 
@@ -199,7 +199,7 @@ for year in range(yearall[0],yearall[1]+1):
         lim2 = (tmean - tmean_min) ** 2
         ind = lim1 < lim2
         lim = lim1
-        lim[ind] = lim2[lim1]
+        lim[ind] = lim2[ind]
         ind = tmean_err > lim
         tmean_err[ind] = lim[ind]
 
@@ -207,7 +207,7 @@ for year in range(yearall[0],yearall[1]+1):
         lim2 = (trange - trange_min) ** 2
         ind = lim1 < lim2
         lim = lim1
-        lim[ind] = lim2[lim1]
+        lim[ind] = lim2[ind]
         ind = trange_err > lim
         trange_err[ind] = lim[ind]
 
