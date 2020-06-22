@@ -351,24 +351,24 @@ for v in range(len(vars)):
             if vars[v] == 'pop':
                 oi_value[oi_value < 0] = 0
                 oi_value[oi_value > 1] = 1
-#             if vars[v] == 'prcp':
-#                 oi_value[oi_value < 0] = 0
-#             if vars[v] == 'trange':
-#                 oi_value = np.abs(oi_value)
-#
-#             # calculate OI error (mean square error from nearby stations)
-#             oi_error_stn = (oimerge_stn[:, indym2] - observation_stn[:, indym2]) ** 2
-#             oi_error_grid = extrapolation(oi_error_stn, near_loc, near_dist)
-#             np.savez_compressed(fileoi_ym, oi_value=oi_value, oi_error=oi_error_grid, latitude=lattar, longitude=lontar)
-#
-#             if vars[v] == 'prcp':
-#                 # value and error in normal space
-#                 fileoi_ym_boxcox = path_oimerge + '/oimerge_' + vars[v] + str(y * 100 + m + 1) + '_boxcox.npz'
-#                 transmode = 'box-cox'
-#                 tranexp = 4
-#                 oi_error_stn = ( au.transform(oimerge_stn[:, indym2],tranexp,transmode) -
-#                                 au.transform(observation_stn[:, indym2], tranexp, transmode) ) ** 2
-#                 oi_error_grid = extrapolation(oi_error_stn, near_loc, near_dist)
-#                 oi_value = au.transform(oi_value, tranexp, transmode)
-#                 np.savez_compressed(fileoi_ym_boxcox, oi_value=oi_value, oi_error=oi_error_grid,
-#                                     latitude=lattar, longitude=lontar, tranexp=tranexp, transmode=transmode)
+            if vars[v] == 'prcp':
+                oi_value[oi_value < 0] = 0
+            if vars[v] == 'trange':
+                oi_value = np.abs(oi_value)
+
+            # calculate OI error (mean square error from nearby stations)
+            oi_error_stn = (oimerge_stn[:, indym2] - observation_stn[:, indym2]) ** 2
+            oi_error_grid = extrapolation(oi_error_stn, near_loc, near_dist)
+            np.savez_compressed(fileoi_ym, oi_value=oi_value, oi_error=oi_error_grid, latitude=lattar, longitude=lontar)
+
+            if vars[v] == 'prcp':
+                # value and error in normal space
+                fileoi_ym_boxcox = path_oimerge + '/oimerge_' + vars[v] + str(y * 100 + m + 1) + '_boxcox.npz'
+                transmode = 'box-cox'
+                tranexp = 4
+                oi_error_stn = ( au.transform(oimerge_stn[:, indym2],tranexp,transmode) -
+                                au.transform(observation_stn[:, indym2], tranexp, transmode) ) ** 2
+                oi_error_grid = extrapolation(oi_error_stn, near_loc, near_dist)
+                oi_value = au.transform(oi_value, tranexp, transmode)
+                np.savez_compressed(fileoi_ym_boxcox, oi_value=oi_value, oi_error=oi_error_grid,
+                                    latitude=lattar, longitude=lontar, tranexp=tranexp, transmode=transmode)
