@@ -8,7 +8,7 @@ import netCDF4 as nc
 import os
 # control parameters
 yearall = [1979,1979]
-monthall = [1,12]
+monthall = [1,2]
 
 # ### Mac settings
 # path_oi = '/Users/localuser/Research/EMDNA/oimerge'
@@ -195,16 +195,16 @@ for year in range(yearall[0],yearall[1]+1):
         ind = prcp_err > lim
         prcp_err[ind] = lim[ind]
 
-        lim1 = (tmean - tmean_max) ** 2
-        lim2 = (tmean - tmean_min) ** 2
+        lim1 = np.abs(tmean - tmean_max)
+        lim2 = np.abs(tmean - tmean_min)
         ind = lim1 < lim2
         lim = lim1
         lim[ind] = lim2[ind]
         ind = tmean_err > lim
         tmean_err[ind] = lim[ind]
 
-        lim1 = (trange - trange_max) ** 2
-        lim2 = (trange - trange_min) ** 2
+        lim1 = np.abs(trange - trange_max)
+        lim2 = np.abs(trange - trange_min)
         ind = lim1 < lim2
         lim = lim1
         lim[ind] = lim2[ind]
