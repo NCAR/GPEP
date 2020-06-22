@@ -42,7 +42,6 @@ near_dist_grid = np.flipud(near_dist_grid)
 # station location and attribute information
 # stninfo: [ stations, 1/lat/lon/elev/slope_ns/slope_we ]
 stnID, stninfo = au.readstnlist(FileStnInfo)
-nstn = len(stnID)
 
 # meshed lat/lon of the target region
 ncfid = nc.Dataset(FileGridInfo)
@@ -88,6 +87,7 @@ date_mm = (np.mod(date_ymd, 10000)/100).astype(int)
 
 for year in range(yearall[0],yearall[1]+1):
     for month in range(monthall[0], monthall[1]+1):
+        print(year, month)
         # output files
         fileout = outpath  + '/reg_' + str(year*100+month) + '.nc'
         # if os.path.isfile(fileout):
@@ -121,8 +121,6 @@ for year in range(yearall[0],yearall[1]+1):
         # derive y_max for each grid pixels
         # load station data
         prcpstn_ym = prcpstn[:, indym]
-        nstn, ntimes = np.shape(prcpstn_ym)
-        del datatemp
 
         y_max = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
         for r in range(nrows):
