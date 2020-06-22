@@ -50,13 +50,13 @@ weightmode = 'BMA' # method used to merge different reanalysis products
 FileGridInfo = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/gridinfo_whole.nc'
 FileStnInfo = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/stnlist_whole.txt'
 gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_aftercheck.npz'
-path_bac = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/GWRLSBMA_merge'
+path_bac = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/GWRBMA_merge'
 path_obs = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_aftercheck'
 near_file_GMET = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_aftercheck/nearstn_catalog.npz'
 file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA_new/DEM/NA_DEM_010deg_trim.mat'
 
 # output files/paths (can also be used as inputs once generated)
-path_oimerge = '/home/gut428/OImerge_GWRLSBMA'
+path_oimerge = '/home/gut428/OImerge_GWRBMA'
 ### Plato settings
 
 file_regression_stn = path_obs + '/regression_stn.npz'
@@ -65,7 +65,7 @@ for i in range(len(vars)):
     if vars[i] == 'pop':
         file_corrmerge_stn[i] = path_bac + '/merge_stn_' + vars[i] + '_GWR_' + weightmode + '.npz'
     else:
-        file_corrmerge_stn[i] = path_bac + '/mergecorr_stn_' + vars[i] + '_GWRLS_' + weightmode + '.npz'
+        file_corrmerge_stn[i] = path_bac + '/mergecorr_stn_' + vars[i] + '_GWR_' + weightmode + '.npz'
 
 ########################################################################################################################
 
