@@ -3,8 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Plato_commands" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_commands" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/s8_oimerge.py" beforeDir="false" afterPath="$PROJECT_DIR$/s8_oimerge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/temprun.py" beforeDir="false" afterPath="$PROJECT_DIR$/temprun.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,7 +41,7 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.temprun">
+  <component name="RunManager" selected="Python.temprun_pop">
     <configuration name="observation_reanalysis_merge" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="pyGMET" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -127,7 +126,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="temprun" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="temprun_pop" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="pyGMET" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -139,7 +138,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/temprun.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/temprun_pop.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -150,7 +149,7 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.temprun" />
+        <item itemvalue="Python.temprun_pop" />
         <item itemvalue="Python.reanalysis_pop" />
         <item itemvalue="Python.reanalysis_correction_merge_old" />
         <item itemvalue="Python.observation_reanalysis_merge" />
