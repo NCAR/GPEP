@@ -32,12 +32,10 @@ outpath = '/home/gut428/GMET_OIinput'
 print('Read study area basic information')
 # load near station information
 datatemp = np.load(near_file_GMET)
-near_loc_grid = datatemp['near_grid_prcpLoc']
-near_weight_grid = datatemp['near_grid_prcpWeight']
-near_dist_grid = datatemp['near_grid_prcpDist']
-near_loc_grid = np.flipud(near_loc_grid)
-near_weight_grid = np.flipud(near_weight_grid)
-near_dist_grid = np.flipud(near_dist_grid)
+near_grid_prcpLoc = datatemp['near_grid_prcpLoc']
+near_grid_tempLoc = datatemp['near_grid_tempLoc']
+near_grid_prcpLoc = np.flipud(near_grid_prcpLoc)
+near_grid_tempLoc = np.flipud(near_grid_tempLoc)
 
 # station location and attribute information
 # stninfo: [ stations, 1/lat/lon/elev/slope_ns/slope_we ]
@@ -118,18 +116,32 @@ for year in range(yearall[0],yearall[1]+1):
 
         ################################################################################################################
 
-        # derive y_max for each grid pixels
+        # derive max value for each grid pixels
         # load station data
         prcpstn_ym = prcpstn[:, indym]
+        tmeanstn_ym = prcpstn[:, indym]
+        trangestn_ym = prcpstn[:, indym]
 
-        y_max = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
+        prcp_max = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
+        tmean_max = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
+        trange_max = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
+        prcp_min = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
+        tmean_min = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
+        trange_min = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
         for r in range(nrows):
             for c in range(ncols):
-                if near_loc_grid[r, c, 0] < 0:
-                    continue
-                nearloci = near_loc_grid[r, c, :]
-                nearloci = nearloci[nearloci > -1]
-                y_max[r, c, :] = np.nanmax(prcpstn_ym[nearloci, :], axis=0)
+                if near_grid_prcpLoc[r, c, 0] > -1:
+                    nearloci = near_grid_prcpLoc[r, c, :]
+                    nearloci = nearloci[nearloci > -1]
+                    prcp_max[r, c, :] = np.nanmax(prcpstn_ym[nearloci, :], axis=0)
+                    prcp_min[r, c, :] = np.nanmin(prcpstn_ym[nearloci, :], axis=0)
+                if near_grid_tempLoc[r, c, 0] > -1:
+                    nearloci = near_grid_tempLoc[r, c, :]
+                    nearloci = nearloci[nearloci > -1]
+                    tmean_max[r, c, :] = np.nanmax(tmeanstn_ym[nearloci, :], axis=0)
+                    trange_max[r, c, :] = np.nanmax(trangestn_ym[nearloci, :], axis=0)
+                    tmean_min[r, c, :] = np.nanmin(tmeanstn_ym[nearloci, :], axis=0)
+                    trange_min[r, c, :] = np.nanmin(trangestn_ym[nearloci, :], axis=0)
 
         ################################################################################################################
 
@@ -172,8 +184,37 @@ for year in range(yearall[0],yearall[1]+1):
 
         ################################################################################################################
 
+        # constrain error value range because sometimes anomalous values will result in unrealistic errors
+        # this is actually a very basic control with large value range allowed for error
+
+        lim1 = (prcp - prcp_max) ** 2
+        lim2 = (prcp - prcp_min) ** 2
+        ind = lim1 < lim2
+        lim = lim1
+        lim[ind] = lim2[lim1]
+        ind = prcp_err > lim
+        prcp_err[ind] = lim[ind]
+
+        lim1 = (tmean - tmean_max) ** 2
+        lim2 = (tmean - tmean_min) ** 2
+        ind = lim1 < lim2
+        lim = lim1
+        lim[ind] = lim2[lim1]
+        ind = tmean_err > lim
+        tmean_err[ind] = lim[ind]
+
+        lim1 = (trange - trange_max) ** 2
+        lim2 = (trange - trange_min) ** 2
+        ind = lim1 < lim2
+        lim = lim1
+        lim[ind] = lim2[lim1]
+        ind = trange_err > lim
+        trange_err[ind] = lim[ind]
+
+        ################################################################################################################
+
         # save to netcdf
-        y_max = np.flipud(y_max)
+        prcp_max = np.flipud(prcp_max)
         pop = np.flipud(pop)
         prcp = np.flipud(prcp)
         prcp_err = np.flipud(prcp_err)
@@ -183,4 +224,4 @@ for year in range(yearall[0],yearall[1]+1):
         trange_err = np.flipud(trange_err)
 
         au.save_output_nc(fileout, gridinfo, seconds, mean_autocorr, mean_tp_corr, pop, prcp, tmean, trange,
-                          prcp_err, tmean_err, trange_err, y_max)
+                          prcp_err, tmean_err, trange_err, prcp_max)
