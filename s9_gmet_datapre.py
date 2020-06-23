@@ -1,11 +1,10 @@
 # prepare data for GMET probabilistic estimation based on OI merging and original station data
 import numpy as np
 import auxiliary as au
-from auxiliary_merge import m_DateList
 from calendar import monthrange
 import datetime as dt
 import netCDF4 as nc
-import os
+
 # control parameters
 yearall = [1979,1979]
 monthall = [1,2]
@@ -142,6 +141,8 @@ for year in range(yearall[0],yearall[1]+1):
                     trange_max[r, c, :] = np.nanmax(trangestn_ym[nearloci, :], axis=0)
                     tmean_min[r, c, :] = np.nanmin(tmeanstn_ym[nearloci, :], axis=0)
                     trange_min[r, c, :] = np.nanmin(trangestn_ym[nearloci, :], axis=0)
+        prcp_max = au.transform(prcp_max, 4, 'box-cox')
+        prcp_min = au.transform(prcp_min, 4, 'box-cox')
 
         ################################################################################################################
 
@@ -159,6 +160,8 @@ for year in range(yearall[0],yearall[1]+1):
         # fileoi = path_oi + '/oimerge_pop' + str(year * 100 + month) + '.npz'
         # datatemp = np.load(fileoi)
         # pop = datatemp['oi_value']
+        # pop[pop<0] = 0
+        # pop[pop>1] = 1
         # # pop_err = datatemp['oi_error']
         # temporal solution for pop
         fileoi = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/pop-old/bmamerge_pop_' + \
