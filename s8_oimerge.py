@@ -14,13 +14,13 @@ from auxiliary_merge import *
 ########################################################################################################################
 
 # time periods and methods
-vars = sys.argv[1]
-vars = [vars]
-month = int(sys.argv[2])
-
-# vars = 'prcp'
+# vars = sys.argv[1]
 # vars = [vars]
-# month = 2
+# month = int(sys.argv[2])
+
+vars = 'prcp'
+vars = [vars]
+month = 1
 
 print(vars,month)
 
@@ -30,34 +30,35 @@ print(vars,month)
 weightmode = 'BMA' # method used to merge different reanalysis products
 # vars = ['prcp', 'tmean', 'trange']
 
-# ### Local Mac settings
-# # input files/paths
-# path_bac = '/Users/localuser/Research/EMDNA/merge' # data that will be used as background
-# path_obs = '/Users/localuser/Research/EMDNA/regression' # data that will be used as observation
-# near_file_GMET = '/Users/localuser/Research/EMDNA/regression/weight_nearstn.npz' # near station of stations/grids
-# file_mask = './DEM/NA_DEM_010deg_trim.mat'
-# FileStnInfo = '/Users/localuser/GMET/pyGMET_NA/stnlist_whole.txt'
-# gmet_stndatafile = '/Users/localuser/Research/EMDNA/stndata_whole.npz'
-#
-# # output files/paths (can also be used as inputs once generated)
-# path_oimerge = '/Users/localuser/Research/EMDNA/oimerge'
-#
-# ### Local Mac settings
-
-
-### Plato settings
+### Local Mac settings
 # input files/paths
-FileGridInfo = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/gridinfo_whole.nc'
-FileStnInfo = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/stnlist_whole.txt'
-gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_aftercheck.npz'
-path_bac = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/GWRBMA_merge'
-path_obs = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_aftercheck'
-near_file_GMET = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_aftercheck/nearstn_catalog.npz'
-file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA_new/DEM/NA_DEM_010deg_trim.mat'
+FileGridInfo = '/Users/localuser/Research/EMDNA/basicinfo/gridinfo_whole.nc'
+path_bac = '/Users/localuser/Research/EMDNA/merge' # data that will be used as background
+path_obs = '/Users/localuser/Research/EMDNA/regression' # data that will be used as observation
+near_file_GMET = '/Users/localuser/Research/EMDNA/regression/weight_nearstn.npz' # near station of stations/grids
+file_mask = './DEM/NA_DEM_010deg_trim.mat'
+FileStnInfo = '/Users/localuser/Research/EMDNA/basicinfo/stnlist_whole.txt'
+gmet_stndatafile = '/Users/localuser/Research/EMDNA/stndata_whole.npz'
 
 # output files/paths (can also be used as inputs once generated)
-path_oimerge = '/home/gut428/OImerge_GWRBMA'
-### Plato settings
+path_oimerge = '/Users/localuser/Research/EMDNA/oimerge'
+
+### Local Mac settings
+
+
+# ### Plato settings
+# # input files/paths
+# FileGridInfo = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/gridinfo_whole.nc'
+# FileStnInfo = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/stnlist_whole.txt'
+# gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_aftercheck.npz'
+# path_bac = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/GWRBMA_merge'
+# path_obs = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_aftercheck'
+# near_file_GMET = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_aftercheck/nearstn_catalog.npz'
+# file_mask = '/datastore/GLOBALWATER/CommonData/EMDNA_new/DEM/NA_DEM_010deg_trim.mat'
+#
+# # output files/paths (can also be used as inputs once generated)
+# path_oimerge = '/home/gut428/OImerge_GWRBMA'
+# ### Plato settings
 
 file_regression_stn = path_obs + '/regression_stn.npz'
 file_corrmerge_stn = [''] * len(vars)

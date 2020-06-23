@@ -1,6 +1,3 @@
-# pop estimation using logistic regression
-# computation time:
-# pop estimation for all stations: 74 jobs. ~7 to 18 hours per job
 
 import numpy as np
 import regression as reg
@@ -18,13 +15,13 @@ from sklearn.linear_model import LogisticRegression, SGDClassifier
 ########### other choices for logistic regression
 
 # read from inputs
-# time1 = int(sys.argv[1])
-# time2 = int(sys.argv[2])
-# print(time1,time2)
+time1 = int(sys.argv[1])
+time2 = int(sys.argv[2])
+print(time1,time2)
 
-yearin = int(sys.argv[1])
-monthin = int(sys.argv[2])
-print(yearin,monthin)
+# yearin = int(sys.argv[1])
+# monthin = int(sys.argv[2])
+# print(yearin,monthin)
 
 prefix = ['ERA5_', 'MERRA2_', 'JRA55_']
 
@@ -61,7 +58,7 @@ file_readownstn = ['/datastore/GLOBALWATER/CommonData/EMDNA_new/ERA5_day_ds/ERA5
 path_pop = '/home/gut428/ReanalysisCorrMerge/pop'
 ### Plato settings
 
-file_reapop_stn = path_pop + '/reanalysis_pop_stn.npz'
+file_reapop_stn = path_pop + '/reapop_stn_' + str(time1) + '-' + str(time2) + '.npz'
 file_popmerge_stn = path_pop + '/merge_stn_pop_GWR_BMA.npz'
 
 ########################################################################################################################
@@ -128,91 +125,64 @@ for rr in range(reanum):
     del dr, temp
 readata_stn[readata_stn < 0] = 0
 
-
 ########################################################################################################################
 
-for y in range(yearin, yearin + 1):
-    for m in range(monthin-1, monthin):
-        print('year,month',y,m+1)
-        file_reapop = path_pop + '/rea_pop_' + str(y * 100 + m + 1) + '.npz'
-        file_bmapop = path_pop + '/bmamerge_pop_' + str(y * 100 + m + 1) + '.npz'
-        if os.path.isfile(file_bmapop):
-            print('file exists ... continue')
-            continue
+# method-1: estimate pop using a univariate regression between station occurrence (0-1) and reanalysis precipitation
+# file_popt = path_pop + '/reapop_stn_' + str(time1) + '-' + str(time2) + '.npz'
+if os.path.isfile(file_reapop_stn):
+    datatemp = np.load(file_reapop_stn)
+    reapop_stn = datatemp['reapop_stn']
+    del datatemp
+else:
+    reapop_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
+    for rr in range(reanum):
+        for gg in range(nstn):
+            if np.mod(gg,1000)==0:
+                print('reanalysis',rr, 'station',gg,nstn)
+            if np.isnan(stndata[gg, 0]):
+                continue
+            nearloc = near_loc_stn[gg, :]
+            neardist = near_dist_stn[gg, :]
+            nearweight = near_weight_stn[gg, :]
+            neardist = neardist[nearloc > -1]
+            nearweight = nearweight[nearloc > -1]
+            nearweight = nearweight/np.sum(nearweight)
+            nearloc = nearloc[nearloc > -1]
 
-        # date processing
-        indmy = (date_yyyy == y) & (date_mm == m + 1)
-        mmdays = np.sum(indmy)
+            nstn_prcp = len(nearloc)
+            w_pcp_red = np.zeros([nstn_prcp, nstn_prcp])
+            for i in range(nstn_prcp):
+                w_pcp_red[i, i] = nearweight[i]  # eye matrix: stn weight in one-one lien
 
-        # read raw gridded reanalysis data
-        readata_raw = np.nan * np.zeros([reanum, nrows, ncols, mmdays], dtype=np.float32)
-        for rr in range(reanum):
-            if not (prefix[rr] == 'MERRA2_' and y == 1979):
-                filer = path_readowngrid[rr] + '/' + prefix[rr] + 'ds_prcp_' + str(y*100 +m+1) + '.npz'
-                d = np.load(filer)
-                readata_raw[rr, :, :, :] = d['data']
-                del d
+            x_red = np.ones([nstn_prcp, 2])
 
-        readata_stnym = readata_stn[:, :, indmy].copy()
-        stndataym = stndata[:, indmy].copy()
+            for tt in range(time1-1, time2):
+            # for tt in range(time1-1, time2): # to accelerate speed
+                prea_tar = readata_stn[rr, gg, tt]
+                if np.isnan(prea_tar):
+                    continue
+                if stndata[gg, tt]>0:
+                    pstn_tar = 1
+                else:
+                    pstn_tar = 0
+                prea_near = readata_stn[rr, nearloc, tt]
+                pstn_near = stndata[nearloc, tt]
+                pstn_near[pstn_near > 0] = 1
 
-        ################################################################################################################
-        print('estimate pop for all grids')
-        reapop_grid = np.nan * np.zeros([reanum, nrows, ncols, mmdays], dtype=np.float32)
-        if os.path.isfile(file_reapop):
-            datatemp = np.load(file_reapop)
-            reapop_grid = datatemp['reapop_grid']
-            del datatemp
-        else:
-            for r in range(nrows):
-                if np.mod(r, 10) == 0:
-                    print(r, nrows)
-                for c in range(ncols):
-                    if np.isnan(mask[r, c]):
-                        continue
-                    nearloc = near_loc_grid[r, c, :]
-                    neardist = near_dist_grid[r, c, :]
-                    nearweight = near_weight_grid[r, c, :]
-                    neardist = neardist[nearloc > -1]
-                    nearweight = nearweight[nearloc > -1]
-                    nearweight = nearweight / np.sum(nearweight)
-                    nearloc = nearloc[nearloc > -1]
-
-                    nstn_prcp = len(nearloc)
-                    w_pcp_red = np.zeros([nstn_prcp, nstn_prcp])
-                    for i in range(nstn_prcp):
-                        w_pcp_red[i, i] = nearweight[i]  # eye matrix: stn weight in one-one lien
-
-                    x_red = np.ones([nstn_prcp, 2])
-                    for rr in range(reanum):
-                        for tt in range(mmdays):
-                            prea_tar = readata_raw[rr, r, c, tt]
-                            if np.isnan(prea_tar):
-                                continue
-                            prea_near = readata_stnym[rr, nearloc, tt]
-                            pstn_near = stndataym[nearloc, tt]
-                            pstn_near[pstn_near > 0] = 1
-
-                            # logistic regression
-                            if np.all(pstn_near == 1):
-                                reapop_grid[rr, r, c, tt] = 1
-                            elif np.all(pstn_near == 0) or np.all(prea_near < 0.01):
-                                reapop_grid[rr, r, c, tt] = 0
-                            else:
-                                x_red[:, 1] = prea_near
-                                tx_red = np.transpose(x_red)
-                                twx_red = np.matmul(tx_red, w_pcp_red)
-                                b = reg.logistic_regression(x_red, twx_red, pstn_near)
-                                if np.all(b == 0) or np.any(np.isnan(b)):
-                                    reapop_grid[rr, r, c, tt] = np.dot(nearweight, pstn_near)
-                                else:
-                                    zb = - np.dot(np.array([1, prea_tar]), b)
-                                    reapop_grid[rr, r, c, tt] = 1 / (1 + np.exp(zb))
-
-                                # # another choice for logistic regression
-                                # # model=SGDClassifier(loss='log')
-                                # model = LogisticRegression(solver='lbfgs')
-                                # model.fit(np.reshape(prea_near, [-1, 1]), pstn_near, sample_weight=nearweight)
-                                # reapop_grid[rr, r, c, tt] = model.predict_proba(np.reshape(prea_tar, [-1, 1]))[0][1]
-
-            np.savez_compressed(file_reapop, reapop_grid=reapop_grid, latitude=lattar, longitude=lontar, prefix=prefix)
+                # logistic regression
+                if np.all(pstn_near == 1):
+                    reapop_stn[rr, gg, tt] = 1
+                elif np.all(pstn_near == 0) or np.all(prea_near < 0.01):
+                    reapop_stn[rr, gg, tt] = 0
+                else:
+                    x_red[:, 1] = prea_near
+                    tx_red = np.transpose(x_red)
+                    twx_red = np.matmul(tx_red, w_pcp_red)
+                    b = reg.logistic_regression(x_red, twx_red, pstn_near)
+                    if np.all(b==0) or np.any(np.isnan(b)):
+                        reapop_stn[rr, gg, tt] = np.dot(nearweight, pstn_near)
+                    else:
+                        zb = - np.dot(np.array([1,prea_tar]), b)
+                        reapop_stn[rr, gg, tt] = 1 / (1 + np.exp(zb))
+    np.savez_compressed(file_reapop_stn, reapop_stn=reapop_stn, stninfo=stninfo,
+                        stnID=stnID, date_ymd=date_ymd, prefix=prefix)

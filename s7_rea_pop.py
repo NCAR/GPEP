@@ -1,7 +1,7 @@
 # pop estimation using logistic regression
 # computation time:
 # pop estimation for all stations: 74 jobs. ~7 to 18 hours per job
-# pop estimation for grids: 12 * 40 = 480 jobs. 14 hours to 1 day per job
+# pop estimation for grids: 12 * 40 = 480 jobs. 14 to 32 hours per job
 
 import numpy as np
 import regression as reg
@@ -188,6 +188,16 @@ else:
                     else:
                         zb = - np.dot(np.array([1,prea_tar]), b)
                         reapop_stn[rr, gg, tt] = 1 / (1 + np.exp(zb))
+    np.savez_compressed(file_reapop_stn, reapop_stn=reapop_stn, stninfo=stninfo,
+                        stnID=stnID, date_ymd=date_ymd, prefix=prefix)
+
+    # merge pop from different files because in practice, different jobs are submitted
+    reapop_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
+    timeall = np.hstack((np.arange(1,14610,200), 14610))
+    for tt in range(len(timeall)-1):
+        filet = path_pop + '/reapop_stn_' + str(timeall[tt]) + '-' + str(timeall[tt+1]) + '.npz'
+        d=np.load(filet)
+        reapop_stn[:, :, (timeall[tt]-1):timeall[tt+1]] = d['reapop_stn'][:, :, (timeall[tt]-1):timeall[tt+1]]
     np.savez_compressed(file_reapop_stn, reapop_stn=reapop_stn, stninfo=stninfo,
                         stnID=stnID, date_ymd=date_ymd, prefix=prefix)
 
