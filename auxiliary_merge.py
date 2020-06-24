@@ -68,8 +68,9 @@ def ismember(a, b):
     index = np.array([(np.where(b == i))[0][-1] if t else 0 for i, t in zip(a, tf)])
     return tf, index
 
-def extrapolation(datain, nearstn_loc, nearstn_dist):
+def extrapolation(datain, nearstn_loc, nearstn_dist, excflag=0):
     # datain: one or multiple time steps
+    # if excflag=1, exlucde the value that deviates farthest from mean value
     wexp = 3
     if np.ndim(datain) == 1:  # add time axis
         datain = datain[:, np.newaxis]
@@ -84,6 +85,13 @@ def extrapolation(datain, nearstn_loc, nearstn_dist):
             nearloci = nearstn_loc[i, :]
             indloci = nearloci > -1
             dataini = datain[nearloci[indloci], :]
+
+            if excflag == 1:
+                dmean = np.tile(np.nanmean(dataini, axis=0),[np.sum(indloci), 1])
+                diff = np.abs(dataini - dmean)
+                for j in range(ntimes):
+                    dataini[np.nanargmax(diff[:,j]), j] = np.nan
+
             disti = nearstn_dist[i, indloci]
             maxdist = np.max([np.max(disti) + 1, 100])
             weighti = au.distanceweight(disti, maxdist, wexp)
@@ -102,6 +110,13 @@ def extrapolation(datain, nearstn_loc, nearstn_dist):
                 nearloci = nearstn_loc[r, c, :]
                 indloci = nearloci > -1
                 dataini = datain[nearloci[indloci], :]
+
+                if excflag == 1:
+                    dmean = np.tile(np.nanmean(dataini, axis=0), [np.sum(indloci), 1])
+                    diff = np.abs(dataini - dmean)
+                    for j in range(ntimes):
+                        dataini[np.nanargmax(diff[:, j]), j] = np.nan
+
                 disti = nearstn_dist[r, c, indloci]
                 weighti = au.distanceweight(disti, np.max(disti) + 1, wexp)
                 weighti[np.isnan(dataini[:,0])]=np.nan
