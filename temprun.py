@@ -117,7 +117,7 @@ for v in range(len(vars)):
         datem = date_yyyy[indm]
 
         # load OI merged data at station points
-        filemerge_stn = path_oimerge + '/OImerge_stn_GWRLSBMA_' + vars[v] + '.npz'
+        filemerge_stn = '/datastore/GLOBALWATER/CommonData/EMDNA_new/OImerge_GWRLSBMA/OImerge_stn_GWRLSBMA_' + vars[v] + '.npz'
         datatemp = np.load(filemerge_stn)
         oimerge_stn = datatemp['oimerge_stn']
         del datatemp
