@@ -105,10 +105,10 @@ date_mm = (np.mod(date_ymd, 10000)/100).astype(int)
 # this part should be revised if re-running is needed.
 
 for v in range(len(vars)):
-    print('OI merge at stations:', vars[v])
-    filemerge_stn = path_oimerge + '/OImerge_stn_GWRQMBMA_' + vars[v] + '.npz'
+    filemerge_stn = path_oimerge + '/OImerge_stn_GWRBMA_' + vars[v] + '.npz'
     if os.path.isfile(filemerge_stn):
         continue
+    print('OI merge at stations:', vars[v])
 
     # load station original observations
     datatemp = np.load(gmet_stndatafile)
@@ -201,174 +201,175 @@ for v in range(len(vars)):
         print('Combine station OI merging data for 12 months')
         oimerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)
         filemerge_stn = path_oimerge + '/OImerge_stn_GWRBMA_' + vars[v] + '.npz'
-        for m in range(12):
-            indm = (date_mm == m + 1)
-            nday = sum(indm)
-            filemerge_stnm = path_oimerge + '/OImerge_stn_GWRBMA_' + vars[v] + '_' + str(m + 1) + '.npz'
-            datatemp = np.load(filemerge_stnm)
-            oimerge_stnm = datatemp['oimerge_stn']
-            oimerge_stn[:, indm] = oimerge_stnm[:, indm]
-            del oimerge_stnm
-        np.savez_compressed(filemerge_stn, oimerge_stn=oimerge_stn, stninfo=stninfo, date_ymd=date_ymd, stnID=stnID)
+        if not os.path.isfile(filemerge_stn):
+            for m in range(12):
+                indm = (date_mm == m + 1)
+                nday = sum(indm)
+                filemerge_stnm = path_oimerge + '/OImerge_stn_GWRBMA_' + vars[v] + '_' + str(m + 1) + '.npz'
+                datatemp = np.load(filemerge_stnm)
+                oimerge_stnm = datatemp['oimerge_stn']
+                oimerge_stn[:, indm] = oimerge_stnm[:, indm]
+                del oimerge_stnm
+            np.savez_compressed(filemerge_stn, oimerge_stn=oimerge_stn, stninfo=stninfo, date_ymd=date_ymd, stnID=stnID)
 
 ########################################################################################################################
 # # OI-merging at grid scale
 
-# for v in range(len(vars)):
-#     print('OI merge at grids:', vars[v])
-#
-#     # load station original observations
-#     datatemp = np.load(gmet_stndatafile)
-#     if vars[v] == 'pop':
-#         observation_stn = datatemp['prcp_stn']
-#         observation_stn[observation_stn > 0] = 1
-#     else:
-#         observation_stn = datatemp[vars[v] + '_stn']
-#     del datatemp
-#
-#     # load station regression estimates (obs)
-#     datatemp = np.load(file_regression_stn)
-#     regression_stn = datatemp[vars[v]]
-#     del datatemp
-#
-#     # load corrected/merged reanalysis data at all station points (those are totally independent with station observations)
-#     datatemp = np.load(file_corrmerge_stn[v])
-#     reafinal_stn = datatemp['reamerge_stn']
-#     nstn, ntimes = np.shape(reafinal_stn)
-#     del datatemp
-#
-#     # load near station information
-#     datatemp = np.load(near_file_GMET)
-#     if vars[v] == 'prcp' or vars[v] == 'pop':
-#         near_loc = datatemp['near_grid_prcpLoc']
-#         near_weight = datatemp['near_grid_prcpWeight']
-#         near_dist = datatemp['near_grid_prcpDist']
-#     else:
-#         near_loc = datatemp['near_grid_tempLoc']
-#         near_weight = datatemp['near_grid_tempWeight']
-#         near_dist = datatemp['near_grid_tempDist']
-#     near_loc = np.flipud(near_loc)
-#     near_weight = np.flipud(near_weight)
-#     near_dist = np.flipud(near_dist)
-#     del datatemp
-#
-#     # start OI merging
-#     for m in range(month-1, month):
-#         print('month', m + 1)
-#         indm = (date_mm == m + 1)
-#         nday = sum(indm)
-#         datem = date_yyyy[indm]
-#
-#         # load gridded merged reanalysis data for all years
-#         print('load gridded merged data')
-#         reagrid_value = np.nan * np.zeros([nrows, ncols, nday], dtype=np.float32)
-#         reagrid_error = np.nan * np.zeros([nrows, ncols, nday], dtype=np.float32)
-#         for y in range(1979, 2019):
-#             indym = datem == y
-#             filey = path_bac + '/bmamerge_' + vars[v] + '_' + str(y*100+m+1) + '.npz'
-#             datatemp = np.load(filey)
-#             reagrid_value[:, :, indym] = datatemp['bma_data']
-#             reagrid_error[:, :, indym] = datatemp['bma_error']
-#             del datatemp
-#
-#         # calculate OI-merging weights for every grids
-#         print('calculate OI merging weights')
-#         file_oiweight = path_oimerge + '/oiweight_' + vars[v] + '_month_' + str(m+1) + '.npz'
-#         if os.path.isfile(file_oiweight):
-#             datatemp = np.load(file_oiweight)
-#             oiweight = datatemp['oiweight']
-#             del datatemp
-#         else:
-#             oiweight = np.nan * np.zeros([nrows, ncols, np.shape(near_loc)[2]], dtype=np.float32)
-#             for r in range(nrows):
-#                 if np.mod(r,10)==0:
-#                     print(r,nrows)
-#                 for c in range(ncols):
-#                     if np.isnan(mask[r, c]):
-#                         continue
-#                     near_loci = near_loc[r, c, :]
-#                     near_loci = near_loci[near_loci > -1]
-#
-#                     b_near = reafinal_stn[near_loci, :][:, indm]
-#                     o_near = regression_stn[near_loci, :][:, indm]
-#                     # this error is from weighted mean. if using nearest neighbor to obtain gridded error, this weight will be more similar to stn-OI
-#                     tar_err_b = reagrid_error[r, c, :]
-#                     near_err_b = b_near - observation_stn[near_loci, :][:, indm]
-#                     near_err_o = o_near - observation_stn[near_loci, :][:, indm]
-#
-#                     # delete possible nan values
-#                     induse = ~np.isnan(tar_err_b + np.sum(near_err_b, axis=0) + np.sum(near_err_o, axis=0))
-#                     weight = OImerge(tar_err_b[induse], near_err_b[:, induse], near_err_o[:, induse], eye_o=0)
-#
-#                     oiweight[r, c, 0:len(weight)] = weight
-#             np.savez_compressed(file_oiweight, oiweight=oiweight, lattar=lattar, lontar=lontar)
-#
-#         # perform OI merging for all years
-#         print('perform OI merging')
-#
-#         # load OI merged data at station points
-#         filemerge_stn = path_oimerge + '/OImerge_stn_GWRQMBMA_' + vars[v] + '.npz'
-#         datatemp = np.load(filemerge_stn)
-#         oimerge_stn = datatemp['oimerge_stn']
-#         del datatemp
-#
-#         for y in range(1979, 2019):
-#             print('year',y)
-#             fileoi_ym = path_oimerge + '/oimerge_' + vars[v] + str(y*100+m+1) + '.npz'
-#             indym1 = datem == y
-#             ndayy = np.sum(indym1)
-#             indym2 = (date_mm == m + 1) & (date_yyyy == y)
-#             if os.path.isfile(fileoi_ym):
-#                 continue
-#
-#             # calculate OI value
-#             oi_value = np.nan * np.zeros([nrows, ncols, ndayy], dtype=np.float32)
-#             for r in range(nrows):
-#                 if np.mod(r,10)==0:
-#                     print(r,nrows)
-#                 for c in range(ncols):
-#                     if np.isnan(mask[r, c]):
-#                         continue
-#                     near_loci = near_loc[r, c, :]
-#                     near_loci = near_loci[near_loci > -1]
-#
-#                     weight = oiweight[r, c, :]
-#                     weight = weight[~np.isnan(weight)]
-#                     if (np.any(np.isnan(weight))) or (np.any(abs(weight) > 2)): # exclude too large values
-#                         weight = near_weight[r, c, 0:len(weight)]
-#                         weight = weight / np.sum(weight)
-#
-#                     b_tar = reagrid_value[r, c, indym1]
-#                     b_near = reafinal_stn[near_loci, :][:, indym2]
-#                     o_near = regression_stn[near_loci, :][:, indym2]
-#
-#                     diff = o_near - b_near
-#                     merge_est = b_tar.copy()
-#                     for id in range(ndayy):
-#                         merge_est[id] = merge_est[id] + np.dot(weight, diff[:, id])
-#                     oi_value[r, c, :] = merge_est
-#
-#             if vars[v] == 'pop':
-#                 oi_value[oi_value < 0] = 0
-#                 oi_value[oi_value > 1] = 1
-#             if vars[v] == 'prcp':
-#                 oi_value[oi_value < 0] = 0
-#             if vars[v] == 'trange':
-#                 oi_value = np.abs(oi_value)
-#
-#             # calculate OI error (mean square error from nearby stations)
-#             oi_error_stn = (oimerge_stn[:, indym2] - observation_stn[:, indym2]) ** 2
-#             oi_error_grid = extrapolation(oi_error_stn, near_loc, near_dist, excflag=1)
-#             np.savez_compressed(fileoi_ym, oi_value=oi_value, oi_error=oi_error_grid, latitude=lattar, longitude=lontar)
-#
-#             if vars[v] == 'prcp':
-#                 # value and error in normal space
-#                 fileoi_ym_boxcox = path_oimerge + '/oimerge_' + vars[v] + str(y * 100 + m + 1) + '_boxcox.npz'
-#                 transmode = 'box-cox'
-#                 tranexp = 4
-#                 oi_error_stn = ( au.transform(oimerge_stn[:, indym2],tranexp,transmode) -
-#                                 au.transform(observation_stn[:, indym2], tranexp, transmode) ) ** 2
-#                 oi_error_grid = extrapolation(oi_error_stn, near_loc, near_dist, excflag=1)
-#                 oi_value = au.transform(oi_value, tranexp, transmode)
-#                 np.savez_compressed(fileoi_ym_boxcox, oi_value=oi_value, oi_error=oi_error_grid,
-#                                     latitude=lattar, longitude=lontar, tranexp=tranexp, transmode=transmode)
+for v in range(len(vars)):
+    print('OI merge at grids:', vars[v])
+
+    # load station original observations
+    datatemp = np.load(gmet_stndatafile)
+    if vars[v] == 'pop':
+        observation_stn = datatemp['prcp_stn']
+        observation_stn[observation_stn > 0] = 1
+    else:
+        observation_stn = datatemp[vars[v] + '_stn']
+    del datatemp
+
+    # load station regression estimates (obs)
+    datatemp = np.load(file_regression_stn)
+    regression_stn = datatemp[vars[v]]
+    del datatemp
+
+    # load corrected/merged reanalysis data at all station points (those are totally independent with station observations)
+    datatemp = np.load(file_corrmerge_stn[v])
+    reafinal_stn = datatemp['reamerge_stn']
+    nstn, ntimes = np.shape(reafinal_stn)
+    del datatemp
+
+    # load near station information
+    datatemp = np.load(near_file_GMET)
+    if vars[v] == 'prcp' or vars[v] == 'pop':
+        near_loc = datatemp['near_grid_prcpLoc']
+        near_weight = datatemp['near_grid_prcpWeight']
+        near_dist = datatemp['near_grid_prcpDist']
+    else:
+        near_loc = datatemp['near_grid_tempLoc']
+        near_weight = datatemp['near_grid_tempWeight']
+        near_dist = datatemp['near_grid_tempDist']
+    near_loc = np.flipud(near_loc)
+    near_weight = np.flipud(near_weight)
+    near_dist = np.flipud(near_dist)
+    del datatemp
+
+    # start OI merging
+    for m in range(month-1, month):
+        print('month', m + 1)
+        indm = (date_mm == m + 1)
+        nday = sum(indm)
+        datem = date_yyyy[indm]
+
+        # load gridded merged reanalysis data for all years
+        print('load gridded merged data')
+        reagrid_value = np.nan * np.zeros([nrows, ncols, nday], dtype=np.float32)
+        reagrid_error = np.nan * np.zeros([nrows, ncols, nday], dtype=np.float32)
+        for y in range(1979, 2019):
+            indym = datem == y
+            filey = path_bac + '/bmamerge_' + vars[v] + '_' + str(y*100+m+1) + '.npz'
+            datatemp = np.load(filey)
+            reagrid_value[:, :, indym] = datatemp['bma_data']
+            reagrid_error[:, :, indym] = datatemp['bma_error']
+            del datatemp
+
+        # calculate OI-merging weights for every grids
+        print('calculate OI merging weights')
+        file_oiweight = path_oimerge + '/oiweight_' + vars[v] + '_month_' + str(m+1) + '.npz'
+        if os.path.isfile(file_oiweight):
+            datatemp = np.load(file_oiweight)
+            oiweight = datatemp['oiweight']
+            del datatemp
+        else:
+            oiweight = np.nan * np.zeros([nrows, ncols, np.shape(near_loc)[2]], dtype=np.float32)
+            for r in range(nrows):
+                if np.mod(r,10)==0:
+                    print(r,nrows)
+                for c in range(ncols):
+                    if np.isnan(mask[r, c]):
+                        continue
+                    near_loci = near_loc[r, c, :]
+                    near_loci = near_loci[near_loci > -1]
+
+                    b_near = reafinal_stn[near_loci, :][:, indm]
+                    o_near = regression_stn[near_loci, :][:, indm]
+                    # this error is from weighted mean. if using nearest neighbor to obtain gridded error, this weight will be more similar to stn-OI
+                    tar_err_b = reagrid_error[r, c, :]
+                    near_err_b = b_near - observation_stn[near_loci, :][:, indm]
+                    near_err_o = o_near - observation_stn[near_loci, :][:, indm]
+
+                    # delete possible nan values
+                    induse = ~np.isnan(tar_err_b + np.sum(near_err_b, axis=0) + np.sum(near_err_o, axis=0))
+                    weight = OImerge(tar_err_b[induse], near_err_b[:, induse], near_err_o[:, induse], eye_o=0)
+
+                    oiweight[r, c, 0:len(weight)] = weight
+            np.savez_compressed(file_oiweight, oiweight=oiweight, lattar=lattar, lontar=lontar)
+
+        # perform OI merging for all years
+        print('perform OI merging')
+
+        # load OI merged data at station points
+        filemerge_stn = path_oimerge + '/OImerge_stn_GWRBMA_' + vars[v] + '.npz'
+        datatemp = np.load(filemerge_stn)
+        oimerge_stn = datatemp['oimerge_stn']
+        del datatemp
+
+        for y in range(1979, 2019):
+            print('year',y)
+            fileoi_ym = path_oimerge + '/oimerge_' + vars[v] + str(y*100+m+1) + '.npz'
+            indym1 = datem == y
+            ndayy = np.sum(indym1)
+            indym2 = (date_mm == m + 1) & (date_yyyy == y)
+            if os.path.isfile(fileoi_ym):
+                continue
+
+            # calculate OI value
+            oi_value = np.nan * np.zeros([nrows, ncols, ndayy], dtype=np.float32)
+            for r in range(nrows):
+                if np.mod(r,10)==0:
+                    print(r,nrows)
+                for c in range(ncols):
+                    if np.isnan(mask[r, c]):
+                        continue
+                    near_loci = near_loc[r, c, :]
+                    near_loci = near_loci[near_loci > -1]
+
+                    weight = oiweight[r, c, :]
+                    weight = weight[~np.isnan(weight)]
+                    if (np.any(np.isnan(weight))) or (np.any(abs(weight) > 2)): # exclude too large values
+                        weight = near_weight[r, c, 0:len(weight)]
+                        weight = weight / np.sum(weight)
+
+                    b_tar = reagrid_value[r, c, indym1]
+                    b_near = reafinal_stn[near_loci, :][:, indym2]
+                    o_near = regression_stn[near_loci, :][:, indym2]
+
+                    diff = o_near - b_near
+                    merge_est = b_tar.copy()
+                    for id in range(ndayy):
+                        merge_est[id] = merge_est[id] + np.dot(weight, diff[:, id])
+                    oi_value[r, c, :] = merge_est
+
+            if vars[v] == 'pop':
+                oi_value[oi_value < 0] = 0
+                oi_value[oi_value > 1] = 1
+            if vars[v] == 'prcp':
+                oi_value[oi_value < 0] = 0
+            if vars[v] == 'trange':
+                oi_value = np.abs(oi_value)
+
+            # calculate OI error (mean square error from nearby stations)
+            oi_error_stn = (oimerge_stn[:, indym2] - observation_stn[:, indym2]) ** 2
+            oi_error_grid = extrapolation(oi_error_stn, near_loc, near_dist, excflag=1)
+            np.savez_compressed(fileoi_ym, oi_value=oi_value, oi_error=oi_error_grid, latitude=lattar, longitude=lontar)
+
+            if vars[v] == 'prcp':
+                # value and error in normal space
+                fileoi_ym_boxcox = path_oimerge + '/oimerge_' + vars[v] + str(y * 100 + m + 1) + '_boxcox.npz'
+                transmode = 'box-cox'
+                tranexp = 4
+                oi_error_stn = ( au.transform(oimerge_stn[:, indym2],tranexp,transmode) -
+                                au.transform(observation_stn[:, indym2], tranexp, transmode) ) ** 2
+                oi_error_grid = extrapolation(oi_error_stn, near_loc, near_dist, excflag=1)
+                oi_value = au.transform(oi_value, tranexp, transmode)
+                np.savez_compressed(fileoi_ym_boxcox, oi_value=oi_value, oi_error=oi_error_grid,
+                                    latitude=lattar, longitude=lontar, tranexp=tranexp, transmode=transmode)
