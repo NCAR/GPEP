@@ -198,8 +198,8 @@ for year in range(yearall[0],yearall[1]+1):
         ind = prcp_err > lim
         prcp_err[ind] = lim[ind]
 
-        lim1 = np.abs(tmean - tmean_max)
-        lim2 = np.abs(tmean - tmean_min)
+        lim1 = (tmean - tmean_max) ** 2
+        lim2 = (tmean - tmean_min) ** 2
         ind = lim1 < lim2
         lim = lim1
         lim[ind] = lim2[ind]

@@ -1,14 +1,6 @@
-# load near station information
-datatemp = np.load(near_file_GMET)
-if vars[v] == 'prcp' or vars[v] == 'pop':
-    near_loc = datatemp['near_grid_prcpLoc']
-    near_weight = datatemp['near_grid_prcpWeight']
-    near_dist = datatemp['near_grid_prcpDist']
-else:
-    near_loc = datatemp['near_grid_tempLoc']
-    near_weight = datatemp['near_grid_tempWeight']
-    near_dist = datatemp['near_grid_tempDist']
-near_loc = np.flipud(near_loc)
-near_weight = np.flipud(near_weight)
-near_dist = np.flipud(near_dist)
-del datatemp
+reapop_stn = np.nan * np.zeros([reanum, nstn, ntimes], dtype=np.float32)
+timeall = np.hstack( (np.arange(1, 7000, 200), np.arange(7001, 7202, 50), np.arange(7401, 7600, 50), np.arange(7601, 14610, 200), 14610))
+for tt in range(len(timeall) - 1):
+    filet = path_pop + '/reapop_stn_' + str(timeall[tt]) + '-' + str(timeall[tt + 1]) + '.npz'
+    d = np.load(filet)
+    reapop_stn[:, :, (timeall[tt] - 1):timeall[tt + 1]] = d['reapop_stn'][:, :, (timeall[tt] - 1):timeall[tt + 1]]
