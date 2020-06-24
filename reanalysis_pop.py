@@ -60,7 +60,8 @@ path_pop = '/home/gut428/ReanalysisCorrMerge/pop'
 ### Plato settings
 
 file_reapop_stn = path_pop + '/reanalysis_pop_stn.npz'
-file_popmerge_stn = path_pop + '/bmamerge_pop_stn.npz'
+file_popmerge_stn = path_pop + '/merge_stn_pop_GWR_BMA.npz'
+file_popmerge_weight = path_pop + '/mergeweight_pop_BMA.npz'
 
 ########################################################################################################################
 
@@ -192,7 +193,7 @@ if os.path.isfile(file_popmerge_stn):
 else:
     # estimate bma merging weights for pop
     print('estimate bma merging weights for pop')
-    bmaweight_stn = np.nan * np.zeros([12, nstn, reanum], dtype=np.float32)
+    reamerge_weight_stn = np.nan * np.zeros([12, nstn, reanum], dtype=np.float32)
     for m in range(12):
         print('month',m)
         indm = date_number['mm'] == (m+1)
@@ -203,10 +204,10 @@ else:
             obs = stndata[i, indm].copy()
             obs[obs > 0] = 1
             weight, sigma, sigma_s = bma(rea, obs)
-            bmaweight_stn[m, i, :] = weight
+            reamerge_weight_stn[m, i, :] = weight
 
     # use cross validation to calculate independent merged pop which can be evaluated using station data
-    mergepop_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)
+    reamerge_stn = np.nan * np.zeros([nstn, ntimes], dtype=np.float32)
     for i in range(nstn):
         if np.mod(i,5000)==0:
             print(i)
@@ -222,7 +223,7 @@ else:
         # get bma weight from nearby stations
         weight_i = np.zeros([12, reanum])
         for m in range(12):
-            weight_im_near = bmaweight_stn[m, nearloc, :]
+            weight_im_near = reamerge_weight_stn[m, nearloc, :]
             weight_i[m, :] = np.sum(weight_im_near * nearweight, axis=0)
 
         # merging at the target station
@@ -234,14 +235,18 @@ else:
             weight_im[np.isnan(reapop_stn_im)] = np.nan
             reapop_merge_i[indm] = np.nansum(reapop_stn_im * weight_im, axis=0) / np.nansum(weight_im, axis=0)
 
-        mergepop_stn[i, :] = reapop_merge_i
+        reamerge_stn[i, :] = reapop_merge_i
+
+    np.savez_compressed(file_popmerge_stn, reamerge_weight_stn=reamerge_weight_stn, reamerge_stn=reamerge_stn)
 
     # interpolate weights to grids
-    bmaweight_grid  = np.nan * np.zeros([12, reanum, nrows, ncols], dtype=np.float32)
+    reamerge_weight_grid  = np.nan * np.zeros([12, reanum, nrows, ncols], dtype=np.float32)
     for m in range(12):
         for rr in range(reanum):
-            bmaweight_grid[m, rr, :, :] = extrapolation(bmaweight_stn[m, :, rr], near_loc_grid, near_dist_grid)
-    np.savez_compressed(file_popmerge_stn, bmaweight_stn=bmaweight_stn, bmaweight_grid=bmaweight_grid, mergepop_stn=mergepop_stn)
+            reamerge_weight_grid[m, rr, :, :] = extrapolation(reamerge_weight_stn[m, :, rr], near_loc_grid, near_dist_grid)
+
+    np.savez_compressed(file_popmerge_weight,reamerge_weight_grid=reamerge_weight_grid, reaname=prefix,
+                        latitude=lattar, longitude=lontar)
 
 ########################################################################################################################
 

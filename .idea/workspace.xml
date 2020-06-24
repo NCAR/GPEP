@@ -3,9 +3,52 @@
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auxiliary_merge.py" beforeDir="false" afterPath="$PROJECT_DIR$/auxiliary_merge.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/oi_griderror_test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/oi_griderror_test.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/temprun_pop.py" beforeDir="false" afterPath="$PROJECT_DIR$/temprun_pop.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_commands" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_commands" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1979.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1979.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1980.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1980.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1981.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1981.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1982.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1982.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1983.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1983.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1984.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1984.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1985.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1985.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1986.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1986.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1987.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1987.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1988.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1988.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1989.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1989.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1990.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1990.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1991.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1991.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1992.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1992.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1993.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1993.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1994.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1994.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1995.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1995.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1996.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1996.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1997.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1997.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1998.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1998.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_1999.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_1999.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2000.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2000.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2001.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2001.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2002.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2002.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2003.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2003.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2004.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2004.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2005.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2005.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2006.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2006.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2007.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2007.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2008.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2008.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2009.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2009.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2010.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2010.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2011.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2011.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2012.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2012.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2013.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2013.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2014.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2014.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2015.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2015.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2016.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2016.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2017.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2017.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_oi_2018.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_oi_2018.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_temprun.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_temprun.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Untitled.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Untitled.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reanalysis_pop.py" beforeDir="false" afterPath="$PROJECT_DIR$/reanalysis_pop.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/s8_oimerge.py" beforeDir="false" afterPath="$PROJECT_DIR$/s8_oimerge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/temprun_pop.py" beforeDir="false" afterPath="$PROJECT_DIR$/temprun.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -128,7 +171,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="temprun_pop" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="temprun" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="pyGMET" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -140,7 +183,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/temprun_pop.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/temprun.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />

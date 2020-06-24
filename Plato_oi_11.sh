@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=reapop1997
+#SBATCH --job-name=pop11
 #SBATCH --time=0-6:00:00
 #SBATCH --mem=35G
 module load python/3.7.4
-srun python -u temprun_pop.py 1997
+srun python -u s8_oimerge.py pop 11
