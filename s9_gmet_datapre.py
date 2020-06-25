@@ -19,6 +19,7 @@ monthall = [1,2]
 
 ### Plato settings
 path_oi = '/datastore/GLOBALWATER/CommonData/EMDNA_new/OImerge_GWRLSBMA'
+path_oi_pop = '/datastore/GLOBALWATER/CommonData/EMDNA_new/OImerge_pop'
 near_file_GMET = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_aftercheck/nearstn_catalog.npz'
 gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_aftercheck.npz'
 FileStnInfo = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/stnlist_whole.txt'  # station basic information (lists)
@@ -157,18 +158,18 @@ for year in range(yearall[0],yearall[1]+1):
         ################################################################################################################
 
         # # load OI-merged pop, pcp, tmean, trange
-        # fileoi = path_oi + '/oimerge_pop' + str(year * 100 + month) + '.npz'
-        # datatemp = np.load(fileoi)
-        # pop = datatemp['oi_value']
-        # pop[pop<0] = 0
-        # pop[pop>1] = 1
-        # # pop_err = datatemp['oi_error']
-        # temporal solution for pop
-        fileoi = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/pop-old/bmamerge_pop_' + \
-                 str(year * 100 + month) + '.npz'
+        fileoi = path_oi_pop + '/oimerge_pop' + str(year * 100 + month) + '.npz'
         datatemp = np.load(fileoi)
-        pop = datatemp['bma_data']
+        pop = datatemp['oi_value']
+        pop[pop<0] = 0
+        pop[pop>1] = 1
         # pop_err = datatemp['oi_error']
+        # temporal solution for pop
+        # fileoi = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/pop-old/bmamerge_pop_' + \
+        #          str(year * 100 + month) + '.npz'
+        # datatemp = np.load(fileoi)
+        # pop = datatemp['bma_data']
+        # # pop_err = datatemp['oi_error']
 
         fileoi = path_oi + '/oimerge_prcp' + str(year * 100 + month) + '_boxcox.npz'
         datatemp = np.load(fileoi)
@@ -183,7 +184,9 @@ for year in range(yearall[0],yearall[1]+1):
         fileoi = path_oi + '/oimerge_trange' + str(year * 100 + month) + '.npz'
         datatemp = np.load(fileoi)
         trange = datatemp['oi_value']
+        trange[trange < 1] = 1
         trange_err = datatemp['oi_error']
+
 
         ################################################################################################################
 

@@ -360,6 +360,7 @@ for v in range(len(vars)):
             # calculate OI error (mean square error from nearby stations)
             oi_error_stn = (oimerge_stn[:, indym2] - observation_stn[:, indym2]) ** 2
             oi_error_grid = extrapolation(oi_error_stn, near_loc, near_dist, excflag=1)
+            oi_error_grid = oi_error_grid ** 0.5
             np.savez_compressed(fileoi_ym, oi_value=oi_value, oi_error=oi_error_grid, latitude=lattar, longitude=lontar)
 
             if vars[v] == 'prcp':
@@ -370,6 +371,7 @@ for v in range(len(vars)):
                 oi_error_stn = ( au.transform(oimerge_stn[:, indym2],tranexp,transmode) -
                                 au.transform(observation_stn[:, indym2], tranexp, transmode) ) ** 2
                 oi_error_grid = extrapolation(oi_error_stn, near_loc, near_dist, excflag=1)
+                oi_error_grid = oi_error_grid ** 0.5
                 oi_value = au.transform(oi_value, tranexp, transmode)
                 np.savez_compressed(fileoi_ym_boxcox, oi_value=oi_value, oi_error=oi_error_grid,
                                     latitude=lattar, longitude=lontar, tranexp=tranexp, transmode=transmode)

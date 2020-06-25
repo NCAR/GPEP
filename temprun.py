@@ -129,25 +129,18 @@ for v in range(len(vars)):
             indym1 = datem == y
             ndayy = np.sum(indym1)
             indym2 = (date_mm == m + 1) & (date_yyyy == y)
-            if os.path.isfile(fileoi_ym):
-                continue
-
-            datatemp=np.load(fileoi_ym_exist)
-            oi_value=datatemp['oi_value']
-
-            # calculate OI error (mean square error from nearby stations)
-            oi_error_stn = (oimerge_stn[:, indym2] - observation_stn[:, indym2]) ** 2
-            oi_error_grid = extrapolation(oi_error_stn, near_loc, near_dist, excflag=1)
-            np.savez_compressed(fileoi_ym, oi_value=oi_value, oi_error=oi_error_grid, latitude=lattar, longitude=lontar)
 
             if vars[v] == 'prcp':
                 # value and error in normal space
                 fileoi_ym_boxcox = path_oimerge + '/oimerge_' + vars[v] + str(y * 100 + m + 1) + '_boxcox.npz'
+                if os.path.isfile(fileoi_ym_boxcox):
+                    continue
                 transmode = 'box-cox'
                 tranexp = 4
                 oi_error_stn = ( au.transform(oimerge_stn[:, indym2],tranexp,transmode) -
                                 au.transform(observation_stn[:, indym2], tranexp, transmode) ) ** 2
                 oi_error_grid = extrapolation(oi_error_stn, near_loc, near_dist, excflag=1)
+                oi_error_grid = oi_error_grid ** 0.5
                 oi_value = au.transform(oi_value, tranexp, transmode)
                 np.savez_compressed(fileoi_ym_boxcox, oi_value=oi_value, oi_error=oi_error_grid,
                                     latitude=lattar, longitude=lontar, tranexp=tranexp, transmode=transmode)
