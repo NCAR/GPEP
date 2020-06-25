@@ -135,6 +135,10 @@ for v in range(len(vars)):
                 fileoi_ym_boxcox = path_oimerge + '/oimerge_' + vars[v] + str(y * 100 + m + 1) + '_boxcox.npz'
                 if os.path.isfile(fileoi_ym_boxcox):
                     continue
+                datatemp=np.load(fileoi_ym_exist)
+                oi_value=datatemp['oi_value']
+                oi_value[oi_value<0]=0
+
                 transmode = 'box-cox'
                 tranexp = 4
                 oi_error_stn = ( au.transform(oimerge_stn[:, indym2],tranexp,transmode) -
