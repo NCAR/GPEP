@@ -75,9 +75,6 @@ def transform(data, texp, mode):
     # mode: box-cox; power-law
     if mode == 'box-cox':
         datat = (data ** (1 / texp) - 1) / (1 / texp)
-        ind0 = data == 0
-        if np.sum(ind0)>0:
-            datat[ind0] = -3
     elif mode == 'power-law':
         datat = data ** (1 / texp)
     elif mode == 'none':
@@ -91,7 +88,6 @@ def retransform(data, texp, mode):
     # transform prcp to approximate normal distribution
     # mode: box-cox; power-law
     if mode == 'box-cox':
-        data[data < -3] = -3
         datat = (data / texp + 1) ** texp
     elif mode == 'power-law':
         data[data < 0] = 0

@@ -367,7 +367,7 @@ for v in range(len(vars)):
                 # value and error in normal space
                 fileoi_ym_boxcox = path_oimerge + '/oimerge_' + vars[v] + str(y * 100 + m + 1) + '_boxcox.npz'
                 transmode = 'box-cox'
-                tranexp = 4
+                tranexp = 3
                 oi_error_stn = ( au.transform(oimerge_stn[:, indym2],tranexp,transmode) -
                                 au.transform(observation_stn[:, indym2], tranexp, transmode) ) ** 2
                 oi_error_grid = extrapolation(oi_error_stn, near_loc, near_dist, excflag=1)

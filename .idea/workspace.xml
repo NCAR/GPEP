@@ -3,7 +3,49 @@
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/generate_batch.m" beforeDir="false" afterPath="$PROJECT_DIR$/generate_batch.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1979.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1980.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1981.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1982.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1983.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1984.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1985.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1986.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1987.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1988.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1989.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1990.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1991.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1992.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1993.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1994.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1995.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1996.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1997.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1998.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_1999.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2000.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2001.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2002.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2003.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2004.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2005.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2006.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2007.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2008.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2009.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2010.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2011.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2012.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2013.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2014.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2015.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2016.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2017.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_2018.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_commands" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_commands" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auxiliary.py" beforeDir="false" afterPath="$PROJECT_DIR$/auxiliary.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/s8_oimerge.py" beforeDir="false" afterPath="$PROJECT_DIR$/s8_oimerge.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/temprun.py" beforeDir="false" afterPath="$PROJECT_DIR$/temprun.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -289,12 +331,12 @@
       <screen x="0" y="23" width="1680" height="942" />
     </state>
     <state x="154" y="128" width="1136" height="738" key="dock-window-1/0.23.1680.942@0.23.1680.942" timestamp="1588185413708" />
-    <state x="815" y="226" width="670" height="674" key="search.everywhere.popup" timestamp="1592947354536">
-      <screen x="0" y="23" width="1680" height="944" />
+    <state x="815" y="227" width="670" height="676" key="search.everywhere.popup" timestamp="1593139791647">
+      <screen x="0" y="23" width="1680" height="947" />
     </state>
     <state x="815" y="226" width="670" height="672" key="search.everywhere.popup/0.23.1680.942@0.23.1680.942" timestamp="1592760001965" />
     <state x="815" y="226" width="670" height="674" key="search.everywhere.popup/0.23.1680.944@0.23.1680.944" timestamp="1592947354536" />
-    <state x="815" y="227" width="670" height="676" key="search.everywhere.popup/0.23.1680.947@0.23.1680.947" timestamp="1589145890020" />
+    <state x="815" y="227" width="670" height="676" key="search.everywhere.popup/0.23.1680.947@0.23.1680.947" timestamp="1593139791647" />
     <state x="815" y="228" width="670" height="676" key="search.everywhere.popup/0.23.1680.949@0.23.1680.949" timestamp="1588692212728" />
     <state x="815" y="228" width="670" height="680" key="search.everywhere.popup/0.23.1680.952@0.23.1680.952" timestamp="1589334479719" />
   </component>
