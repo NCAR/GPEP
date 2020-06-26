@@ -6,8 +6,8 @@ import datetime as dt
 import netCDF4 as nc
 
 # control parameters
-yearall = [1979,1979]
-monthall = [1,2]
+yearall = [2018,2018]
+monthall = [1,12]
 
 # ### Mac settings
 # path_oi = '/Users/localuser/Research/EMDNA/oimerge'
@@ -33,9 +33,9 @@ print('Read study area basic information')
 # load near station information
 datatemp = np.load(near_file_GMET)
 near_grid_prcpLoc = datatemp['near_grid_prcpLoc']
-near_grid_tempLoc = datatemp['near_grid_tempLoc']
+# near_grid_tempLoc = datatemp['near_grid_tempLoc']
 near_grid_prcpLoc = np.flipud(near_grid_prcpLoc)
-near_grid_tempLoc = np.flipud(near_grid_tempLoc)
+# near_grid_tempLoc = np.flipud(near_grid_tempLoc)
 
 # station location and attribute information
 # stninfo: [ stations, 1/lat/lon/elev/slope_ns/slope_we ]
@@ -119,31 +119,31 @@ for year in range(yearall[0],yearall[1]+1):
         # derive max value for each grid pixels
         # load station data
         prcpstn_ym = prcpstn[:, indym]
-        tmeanstn_ym = prcpstn[:, indym]
-        trangestn_ym = prcpstn[:, indym]
+        # tmeanstn_ym = prcpstn[:, indym]
+        # trangestn_ym = prcpstn[:, indym]
 
         prcp_max = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
-        tmean_max = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
-        trange_max = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
-        prcp_min = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
-        tmean_min = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
-        trange_min = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
+        # tmean_max = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
+        # trange_max = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
+        # prcp_min = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
+        # tmean_min = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
+        # trange_min = np.nan * np.zeros([nrows, ncols, ntimes], dtype=np.float32)
         for r in range(nrows):
             for c in range(ncols):
                 if near_grid_prcpLoc[r, c, 0] > -1:
                     nearloci = near_grid_prcpLoc[r, c, :]
                     nearloci = nearloci[nearloci > -1]
                     prcp_max[r, c, :] = np.nanmax(prcpstn_ym[nearloci, :], axis=0)
-                    prcp_min[r, c, :] = np.nanmin(prcpstn_ym[nearloci, :], axis=0)
-                if near_grid_tempLoc[r, c, 0] > -1:
-                    nearloci = near_grid_tempLoc[r, c, :]
-                    nearloci = nearloci[nearloci > -1]
-                    tmean_max[r, c, :] = np.nanmax(tmeanstn_ym[nearloci, :], axis=0)
-                    trange_max[r, c, :] = np.nanmax(trangestn_ym[nearloci, :], axis=0)
-                    tmean_min[r, c, :] = np.nanmin(tmeanstn_ym[nearloci, :], axis=0)
-                    trange_min[r, c, :] = np.nanmin(trangestn_ym[nearloci, :], axis=0)
-        prcp_max = au.transform(prcp_max, 4, 'box-cox')
-        prcp_min = au.transform(prcp_min, 4, 'box-cox')
+                    # prcp_min[r, c, :] = np.nanmin(prcpstn_ym[nearloci, :], axis=0)
+                # if near_grid_tempLoc[r, c, 0] > -1:
+                #     nearloci = near_grid_tempLoc[r, c, :]
+                #     nearloci = nearloci[nearloci > -1]
+                #     tmean_max[r, c, :] = np.nanmax(tmeanstn_ym[nearloci, :], axis=0)
+                #     trange_max[r, c, :] = np.nanmax(trangestn_ym[nearloci, :], axis=0)
+                #     tmean_min[r, c, :] = np.nanmin(tmeanstn_ym[nearloci, :], axis=0)
+                #     trange_min[r, c, :] = np.nanmin(trangestn_ym[nearloci, :], axis=0)
+        prcp_max = au.transform(prcp_max, 3, 'box-cox')
+        # prcp_min = au.transform(prcp_min, 3, 'box-cox')
 
         ################################################################################################################
 
@@ -193,29 +193,29 @@ for year in range(yearall[0],yearall[1]+1):
         # constrain error value range because sometimes anomalous values will result in unrealistic errors
         # this is actually a very basic control with large value range allowed for error
 
-        lim1 = (prcp - prcp_max) ** 2
-        lim2 = (prcp - prcp_min) ** 2
-        ind = lim1 < lim2
-        lim = lim1
-        lim[ind] = lim2[ind]
-        ind = prcp_err > lim
-        prcp_err[ind] = lim[ind]
-
-        lim1 = (tmean - tmean_max) ** 2
-        lim2 = (tmean - tmean_min) ** 2
-        ind = lim1 < lim2
-        lim = lim1
-        lim[ind] = lim2[ind]
-        ind = tmean_err > lim
-        tmean_err[ind] = lim[ind]
-
-        lim1 = np.abs(trange - trange_max)
-        lim2 = np.abs(trange - trange_min)
-        ind = lim1 < lim2
-        lim = lim1
-        lim[ind] = lim2[ind]
-        ind = trange_err > lim
-        trange_err[ind] = lim[ind]
+        # lim1 = (prcp - prcp_max)
+        # lim2 = (prcp - prcp_min)
+        # ind = lim1 < lim2
+        # lim = lim1
+        # lim[ind] = lim2[ind]
+        # ind = prcp_err > lim
+        # prcp_err[ind] = lim[ind]
+        #
+        # lim1 = np.abs(tmean - tmean_max)
+        # lim2 = np.abs(tmean - tmean_min)
+        # ind = lim1 < lim2
+        # lim = lim1
+        # lim[ind] = lim2[ind]
+        # ind = tmean_err > lim
+        # tmean_err[ind] = lim[ind]
+        #
+        # lim1 = np.abs(trange - trange_max)
+        # lim2 = np.abs(trange - trange_min)
+        # ind = lim1 < lim2
+        # lim = lim1
+        # lim[ind] = lim2[ind]
+        # ind = trange_err > lim
+        # trange_err[ind] = lim[ind]
 
         ################################################################################################################
 
