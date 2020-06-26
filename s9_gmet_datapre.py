@@ -6,7 +6,7 @@ import datetime as dt
 import netCDF4 as nc
 
 # control parameters
-yearall = [2018,2018]
+yearall = [2016, 2017]
 monthall = [1,12]
 
 # ### Mac settings
