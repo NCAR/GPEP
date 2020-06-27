@@ -4,9 +4,12 @@ import auxiliary as au
 from calendar import monthrange
 import datetime as dt
 import netCDF4 as nc
+import sys
+
+year=int(sys.argv[1])
 
 # control parameters
-yearall = [2016, 2017]
+yearall = [year, year]
 monthall = [1,12]
 
 # ### Mac settings
