@@ -27,8 +27,11 @@ near_file_GMET = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stn_reg_aftercheck
 gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_aftercheck.npz'
 FileStnInfo = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/stnlist_whole.txt'  # station basic information (lists)
 FileGridInfo = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/gridinfo_whole.nc'  # study area information
+FileCorr_ratio = '/datastore/GLOBALWATER/CommonData/EMDNA_new/PBCOR_V1.0/CHELSA_V12_NA_corratio.npz' # if undercatch is corrected
 ### Plato settings
 outpath = '/home/gut428/GMET_OIinput'
+
+corrflag = 1 # 1: correction; 0: No
 
 ########################################################################################################################
 
@@ -83,6 +86,14 @@ date_ymd = datatemp['date_ymd']
 del datatemp
 date_yyyy = (date_ymd/10000).astype(int)
 date_mm = (np.mod(date_ymd, 10000)/100).astype(int)
+
+########################################################################################################################
+
+if corrflag == 1:
+    datatemp = np.load(FileCorr_ratio)
+    corr_ratio=datatemp['corr_ratio']
+    corr_ratio[corr_ratio < 0.1] = 0.1
+    corr_ratio[corr_ratio > 10] = 10
 
 ########################################################################################################################
 
@@ -145,6 +156,12 @@ for year in range(yearall[0],yearall[1]+1):
                 #     trange_max[r, c, :] = np.nanmax(trangestn_ym[nearloci, :], axis=0)
                 #     tmean_min[r, c, :] = np.nanmin(tmeanstn_ym[nearloci, :], axis=0)
                 #     trange_min[r, c, :] = np.nanmin(trangestn_ym[nearloci, :], axis=0)
+        if corrflag == 1:
+            corr_ratio_max = corr_ratio.copy()
+            corr_ratio_max[corr_ratio_max < 1] = 1
+            corr_ratio_max[corr_ratio_max > 3] = 3
+            for d in range(ntimes):
+                prcp_max[:, :, d] = prcp_max[:, :, d] * corr_ratio[:, :, month - 1]
         prcp_max = au.transform(prcp_max, 3, 'box-cox')
         # prcp_min = au.transform(prcp_min, 3, 'box-cox')
 
@@ -166,18 +183,33 @@ for year in range(yearall[0],yearall[1]+1):
         pop = datatemp['oi_value']
         pop[pop<0] = 0
         pop[pop>1] = 1
-        # pop_err = datatemp['oi_error']
-        # temporal solution for pop
-        # fileoi = '/datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/pop-old/bmamerge_pop_' + \
-        #          str(year * 100 + month) + '.npz'
-        # datatemp = np.load(fileoi)
-        # pop = datatemp['bma_data']
-        # # pop_err = datatemp['oi_error']
 
-        fileoi = path_oi + '/oimerge_prcp' + str(year * 100 + month) + '_boxcox.npz'
-        datatemp = np.load(fileoi)
-        prcp = datatemp['oi_value']  # value in normal space
-        prcp_err = datatemp['oi_error']
+        if corrflag != 1:
+            fileoi = path_oi + '/oimerge_prcp' + str(year * 100 + month) + '_boxcox.npz'
+            datatemp = np.load(fileoi)
+            prcp = datatemp['oi_value']  # value in normal space
+            prcp_err = datatemp['oi_error']
+        elif corrflag == 1:
+            transmode = 'box-cox'
+            tranexp = 3
+            fileoi = path_oi + '/oimerge_prcp' + str(year * 100 + month) + '.npz'
+            datatemp = np.load(fileoi)
+            prcp = datatemp['oi_value']  # value in normal space
+            for d in range(ntimes):
+                prcp[:, :, d] =  prcp[:, :, d] * corr_ratio[:, :, month-1]
+            prcp = au.transform(prcp, tranexp, transmode)
+
+            fileoi = path_oi + '/oimerge_prcp' + str(year * 100 + month) + '_boxcox.npz'
+            datatemp = np.load(fileoi)
+            prcp_raw = datatemp['oi_value']  # value in normal space
+            prcp_err = datatemp['oi_error']
+            temp1 = (prcp + tranexp)
+            temp2 = (prcp_raw + tranexp)
+            ratio_err =  temp1 / temp2 # mean value change
+            ratio_err[temp2 == 0] = 1
+            ratio_err[ratio_err > 2] = 2
+            ratio_err[ratio_err < 0.5] = 0.5
+            prcp_err = prcp_err * ratio_err
 
         fileoi = path_oi + '/oimerge_tmean' + str(year * 100 + month) + '.npz'
         datatemp = np.load(fileoi)

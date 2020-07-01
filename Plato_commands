@@ -36,7 +36,7 @@ sbatch Plato_prcp_${y}.sh
 sbatch Plato_trange_${y}.sh
 done
 
-for y in {1980..2018..1}
+for y in {1979..2015..1}
 do
 sbatch Plato_${y}.sh
 done
