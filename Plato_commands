@@ -1,14 +1,14 @@
 sbatch --array=2-39%38 Plato_readown.sh
 sbatch --array=1-1%1 Plato_readown1.sh
 
-for (( y=2016; y<=2016; y++))
+for (( y=2010; y<=2015; y++))
 do
-for (( m=1; m<=1; m++ ))
+for (( m=1; m<=12; m++ ))
 do
 if ((m<10)); then
-sbatch Plato_ensemble_"$y"0"$m".sh
+sbatch gra_ens_"$y"0"$m".sh
 else
-sbatch Plato_ensemble_"$y""$m".sh
+sbatch gra_ens_"$y""$m".sh
 fi
 done
 done
@@ -36,7 +36,7 @@ sbatch Plato_prcp_${y}.sh
 sbatch Plato_trange_${y}.sh
 done
 
-for y in {1979..2015..1}
+for y in {1980..2018..1}
 do
 sbatch Plato_${y}.sh
 done
