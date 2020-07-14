@@ -66,7 +66,7 @@ do
 mv reacorrdata_trange_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/Reanalysis_corr/
 done
 
-for m in {2..12..1}
+for m in {1..12..1}
 do
 sbatch Plato_prcp${m}.sh
 sbatch Plato_tmean${m}.sh

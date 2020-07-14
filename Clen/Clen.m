@@ -100,7 +100,7 @@ if ~exist(outfileCC,'file')
     end
     CC=single(CC);
     DIST=single(DIST);
-    save(outfileCC,'CC','DIST','cctype','leastyear','radius','vars','-v7.3');
+    save(outfileCC,'CC','DIST','cctype','leastyear','searchradius','vars','-v7.3');
 else
     load(outfileCC,'CC','DIST','cctype','leastyear','searchradius','vars');
 end
