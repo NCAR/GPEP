@@ -4,7 +4,7 @@ vars={'prcp','tmean','trange'};
 
 for i=1:3
     for j=1:12
-        outfile=['Plato_',varvv,num2str(i),'.sh'];
+        outfile=['Plato_',vars{i},num2str(j),'.sh'];
         fidout=fopen(outfile,'w');
         fprintf(fidout,'#!/bin/bash\n');
         fprintf(fidout,['#SBATCH --job-name=clen\n']);
