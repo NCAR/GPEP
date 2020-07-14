@@ -2,31 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
-      <change afterPath="$PROJECT_DIR$/analysis/ens_validation/rank_histogram/data_pre.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/analysis/ens_validation/rank_histogram/gra_datapre.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_distribution/ens_map.py" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/ens_distribution/ens_map.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/1data_read_validate/GHCN_data_assemble.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/1data_read_validate/GHCN_read_plato.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/1data_read_validate/Plato_assemble.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/1data_read_validate/Plato_read.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/1data_read_validate/arcgridread_tgq.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/1data_read_validate/f_GHCN_read.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/2gauge_rea_match/Plato_match.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/2gauge_rea_match/arcgridread_tgq.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/2gauge_rea_match/f_reanalysis_extract.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/2gauge_rea_match/f_save_rea.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/2gauge_rea_match/gauge_rea_match.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/4extract_data/Plato_extract.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/4extract_data/andrew_extract.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/4extract_data/f_ens_data.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/4extract_data/f_ens_data_andrew.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/4extract_data/f_gauge_data.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/4extract_data/gra_extract.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/4extract_data/main_extract.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/4extract_data/main_extract.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/rank_histogram/rank_histogram.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/temp.py" beforeDir="false" afterPath="$PROJECT_DIR$/temp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Clen/generate_scripts.m" beforeDir="false" afterPath="$PROJECT_DIR$/Clen/generate_scripts.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plato_commands" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_commands" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/rank_histogram/data_pre.m" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/ens_validation/rank_histogram/data_pre.m" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

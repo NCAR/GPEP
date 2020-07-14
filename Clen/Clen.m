@@ -102,7 +102,7 @@ if ~exist(outfileCC,'file')
     DIST=single(DIST);
     save(outfileCC,'CC','DIST','cctype','leastyear','radius','vars','-v7.3');
 else
-    load(outfileCC,'CC','DIST','cctype','leastyear','radius','vars');
+    load(outfileCC,'CC','DIST','cctype','leastyear','searchradius','vars');
 end
 
 % fit

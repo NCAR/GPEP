@@ -68,5 +68,7 @@ done
 
 for m in {2..12..1}
 do
-sbatch Plato_${m}.sh
+sbatch Plato_prcp${m}.sh
+sbatch Plato_tmean${m}.sh
+sbatch Plato_trange${m}.sh
 done
