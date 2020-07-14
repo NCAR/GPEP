@@ -115,7 +115,7 @@ if ~exist(outfileFit,'file')
 
             % Set up fittype and options.
 %             ft = fittype( 'a*exp(-x/b)', 'independent', 'x', 'dependent', 'y' );
-            ft = fittype( 'aexp(-x/b)', 'independent', 'x', 'dependent', 'y' );
+            ft = fittype( 'a*exp(-x/b)', 'independent', 'x', 'dependent', 'y' );
             opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
             opts.Display = 'Off';
             if strcmp(vars{vv},'prcp')

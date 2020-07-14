@@ -11,4 +11,4 @@
 #! add the MATLAB module (as per BCp4)
 module load matlab/R2017b
 #! Run the job
-matlab -nodisplay -r Clen
+matlab -nodisplay -r Clen_daily
