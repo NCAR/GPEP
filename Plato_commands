@@ -1,14 +1,14 @@
 sbatch --array=2-39%38 Plato_readown.sh
 sbatch --array=1-1%1 Plato_readown1.sh
 
-for (( y=1979; y<=2009; y++))
+for (( y=1991; y<=1999; y++))
 do
 for (( m=1; m<=12; m++ ))
 do
 if ((m<10)); then
-sbatch gra_ens_"$y"0"$m".sh
+sbatch run_est_"$y"0"$m".sh
 else
-sbatch gra_ens_"$y""$m".sh
+sbatch run_est_"$y""$m".sh
 fi
 done
 done
@@ -66,9 +66,21 @@ do
 mv reacorrdata_trange_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/Reanalysis_corr/
 done
 
-for m in {1..12..1}
+for i in {2..82..1}
 do
-sbatch Plato_prcp${m}.sh
-sbatch Plato_tmean${m}.sh
-sbatch Plato_trange${m}.sh
+sbatch Plato_krm${i}.sh
+done
+
+
+for (( y=1983; y<=1985; y++))
+do
+for (( m=1; m<=12; m++ ))
+do
+echo "moving ${y}   ${m}"
+if ((m<10)); then
+mv /home/gut428/scratch/GMET/EMDNA_out/SCRF/scrf.${y}0${m}* /home/gut428/projects/rpp-kshook/gut428/EMDNA_v1/SCRF/
+else
+mv /home/gut428/scratch/GMET/EMDNA_out/SCRF/scrf.${y}${m}* /home/gut428/projects/rpp-kshook/gut428/EMDNA_v1/SCRF/
+fi
+done
 done

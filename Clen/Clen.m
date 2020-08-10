@@ -1,5 +1,6 @@
 % calcualte the spatial correlation lengths for each season
 function Clen(vars, monuse)
+
 Infile='/datastore/GLOBALWATER/CommonData/GapFill_new/RawStnData/AllGauge_QC.nc4';
 %Infile='/Users/localuser/Research/GapFill/AllGauge_QC.nc4';
 % vars={'prcp','tmean','trange'};
@@ -115,7 +116,6 @@ if ~exist(outfileFit,'file')
     
     % Set up fittype and options.
     ft1 = fittype( 'exp(-x/b)', 'independent', 'x', 'dependent', 'y' );
-    ft2 = fittype( 'a*exp(-x/b)', 'independent', 'x', 'dependent', 'y' );
     opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
     opts.Display = 'Off';
     if strcmp(vars,'prcp')
@@ -123,9 +123,17 @@ if ~exist(outfileFit,'file')
     else
         opts.StartPoint = 800;
     end
-    
-    % Fit model to data.
     [FIT1, gof1] = fit( xData, yData, ft1, opts );
+    
+    
+    ft2 = fittype( 'a*exp(-x/b)', 'independent', 'x', 'dependent', 'y' );
+    opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
+    opts.Display = 'Off';
+    if strcmp(vars,'prcp')
+        opts.StartPoint = [0.5, 150];
+    else
+        opts.StartPoint = [0.5, 800];
+    end
     [FIT2, gof2] = fit( xData, yData, ft2, opts );
     save(outfileFit,'FIT1','FIT2');
 else

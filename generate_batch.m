@@ -22,15 +22,16 @@ clc;clear
 % end
 % 
 for y=1979:2018
-    outfile=['Plato_',num2str(y),'.sh'];
+    outfile=['gra_',num2str(y),'.sh'];
     fidout=fopen(outfile,'w');
     fprintf(fidout,'#!/bin/bash\n');
-    fprintf(fidout,['#SBATCH --job-name=gmd',num2str(y),'\n']);
-    fprintf(fidout,['#SBATCH --time=0-2:00:00\n']);
-    fprintf(fidout,'#SBATCH --mem=10G\n');
+    fprintf(fidout,['#SBATCH --job-name=m2y',num2str(y),'\n']);
+    fprintf(fidout,'#SBATCH --account=rpp-kshook\n');
+    fprintf(fidout,['#SBATCH --time=1-12:00:00\n']);
+    fprintf(fidout,'#SBATCH --mem=60G\n');
     fprintf(fidout,'module load python/3.7.4\n');
-
-    fprintf(fidout,['srun python -u s9_gmet_datapre.py ',num2str(y),'\n']);
+    fprintf(fidout,'source ~/ENV/bin/activate\n');
+    fprintf(fidout,['srun python -u s10_month2year.py ',num2str(y),'\n']);
     %         fprintf(fidout,'rm *.out\n');
     fclose(fidout);
 end

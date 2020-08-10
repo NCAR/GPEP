@@ -10,7 +10,7 @@ import sys
 # setting: searching nearby stations
 nearstn_min = 20  # nearby stations: minimum number
 nearstn_max = 30  # nearby stations: maximum number
-search_radius = 400  # km. only search stations within this radius even nearstn_max cannot be reached
+search_radius = 100  # km. only search stations within this radius even nearstn_max cannot be reached
 max_dist = 100  # max_distance in distance-based weight calculation
 
 # input files
