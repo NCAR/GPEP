@@ -72,7 +72,7 @@ sbatch Plato_krm${i}.sh
 done
 
 
-for (( y=1983; y<=1985; y++))
+for (( y=1996; y<=2000; y++))
 do
 for (( m=1; m<=12; m++ ))
 do

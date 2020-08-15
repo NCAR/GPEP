@@ -2,14 +2,19 @@
 function Clen(vars, monuse)
 
 Infile='/datastore/GLOBALWATER/CommonData/GapFill_new/RawStnData/AllGauge_QC.nc4';
-%Infile='/Users/localuser/Research/GapFill/AllGauge_QC.nc4';
+% Infile='/Users/localuser/Research/GapFill/AllGauge_QC.nc4';
 % vars={'prcp','tmean','trange'};
 
 if ischar(monuse)
     monuse=str2double(monuse);
 end
 
-cctype='Pearson';
+if strcmp(vars,'prcp')
+    cctype='Pearson';
+else
+    cctype='Spearman';
+end
+
 leastyear=20;
 outfileCC=['CC_',cctype,'_',vars,'_',num2str(monuse),'.mat'];
 outfileFit=['Fit_',cctype,'.mat'];

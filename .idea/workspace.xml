@@ -2,75 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
-      <change afterPath="$PROJECT_DIR$/analysis/ens_validation/bss_crpss/bss_rpss.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/analysis/ens_validation/bss_crpss/gra_bsrpss.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gra_s10.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/s10_month2year.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Clen.m" beforeDir="false" afterPath="$PROJECT_DIR$/Clen/Clen.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_prcp1.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_prcp10.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_prcp11.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_prcp12.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_prcp2.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_prcp3.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_prcp4.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_prcp5.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_prcp6.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_prcp7.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_prcp8.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_prcp9.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_tmean1.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_tmean10.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_tmean11.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_tmean12.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_tmean2.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_tmean3.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_tmean4.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_tmean5.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_tmean6.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_tmean7.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_tmean8.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_tmean9.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_trange1.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_trange10.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_trange11.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_trange12.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_trange2.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_trange3.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_trange4.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_trange5.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_trange6.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_trange7.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_trange8.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Plato_trange9.sh" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Plato_commands" beforeDir="false" afterPath="$PROJECT_DIR$/Plato_commands" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_distribution/andrew_201606_prcp.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_distribution/ens_map.py" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/ens_distribution/ens_map.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_distribution/ens_plot.m" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/ens_distribution/ens_plot.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/data_pre/4extract_data/main_extract.py" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/ens_validation/data_pre/4extract_data/main_extract.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/rank_histogram/data_pre.m" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/ens_validation/rank_histogram/data_pre.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/rank_histogram/data_pre.py" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/ens_validation/rank_histogram/data_pre.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/rank_histogram/plot_rank.m" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/ens_validation/rank_histogram/plot_rank.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/reliability_diagram/Plato_relia.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/reliability_diagram/f_discrimination_data.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/reliability_diagram/f_probability_data.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/reliability_diagram/f_reliability_data.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/reliability_diagram/plot_reliability_discrimination.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/reliability_diagram/tight_subplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/gain_vs_distance/gain_vs_dist_oirea.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/gain_vs_distance/gain_vs_dist_oireg.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/gain_vs_distance/gain_vs_dist_oiregrea.png" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/oi_vsreg_rea/gain_vs_distance/gain_vs_dist_oiregrea.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/gain_vs_distance/oi_vs_rea.m" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/oi_vsreg_rea/gain_vs_distance/oi_vs_rea.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/gain_vs_distance/oi_vs_reg.m" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/oi_vsreg_rea/gain_vs_distance/oi_vs_reg.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/gain_vs_distance/oi_vsreg_rea.m" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/oi_vsreg_rea/gain_vs_distance/oi_vsreg_rea.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/metric_main.m" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/metric_main.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/oi_vs_rea.png" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/oi_vs_rea.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/oi_vs_reg.png" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/oi_vs_reg.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/oi_vsreg_rea.m" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/oi_vsreg_rea.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/generate_batch.m" beforeDir="false" afterPath="$PROJECT_DIR$/generate_batch.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/s2_find_nearstn.py" beforeDir="false" afterPath="$PROJECT_DIR$/s2_find_nearstn.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/temp.py" beforeDir="false" afterPath="$PROJECT_DIR$/temp.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
