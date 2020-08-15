@@ -10,9 +10,9 @@ if ischar(monuse)
 end
 
 if strcmp(vars,'prcp')
-    cctype='Pearson';
-else
     cctype='Spearman';
+else
+    cctype='Pearson';
 end
 
 leastyear=20;
