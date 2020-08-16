@@ -17,7 +17,7 @@ end
 
 leastyear=20;
 outfileCC=['CC_',cctype,'_',vars,'_',num2str(monuse),'.mat'];
-outfileFit=['Fit_',cctype,'.mat'];
+outfileFit=['Fit_',cctype,'_',vars,'_',num2str(monuse),'.mat'];
 if strcmp(vars,'prcp')
     searchradius=1000;
 elseif strcmp(vars,'tmean')
