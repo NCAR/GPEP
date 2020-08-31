@@ -81,10 +81,10 @@ lattarm = ncfid.variables['latitude'][:].data
 lattarm = np.flipud(lattarm)
 lontarm = ncfid.variables['longitude'][:].data
 ncfid.close()
-lontarm[np.isnan(mask)] = np.nan
-lattarm[np.isnan(mask)] = np.nan
 lontar = lontarm[0, :]
 lattar = lattarm[:, 0]
+lontarm[np.isnan(mask)] = np.nan
+lattarm[np.isnan(mask)] = np.nan
 
 # load observations for all stations
 datatemp = np.load(gmet_stndatafile)
@@ -365,6 +365,7 @@ for v in range(len(vars)):
 
             if vars[v] == 'prcp':
                 # value and error in normal space
+                # transformation using fixed parameters
                 fileoi_ym_boxcox = path_oimerge + '/oimerge_' + vars[v] + str(y * 100 + m + 1) + '_boxcox.npz'
                 transmode = 'box-cox'
                 tranexp = 3

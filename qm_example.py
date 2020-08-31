@@ -1,3 +1,4 @@
+# example for performing quantile mapping correction
 import numpy as np
 
 def empirical_cdf(data, prob):

@@ -159,7 +159,7 @@ for year in range(yearall[0],yearall[1]+1):
         if corrflag == 1:
             corr_ratio_max = corr_ratio.copy()
             corr_ratio_max[corr_ratio_max < 1] = 1
-            corr_ratio_max[corr_ratio_max > 3] = 3
+            corr_ratio_max[corr_ratio_max > 5] = 5 # set a smaller upper bound for prcp_max
             for d in range(ntimes):
                 prcp_max[:, :, d] = prcp_max[:, :, d] * corr_ratio[:, :, month - 1]
         prcp_max = au.transform(prcp_max, 3, 'box-cox')
@@ -194,7 +194,7 @@ for year in range(yearall[0],yearall[1]+1):
             tranexp = 3
             fileoi = path_oi + '/oimerge_prcp' + str(year * 100 + month) + '.npz'
             datatemp = np.load(fileoi)
-            prcp = datatemp['oi_value']  # value in normal space
+            prcp = datatemp['oi_value']  # value in natural space
             for d in range(ntimes):
                 prcp[:, :, d] =  prcp[:, :, d] * corr_ratio[:, :, month-1]
             prcp = au.transform(prcp, tranexp, transmode)

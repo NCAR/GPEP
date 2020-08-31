@@ -1,0 +1,79 @@
+sbatch --array=2-39%38 Plato_readown.sh
+sbatch --array=1-1%1 Plato_readown1.sh
+
+for (( y=2011; y<=2018; y++))
+do
+for (( m=1; m<=12; m++ ))
+do
+if ((m<10)); then
+sbatch run_est_"$y"0"$m".sh
+else
+sbatch run_est_"$y""$m".sh
+fi
+done
+done
+
+
+for (( y=2017; y<=2017; y++))
+do
+mv output_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout_update
+mv error_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/PyGMETout_update
+done
+
+for (( y=2001; y<=2006; y++))
+do
+mv GWRLS_corr/reacorrdata_trange_${y}* /datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/GWRLS_corr
+done
+
+for (( y=2013; y<=2018; y++))
+do
+mv GWRLSBMA_merge/bmamerge_trange_${y}* /datastore/GLOBALWATER/CommonData/EMDNA_new/ReanalysisCorrMerge/GWRLSBMA_merge
+done
+
+for (( y=1980; y<=2018; y++))
+do
+sbatch Plato_prcp_${y}.sh
+sbatch Plato_trange_${y}.sh
+done
+
+for y in {1980..2018..1}
+do
+sbatch gra_${y}.sh
+done
+
+
+for y in {1979..2018..1}
+do
+FILE=/home/gut428/ReanalysisCorrMerge/Reanalysis_corr/reacorrdata_prcp_${y}12.npz
+if test -f "$FILE"; then
+mv "$FILE" /datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/Reanalysis_corr/
+fi
+done
+
+FILE=/etc/resolv.conf
+if test -f "$FILE"; then
+    echo "$FILE exist"
+fi
+
+
+for y in 1980 1983 1987 1991 1995 1999 2003 2007 2011 2017
+do
+mv reacorrdata_prcp_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/Reanalysis_corr/
+done
+
+for y in 1981 1984 1988 1992 1996 2000 2004 2008 2012 2016
+do
+mv reacorrdata_trange_${y}* /datastore/GLOBALWATER/CommonData/EMDNA/ReanalysisCorrMerge/Reanalysis_corr/
+done
+
+for i in {2..20..1}
+do
+sbatch trans_${i}.sh
+done
+
+
+for (( y=1979; y<=2018; y++))
+do
+ls scrf.${y}* |wc -w
+done
+
