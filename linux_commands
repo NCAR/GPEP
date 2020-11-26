@@ -77,3 +77,21 @@ do
 ls scrf.${y}* |wc -w
 done
 
+for (( y=1979; y<=2018; y++))
+do
+mv /home/gut428/scratch/GMET/EMDNA_out/Estimate_spearman/${y}/EMDNA_${y}.* /home/gut428/projects/rpp-kshook/gut428/EMDNA_v1/Estimate/${y}
+mv /home/gut428/scratch/GMET/EMDNA_out/Estimate_spearman/${y}/EMDNA_${y}_* /home/gut428/projects/rpp-kshook/gut428/EMDNA_v1/Estimate/${y}
+done
+
+
+for (( y=1901; y<=1978; y++))
+do
+mkdir ${y}
+tar -xvf ${y}.tar.gz -C ${y}
+done
+
+for i in {1981..2019..1}
+do
+sbatch dt2m_${i}.sh
+sbatch dtp_${i}.sh
+done
