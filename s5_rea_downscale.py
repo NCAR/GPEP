@@ -495,102 +495,102 @@ else:
 
 # downscale to station points
 # original station data
-# datatemp = np.load(gmet_stndatafile)
-# prcp_stn0 = datatemp['prcp_stn'][:, 0]
-# tmean_stn0 = datatemp['tmean_stn'][:, 0]
-# del datatemp
-#
-# if not os.path.isfile(file_readownstn):
-#     prcp_readown = np.nan * np.zeros([nstn, ndays], dtype=np.float32)
-#     tmean_readown = np.nan * np.zeros([nstn, ndays], dtype=np.float32)
-#     trange_readown = np.nan * np.zeros([nstn, ndays], dtype=np.float32)
-#     for y in range(year[0], year[1] + 1):
-#         indy = date_number['yyyy'] == y
-#         print('Downscale to station: year', y)
-#
-#         # produce TLR matrix for this year
-#         if downtostn_method == 'TLR2':
-#             TLRy = np.zeros([np.shape(TLRuse)[0], np.shape(TLRuse)[1], np.sum(indy)], dtype=np.float32)
-#             mmy = date_number['mm'][indy]
-#             for i in range(np.sum(indy)):
-#                 TLRy[:, :, i] = TLRuse[:, :, mmy[i] - 1]
-#         elif downtostn_method == 'TLR1':
-#             TLRy = -6.5 * np.ones([len(latori), len(lonori), np.sum(indy)], dtype=np.float32)
-#         else:
-#             TLRy = np.nan
-#
-#         # star downscaling
-#         file_readownstny = outpath_ds + '/MERRA2_downto_stn_' + downtostn_method + str(y) + '.npz'
-#         if os.path.isfile(file_readownstny):
-#             print('file exists. loading')
-#             datatemp = np.load(file_readownstny)
-#             prcptar = datatemp['prcptar']
-#             tmintar = datatemp['tmintar']
-#             tmaxtar = datatemp['tmaxtar']
-#         else:
-#             # downscaling: prcp
-#             infile = inpath_raw + '/MERRA2_prcp_' + str(y) + '.mat'
-#             if not os.path.isfile(infile):
-#                 print(infile,'does not exist')
-#                 continue
-#             datatemp = {}
-#             f = h5py.File(infile, 'r')
-#             for k, v in f.items():
-#                 datatemp[k] = np.array(v)
-#             dataori = datatemp['data']
-#             dataori = np.transpose(dataori, [2, 1, 0])
-#             del datatemp
-#             f.close()
-#             if downtostn_method == 'TLR1' or downtostn_method == 'TLR2':
-#                 prcptar = readownscale_tostn(dataori, latori, lonori, demori, dist2coast_ori, rowse, colse, weight,
-#                                              stn_row, stn_col, prcp_stn0, 'nearest', stn_lle, dist2coast_stn, TLRy)
-#             else:
-#                 prcptar = readownscale_tostn(dataori, latori, lonori, demori, dist2coast_ori, rowse, colse, weight,
-#                                              stn_row, stn_col, prcp_stn0, downtostn_method, stn_lle, dist2coast_stn,
-#                                              TLRy)
-#
-#             # downscaling: tmin/tmax
-#             infile = inpath_raw + '/MERRA2_tmin_' + str(y) + '.mat'
-#             if not os.path.isfile(infile):
-#                 print(infile,'does not exist')
-#                 continue
-#             datatemp = {}
-#             f = h5py.File(infile, 'r')
-#             for k, v in f.items():
-#                 datatemp[k] = np.array(v)
-#             dataori = datatemp['data']
-#             dataori = np.transpose(dataori, [2, 1, 0])
-#             del datatemp
-#             f.close()
-#             tmintar = readownscale_tostn(dataori, latori, lonori, demori, dist2coast_ori, rowse, colse, weight,
-#                                          stn_row, stn_col, tmean_stn0, downtostn_method, stn_lle, dist2coast_stn, TLRy)
-#
-#             # tmax downscaling
-#             infile = inpath_raw + '/MERRA2_tmax_' + str(y) + '.mat'
-#             if not os.path.isfile(infile):
-#                 print(infile,'does not exist')
-#                 continue
-#             datatemp = {}
-#             f = h5py.File(infile, 'r')
-#             for k, v in f.items():
-#                 datatemp[k] = np.array(v)
-#             dataori = datatemp['data']
-#             dataori = np.transpose(dataori, [2, 1, 0])
-#             del datatemp
-#             f.close()
-#             tmaxtar = readownscale_tostn(dataori, latori, lonori, demori, dist2coast_ori, rowse, colse, weight,
-#                                          stn_row, stn_col, tmean_stn0, downtostn_method, stn_lle, dist2coast_stn, TLRy)
-#
-#             np.savez_compressed(file_readownstny, prcptar=prcptar, tmintar=tmintar, tmaxtar=tmaxtar)
-#
-#         # merge
-#         prcp_readown[:, indy] = prcptar
-#         tmean_readown[:, indy] = (tmintar + tmaxtar) / 2
-#         trange_readown[:, indy] = np.abs(tmaxtar - tmintar)
-#     np.savez_compressed(file_readownstn, prcp_readown=prcp_readown, tmean_readown=tmean_readown,
-#                         trange_readown=trange_readown,
-#                         latitude=lattar, longitude=lontar, stn_ID=stn_ID, stn_lle=stn_lle, stn_row=stn_row,
-#                         stn_col=stn_col)
+datatemp = np.load(gmet_stndatafile)
+prcp_stn0 = datatemp['prcp_stn'][:, 0]
+tmean_stn0 = datatemp['tmean_stn'][:, 0]
+del datatemp
+
+if not os.path.isfile(file_readownstn):
+    prcp_readown = np.nan * np.zeros([nstn, ndays], dtype=np.float32)
+    tmean_readown = np.nan * np.zeros([nstn, ndays], dtype=np.float32)
+    trange_readown = np.nan * np.zeros([nstn, ndays], dtype=np.float32)
+    for y in range(year[0], year[1] + 1):
+        indy = date_number['yyyy'] == y
+        print('Downscale to station: year', y)
+
+        # produce TLR matrix for this year
+        if downtostn_method == 'TLR2':
+            TLRy = np.zeros([np.shape(TLRuse)[0], np.shape(TLRuse)[1], np.sum(indy)], dtype=np.float32)
+            mmy = date_number['mm'][indy]
+            for i in range(np.sum(indy)):
+                TLRy[:, :, i] = TLRuse[:, :, mmy[i] - 1]
+        elif downtostn_method == 'TLR1':
+            TLRy = -6.5 * np.ones([len(latori), len(lonori), np.sum(indy)], dtype=np.float32)
+        else:
+            TLRy = np.nan
+
+        # star downscaling
+        file_readownstny = outpath_ds + '/MERRA2_downto_stn_' + downtostn_method + str(y) + '.npz'
+        if os.path.isfile(file_readownstny):
+            print('file exists. loading')
+            datatemp = np.load(file_readownstny)
+            prcptar = datatemp['prcptar']
+            tmintar = datatemp['tmintar']
+            tmaxtar = datatemp['tmaxtar']
+        else:
+            # downscaling: prcp
+            infile = inpath_raw + '/MERRA2_prcp_' + str(y) + '.mat'
+            if not os.path.isfile(infile):
+                print(infile,'does not exist')
+                continue
+            datatemp = {}
+            f = h5py.File(infile, 'r')
+            for k, v in f.items():
+                datatemp[k] = np.array(v)
+            dataori = datatemp['data']
+            dataori = np.transpose(dataori, [2, 1, 0])
+            del datatemp
+            f.close()
+            if downtostn_method == 'TLR1' or downtostn_method == 'TLR2':
+                prcptar = readownscale_tostn(dataori, latori, lonori, demori, dist2coast_ori, rowse, colse, weight,
+                                             stn_row, stn_col, prcp_stn0, 'nearest', stn_lle, dist2coast_stn, TLRy)
+            else:
+                prcptar = readownscale_tostn(dataori, latori, lonori, demori, dist2coast_ori, rowse, colse, weight,
+                                             stn_row, stn_col, prcp_stn0, downtostn_method, stn_lle, dist2coast_stn,
+                                             TLRy)
+
+            # downscaling: tmin/tmax
+            infile = inpath_raw + '/MERRA2_tmin_' + str(y) + '.mat'
+            if not os.path.isfile(infile):
+                print(infile,'does not exist')
+                continue
+            datatemp = {}
+            f = h5py.File(infile, 'r')
+            for k, v in f.items():
+                datatemp[k] = np.array(v)
+            dataori = datatemp['data']
+            dataori = np.transpose(dataori, [2, 1, 0])
+            del datatemp
+            f.close()
+            tmintar = readownscale_tostn(dataori, latori, lonori, demori, dist2coast_ori, rowse, colse, weight,
+                                         stn_row, stn_col, tmean_stn0, downtostn_method, stn_lle, dist2coast_stn, TLRy)
+
+            # tmax downscaling
+            infile = inpath_raw + '/MERRA2_tmax_' + str(y) + '.mat'
+            if not os.path.isfile(infile):
+                print(infile,'does not exist')
+                continue
+            datatemp = {}
+            f = h5py.File(infile, 'r')
+            for k, v in f.items():
+                datatemp[k] = np.array(v)
+            dataori = datatemp['data']
+            dataori = np.transpose(dataori, [2, 1, 0])
+            del datatemp
+            f.close()
+            tmaxtar = readownscale_tostn(dataori, latori, lonori, demori, dist2coast_ori, rowse, colse, weight,
+                                         stn_row, stn_col, tmean_stn0, downtostn_method, stn_lle, dist2coast_stn, TLRy)
+
+            np.savez_compressed(file_readownstny, prcptar=prcptar, tmintar=tmintar, tmaxtar=tmaxtar)
+
+        # merge
+        prcp_readown[:, indy] = prcptar
+        tmean_readown[:, indy] = (tmintar + tmaxtar) / 2
+        trange_readown[:, indy] = np.abs(tmaxtar - tmintar)
+    np.savez_compressed(file_readownstn, prcp_readown=prcp_readown, tmean_readown=tmean_readown,
+                        trange_readown=trange_readown,
+                        latitude=lattar, longitude=lontar, stn_ID=stn_ID, stn_lle=stn_lle, stn_row=stn_row,
+                        stn_col=stn_col)
 
 ########################################################################################################################
 

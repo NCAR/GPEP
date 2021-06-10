@@ -161,7 +161,7 @@ for year in range(yearall[0],yearall[1]+1):
             corr_ratio_max[corr_ratio_max < 1] = 1
             corr_ratio_max[corr_ratio_max > 5] = 5 # set a smaller upper bound for prcp_max
             for d in range(ntimes):
-                prcp_max[:, :, d] = prcp_max[:, :, d] * corr_ratio[:, :, month - 1]
+                prcp_max[:, :, d] = prcp_max[:, :, d] * corr_ratio_max[:, :, month - 1]
         prcp_max = au.transform(prcp_max, 3, 'box-cox')
         # prcp_min = au.transform(prcp_min, 3, 'box-cox')
 

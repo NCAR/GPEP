@@ -2,28 +2,20 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
-      <change afterPath="$PROJECT_DIR$/analysis/ens_validation/climPoP/pop_evaluate.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/analysis/ens_validation/timeseries/timeseries.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gra_s10.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/m_lwlr.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/s11_finalcheck.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/addcoords_EMDNA.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/graham_addcoords.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/s13_create_example_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/slurm_gra_s3.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analysis/emdna_gif/plot_gif.m" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/emdna_gif/plot_gif.m" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/analysis/ens_distribution/ens_map.png" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/ens_distribution/ens_map.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/analysis/ens_distribution/ens_plot.m" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/ens_distribution/ens_plot.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/oi_vs_rea.png" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/oi_vs_rea.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/oi_vs_reg.png" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/oi_vs_reg.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/oi_vsreg_rea.m" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/oi_vsreg_rea.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/prcp_metric_map.png" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/rea_corrmerge/prcp_metric_map.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/prcp_plot.m" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/rea_corrmerge/prcp_plot.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/tmean_metric_map.png" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/rea_corrmerge/tmean_metric_map.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/tmean_plot.m" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/rea_corrmerge/tmean_plot.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/trange_metric_map.png" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/rea_corrmerge/trange_metric_map.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/trange_plot.m" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/rea_corrmerge/trange_plot.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/schematic_subfig/corr_ratio.png" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/schematic_subfig/corr_ratio.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/schematic_subfig/correctionratio_subfig.m" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/schematic_subfig/correctionratio_subfig.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/generate_slurm.m" beforeDir="false" afterPath="$PROJECT_DIR$/generate_slurm.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/linux_commands" beforeDir="false" afterPath="$PROJECT_DIR$/linux_commands" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/s10_month2year.py" beforeDir="false" afterPath="$PROJECT_DIR$/s10_month2year.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/bss_crpss/gra_bsrpss.sh" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/ens_validation/bss_crpss/gra_bsrpss.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/regression.py" beforeDir="false" afterPath="$PROJECT_DIR$/regression.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/s12_subsetting.py" beforeDir="false" afterPath="$PROJECT_DIR$/s12_subsetting.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/s5_rea_downscale.py" beforeDir="false" afterPath="$PROJECT_DIR$/s5_rea_downscale.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/s9_gmet_datapre.py" beforeDir="false" afterPath="$PROJECT_DIR$/s9_gmet_datapre.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slurm_gra_subset.sh" beforeDir="false" afterPath="$PROJECT_DIR$/slurm_gra_subset.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/testcode.py" beforeDir="false" afterPath="$PROJECT_DIR$/testcode.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -65,7 +57,7 @@
       <recent name="$PROJECT_DIR$/analysis/ens_validation/4extract_data" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ERA5land_download">
+  <component name="RunManager" selected="Python.s3_stn_regression_newpredictor">
     <configuration name="ERA5land_download" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="pyGMET" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -108,27 +100,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="reanalysis_correction_merge_old" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="pyGMET" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/reanalysis_correction_merge_old.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="reanalysis_pop" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="pyGMET" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -142,6 +113,27 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/reanalysis_pop.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="s3_stn_regression_newpredictor" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="pyGMET" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/s3_stn_regression_newpredictor.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -173,11 +165,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.s3_stn_regression_newpredictor" />
         <item itemvalue="Python.ERA5land_download" />
         <item itemvalue="Python.ERA5land_download_bymonth" />
         <item itemvalue="Python.temp" />
         <item itemvalue="Python.reanalysis_pop" />
-        <item itemvalue="Python.reanalysis_correction_merge_old" />
       </list>
     </recent_temporary>
   </component>
@@ -195,76 +187,10 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
-    <state x="511" y="354" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1597972407489">
-      <screen x="0" y="23" width="1680" height="944" />
+    <state x="384" y="30" key="CommitChangelistDialog2" timestamp="1620078538366">
+      <screen x="0" y="23" width="1440" height="805" />
     </state>
-    <state x="511" y="353" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.23.1680.942@0.23.1680.942" timestamp="1592524797958" />
-    <state x="511" y="354" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.23.1680.944@0.23.1680.944" timestamp="1597972407489" />
-    <state x="473" y="99" key="CommitChangelistDialog2" timestamp="1594239366937">
-      <screen x="0" y="23" width="1680" height="949" />
-    </state>
-    <state x="473" y="99" key="CommitChangelistDialog2/0.23.1680.949@0.23.1680.949" timestamp="1594239366937" />
-    <state x="170" y="103" key="DiffContextDialog" timestamp="1594239365407">
-      <screen x="0" y="23" width="1680" height="949" />
-    </state>
-    <state x="170" y="103" key="DiffContextDialog/0.23.1680.949@0.23.1680.949" timestamp="1594239365407" />
-    <state width="1117" height="161" key="GridCell.Tab.0.bottom" timestamp="1600118801947">
-      <screen x="0" y="23" width="1680" height="944" />
-    </state>
-    <state width="1390" height="70" key="GridCell.Tab.0.bottom/0.23.1680.942@0.23.1680.942" timestamp="1592524797999" />
-    <state width="1117" height="161" key="GridCell.Tab.0.bottom/0.23.1680.944@0.23.1680.944" timestamp="1600118801947" />
-    <state width="1117" height="161" key="GridCell.Tab.0.bottom/0.23.1680.947@0.23.1680.947" timestamp="1599623263758" />
-    <state width="1117" height="161" key="GridCell.Tab.0.bottom/0.23.1680.949@0.23.1680.949" timestamp="1599502996069" />
-    <state width="1117" height="161" key="GridCell.Tab.0.center" timestamp="1600118801946">
-      <screen x="0" y="23" width="1680" height="944" />
-    </state>
-    <state width="1390" height="70" key="GridCell.Tab.0.center/0.23.1680.942@0.23.1680.942" timestamp="1592524797998" />
-    <state width="1117" height="161" key="GridCell.Tab.0.center/0.23.1680.944@0.23.1680.944" timestamp="1600118801946" />
-    <state width="1117" height="161" key="GridCell.Tab.0.center/0.23.1680.947@0.23.1680.947" timestamp="1599623263756" />
-    <state width="1117" height="161" key="GridCell.Tab.0.center/0.23.1680.949@0.23.1680.949" timestamp="1599502996068" />
-    <state width="1117" height="161" key="GridCell.Tab.0.left" timestamp="1600118801946">
-      <screen x="0" y="23" width="1680" height="944" />
-    </state>
-    <state width="1390" height="70" key="GridCell.Tab.0.left/0.23.1680.942@0.23.1680.942" timestamp="1592524797998" />
-    <state width="1117" height="161" key="GridCell.Tab.0.left/0.23.1680.944@0.23.1680.944" timestamp="1600118801946" />
-    <state width="1117" height="161" key="GridCell.Tab.0.left/0.23.1680.947@0.23.1680.947" timestamp="1599623263756" />
-    <state width="1117" height="161" key="GridCell.Tab.0.left/0.23.1680.949@0.23.1680.949" timestamp="1599502996068" />
-    <state width="1117" height="161" key="GridCell.Tab.0.right" timestamp="1600118801947">
-      <screen x="0" y="23" width="1680" height="944" />
-    </state>
-    <state width="1390" height="70" key="GridCell.Tab.0.right/0.23.1680.942@0.23.1680.942" timestamp="1592524797999" />
-    <state width="1117" height="161" key="GridCell.Tab.0.right/0.23.1680.944@0.23.1680.944" timestamp="1600118801947" />
-    <state width="1117" height="161" key="GridCell.Tab.0.right/0.23.1680.947@0.23.1680.947" timestamp="1599623263757" />
-    <state width="1117" height="161" key="GridCell.Tab.0.right/0.23.1680.949@0.23.1680.949" timestamp="1599502996069" />
-    <state width="1390" height="163" key="GridCell.Tab.1.bottom" timestamp="1593147523599">
-      <screen x="0" y="23" width="1680" height="947" />
-    </state>
-    <state width="1390" height="163" key="GridCell.Tab.1.bottom/0.23.1680.947@0.23.1680.947" timestamp="1593147523599" />
-    <state width="1390" height="163" key="GridCell.Tab.1.center" timestamp="1593147523599">
-      <screen x="0" y="23" width="1680" height="947" />
-    </state>
-    <state width="1390" height="163" key="GridCell.Tab.1.center/0.23.1680.947@0.23.1680.947" timestamp="1593147523599" />
-    <state width="1390" height="163" key="GridCell.Tab.1.left" timestamp="1593147523598">
-      <screen x="0" y="23" width="1680" height="947" />
-    </state>
-    <state width="1390" height="163" key="GridCell.Tab.1.left/0.23.1680.947@0.23.1680.947" timestamp="1593147523598" />
-    <state width="1390" height="163" key="GridCell.Tab.1.right" timestamp="1593147523599">
-      <screen x="0" y="23" width="1680" height="947" />
-    </state>
-    <state width="1390" height="163" key="GridCell.Tab.1.right/0.23.1680.947@0.23.1680.947" timestamp="1593147523599" />
-    <state x="611" y="414" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1601237259545">
-      <screen x="0" y="23" width="1680" height="942" />
-    </state>
-    <state x="611" y="414" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.23.1680.942@0.23.1680.942" timestamp="1601237259545" />
-    <state x="611" y="415" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.23.1680.944@0.23.1680.944" timestamp="1598128832876" />
-    <state x="611" y="416" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.23.1680.947@0.23.1680.947" timestamp="1601164409522" />
-    <state x="611" y="417" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.23.1680.949@0.23.1680.949" timestamp="1594828284577" />
-    <state x="815" y="227" width="670" height="676" key="search.everywhere.popup" timestamp="1598663116007">
-      <screen x="0" y="23" width="1680" height="947" />
-    </state>
-    <state x="815" y="226" width="670" height="672" key="search.everywhere.popup/0.23.1680.942@0.23.1680.942" timestamp="1598299086082" />
-    <state x="815" y="226" width="670" height="674" key="search.everywhere.popup/0.23.1680.944@0.23.1680.944" timestamp="1592947354536" />
-    <state x="815" y="227" width="670" height="676" key="search.everywhere.popup/0.23.1680.947@0.23.1680.947" timestamp="1598663116007" />
+    <state x="384" y="30" key="CommitChangelistDialog2/0.23.1440.805@0.23.1440.805" timestamp="1620078538366" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

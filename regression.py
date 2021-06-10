@@ -221,6 +221,175 @@ def station_error(prcp_stn, tmean_stn, trange_stn, stninfo, near_stn_prcpLoc, ne
     return pcp_err_stn, tmean_err_stn, trange_err_stn, pop_err_stn
 
 
+def station_error_newpredictor(prcp_stn, tmean_stn, trange_stn, prcp_rea, tmean_rea, trange_rea,
+                               stninfo, near_stn_prcpLoc, near_stn_prcpWeight, near_stn_tempLoc,
+                               near_stn_tempWeight, trans_exp, trans_mode, nearstn_min=0):
+    # difference with station_error: this function adds reanalysis data as a new predictor
+    nstn, ntimes = np.shape(prcp_stn)
+    pop_err_stn = np.nan * np.ones([nstn, ntimes], dtype=np.float32)
+    pcp_err_stn = np.nan * np.ones([nstn, ntimes], dtype=np.float32)
+    tmean_err_stn = np.nan * np.ones([nstn, ntimes], dtype=np.float32)
+    trange_err_stn = np.nan * np.ones([nstn, ntimes], dtype=np.float32)
+
+    for t in range(ntimes):
+        print('Current time:', t, 'Total times:', ntimes)
+        # assign vectors of station alues for prcp_stn, temp, for current time step
+        # transform prcp_stn to approximate normal distribution
+        y_prcp = au.transform(prcp_stn[:, t], trans_exp, trans_mode)
+        y_tmean = tmean_stn[:, t]
+        y_trange = trange_stn[:, t]
+        y_pop = np.zeros(nstn)
+        y_pop[prcp_stn[:, t] > 0] = 1
+
+        for gg in range(nstn):
+            if prcp_stn[gg, t] > -1:
+                # reduced matrices for precip
+                nstn_prcp = int(np.sum(near_stn_prcpLoc[gg, :] > -1))
+                if nstn_prcp >= nearstn_min:
+                    w_pcp_red = np.zeros([nstn_prcp, nstn_prcp])
+                    for i in range(nstn_prcp):
+                        w_pcp_red[i, i] = near_stn_prcpWeight[gg, i]  # eye matrix: stn weight in one-one line
+                    w_pcp_1d = near_stn_prcpWeight[gg, 0:nstn_prcp]  # stn weight
+                    w_pcp_1d_loc = near_stn_prcpLoc[gg, 0:nstn_prcp]  # stn ID number/location
+                    y_prcp_red = y_prcp[w_pcp_1d_loc]  # transformed prcp_stn
+                    x_red = stninfo[w_pcp_1d_loc, :]  # station lat/lon/ele/slope_ns/slope_we
+
+                    yp_red = np.zeros(nstn_prcp)  # pop: 0/1
+                    yp_red[prcp_stn[w_pcp_1d_loc, t] > 0] = 1
+                    ndata = np.sum(yp_red == 1)  # number of prcp_stn>0
+                    nodata = np.sum(yp_red == 0)
+                else:
+                    # there are not enough nearby stations
+                    x_red = 0  # not really necessary. just to stop warming from Pycharm
+                    w_pcp_red = 0  # not really necessary. just to stop warming from Pycharm
+                    w_pcp_1d = 0
+                    yp_red = 0  # not really necessary. just to stop warming from Pycharm
+                    y_prcp_red = 0  # not really necessary. just to stop warming from Pycharm
+                    ndata = 0
+                    nodata = 0
+
+                # prcp processing
+                if ndata == 0:
+                    # nearby stations do not have positive prcp data
+                    pop_err_stn[gg, t] = 0
+                    pcp_err_stn[gg, t] = 0
+                else:
+                    # tmp needs to be matmul(TX, X) where TX = TWX_red and X = X_red
+                    mat_test = np.matmul(np.transpose(x_red), w_pcp_red)
+                    tmp = np.matmul(mat_test, x_red)
+                    vv = np.max(np.abs(tmp), axis=1)
+
+                    # decide if slope is to be used in regression
+                    if stninfo[gg, 1] < 74:
+                        if np.any(vv == 0) or abs(stninfo[gg, 4]) < 3.6 or abs(stninfo[gg, 5]) < 3.6:
+                            slope_flag_pcp = 0
+                            x_red_use = x_red[:, 0:4]  # do not use slope in regression
+                            stninfo_use = stninfo[gg, 0:4]
+                        else:
+                            slope_flag_pcp = 1
+                            x_red_use = x_red
+                            stninfo_use = stninfo[gg, :]
+                    else:
+                        x_red_use = x_red[:, 0:3]
+                        stninfo_use = stninfo[gg, 0:3]
+
+                    # add the new predictor
+                    x_red_add = prcp_rea[w_pcp_1d_loc, t][:, np.newaxis]
+                    x_red_use = np.hstack((x_red_use, x_red_add))
+                    x_red_add = prcp_rea[gg, t]
+                    stninfo_use = np.hstack((stninfo_use, x_red_add))
+
+                    tx_red = np.transpose(x_red_use)
+                    twx_red = np.matmul(tx_red, w_pcp_red)
+
+                    # calculate pop
+                    if nodata == 0:
+                        popgg = 1
+                    else:
+                        b = logistic_regression(x_red_use, twx_red, yp_red)
+                        if np.all(b == 0):
+                            popgg = 0
+                        else:
+                            zb = - np.dot(stninfo_use, b)
+                            popgg = 1 / (1 + np.exp(zb))
+                    pop_err_stn[gg, t] = popgg - y_pop[gg]
+
+                    # calculate pcp
+                    b = least_squares(x_red_use, y_prcp_red, twx_red)
+                    pcpgg = np.dot(stninfo_use, b)
+                    pcpgg = regressioncheck(pcpgg, y_prcp_red, w_pcp_1d, 'pcp', transmode=trans_mode)
+                    pcp_err_stn[gg, t] = pcpgg - y_prcp[gg]
+
+            # tmean/trange processing
+            if y_tmean[gg] > -100:
+                # reduced matrices for tmean_stn/trange_stn
+                nstn_temp = int(np.sum(near_stn_tempLoc[gg, :] > -1))
+                if nstn_temp >= nearstn_min:
+                    w_temp_red = np.zeros([nstn_temp, nstn_temp])
+                    for i in range(nstn_temp):
+                        w_temp_red[i, i] = near_stn_tempWeight[gg, i]  # eye matrix: stn weight in one-one lien
+                    w_temp_1d = near_stn_tempWeight[gg, 0:nstn_temp]  # stn weight
+                    w_temp_1d_loc = near_stn_tempLoc[gg, 0:nstn_temp]  # stn ID number/location
+                    y_tmean_red = y_tmean[w_temp_1d_loc]  # transformed temp
+                    y_trange_red = y_trange[w_temp_1d_loc]  # transformed temp
+                    x_red_t = stninfo[w_temp_1d_loc, :]  # station lat/lon/ele/slope_ns/slope_we
+
+                    ndata_t = np.sum(y_tmean_red > -100)
+                    nodata_t = nstn_temp - ndata_t  # invalid temperature
+                else:
+                    x_red_t = 0  # not really necessary. just to stop warming from Pycharm
+                    w_temp_red = 0  # not really necessary. just to stop warming from Pycharm
+                    w_temp_1d = 0
+                    y_tmean_red = 0  # not really necessary. just to stop warming from Pycharm
+                    y_trange_red = 0  # not really necessary. just to stop warming from Pycharm
+                    ndata_t = 0
+                    nodata_t = 0
+
+                if ndata_t > 0:
+                    if stninfo[gg, 1] < 74:
+                        stninfo_use = stninfo[gg, 0:4]
+                        x_red_use = x_red_t[:, 0:4]  # do not use slope for temperature
+                    else:
+                        stninfo_use = stninfo[gg, 0:3]
+                        x_red_use = x_red_t[:, 0:3]  # do not use slope for temperature
+
+                    # add the new predictor
+                    x_red_add = tmean_rea[w_temp_1d_loc, t][:, np.newaxis]
+                    x_red_use = np.hstack((x_red_use, x_red_add))
+                    x_red_add = tmean_rea[gg, t]
+                    stninfo_use = np.hstack((stninfo_use, x_red_add))
+
+                    tx_red = np.transpose(x_red_use)
+                    twx_red = np.matmul(tx_red, w_temp_red)
+
+                    b = least_squares(x_red_use, y_tmean_red, twx_red)
+                    tmeangg = np.dot(stninfo_use, b)
+                    tmeangg = regressioncheck(tmeangg, y_tmean_red, w_temp_1d, 'tmean', transmode='None')
+                    tmean_err_stn[gg, t] = tmeangg - y_tmean[gg]
+
+
+                    if stninfo[gg, 1] < 74:
+                        stninfo_use = stninfo[gg, 0:4]
+                        x_red_use = x_red_t[:, 0:4]  # do not use slope for temperature
+                    else:
+                        stninfo_use = stninfo[gg, 0:3]
+                        x_red_use = x_red_t[:, 0:3]  # do not use slope for temperature
+
+                    # add the new predictor
+                    x_red_add = trange_rea[w_temp_1d_loc, t][:, np.newaxis]
+                    x_red_use = np.hstack((x_red_use, x_red_add))
+                    x_red_add = trange_rea[gg, t]
+                    stninfo_use = np.hstack((stninfo_use, x_red_add))
+
+                    tx_red = np.transpose(x_red_use)
+                    twx_red = np.matmul(tx_red, w_temp_red)
+
+                    b = least_squares(x_red_use, y_trange_red, twx_red)
+                    trangegg = np.dot(stninfo_use, b)
+                    trangegg = regressioncheck(trangegg, y_trange_red, w_temp_1d, 'trange', transmode='None')
+                    trange_err_stn[gg, t] = trangegg - y_trange[gg]
+    return pcp_err_stn, tmean_err_stn, trange_err_stn, pop_err_stn
+
 def station_rea_error(prcp_stn, tmean_stn, trange_stn, stninfo, near_stn_prcpLoc, near_stn_prcpWeight, near_stn_tempLoc,
                       near_stn_tempWeight, trans_exp, trans_mode, nearstn_min):
     # note: this function does not seem to work well. should be revisited and improved in the future
