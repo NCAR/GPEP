@@ -2,21 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
-      <change afterPath="$PROJECT_DIR$/addcoords_EMDNA.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/graham_addcoords.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/s13_create_example_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slurm_gra_s3.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/emdna_gif/plot_gif.m" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/emdna_gif/plot_gif.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_distribution/ens_map.png" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/ens_distribution/ens_map.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_distribution/ens_plot.m" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/ens_distribution/ens_plot.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/bss_crpss/gra_bsrpss.sh" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/ens_validation/bss_crpss/gra_bsrpss.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/regression.py" beforeDir="false" afterPath="$PROJECT_DIR$/regression.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/s12_subsetting.py" beforeDir="false" afterPath="$PROJECT_DIR$/s12_subsetting.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/s5_rea_downscale.py" beforeDir="false" afterPath="$PROJECT_DIR$/s5_rea_downscale.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/s9_gmet_datapre.py" beforeDir="false" afterPath="$PROJECT_DIR$/s9_gmet_datapre.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/slurm_gra_subset.sh" beforeDir="false" afterPath="$PROJECT_DIR$/slurm_gra_subset.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testcode.py" beforeDir="false" afterPath="$PROJECT_DIR$/testcode.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
