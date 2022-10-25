@@ -3,19 +3,25 @@ import numpy as np
 import os
 import netCDF4 as nc
 import datetime
+import pandas as pd
 import auxiliary as au
 
 ########################################################################################################################
 # basic settings
 
 # input files that meet GMET input formats
-gmet_stnpath = '/home/gut428/GMET/StnInput_daily'  # station files for gmet_stnfile
-gmet_stnfile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/stnlist_whole.txt'  # station lists
-year = [1979, 2018] # the start/end of of input files in gmet_stnpath
+gmet_stnpath = '/Users/guoqiang/Github/GMET/test_cases/cali2017/stndata'  # station files for gmet_stnfile
+gmet_stnfile = '/Users/guoqiang/Github/GMET/test_cases/cali2017/inputs/CALI.screened_stn_list_slope.v3.csv'  # station lists
+
+date_start = datetime.date(2017, 2, 1)
+date_end = datetime.date(2017, 2, 28)
+
 minTrange = 1 # minimum temperature range allowed
 
 # output file
-gmet_stndatafile = '/home/gut428/stndata_whole.npz'  # to be saved. only process when absent
+outpath = './Andy_test_case'
+os.makedirs(outpath, exist_ok=True)
+gmet_stndatafile = f'{outpath}/stndata_whole.npz'  # to be saved. only process when absent
 
 ########################################################################################################################
 # start processing
@@ -24,8 +30,6 @@ if os.path.isfile(gmet_stndatafile):
     print('File already exists')
 else:
     # generate date list
-    date_start = datetime.date(year[0], 1, 1)
-    date_end = datetime.date(year[1], 12, 31)
     daynum = (date_end - date_start).days + 1
     date_ymd = np.zeros(daynum, dtype=int)
     dated = date_start

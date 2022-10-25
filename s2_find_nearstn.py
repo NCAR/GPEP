@@ -8,18 +8,18 @@ import os
 import sys
 
 # setting: searching nearby stations
-nearstn_min = 20  # nearby stations: minimum number
-nearstn_max = 30  # nearby stations: maximum number
+nearstn_min = 35  # nearby stations: minimum number
+nearstn_max = 35  # nearby stations: maximum number
 search_radius = 100  # km. only search stations within this radius even nearstn_max cannot be reached
 max_dist = 100  # max_distance in distance-based weight calculation
 
 # input files
-FileStnInfo = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/stnlist_whole.txt'  # station basic information (lists)
-FileGridInfo = '/datastore/GLOBALWATER/CommonData/EMDNA_new/StnGridInfo/gridinfo_whole.nc'  # study area information
-gmet_stndatafile = '/datastore/GLOBALWATER/CommonData/EMDNA_new/stndata_aftercheck.npz'
+FileStnInfo = '/Users/guoqiang/Github/GMET/test_cases/cali2017/inputs/CALI.screened_stn_list_slope.v3.csv'  # station basic information (lists)
+FileGridInfo = '/Users/guoqiang/Github/GMET/test_cases/cali2017/inputs/CALI.gridinfo.0625_v3.nc'  # study area information
+gmet_stndatafile = './Andy_test_case/stndata_whole.npz'
 
 # outfile
-file_nearstn = '/home/gut428/nearstn_catalog.npz'
+file_nearstn = './Andy_test_case/nearstn_catalog.npz'
 
 ########################################################################################################################
 
