@@ -9,3 +9,5 @@
 *.jpg
 *.pdf
 *.npz
+*.xml
+*.pyc

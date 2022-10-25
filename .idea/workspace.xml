@@ -2,268 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
-      <change afterPath="$PROJECT_DIR$/s3_stn_regression_onerun.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/pyGMET.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/pyGMET.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/testcase_simple_regression.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Clen.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Clen_daily.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/Clen_month.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/analysis.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/f_month_cc.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/f_monthmon_cc.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/generate_scripts.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/lldistkm.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/month_merge.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Clen/post_process.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/.ipynb_checkpoints/plotfigure-checkpoint.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/basic_figure/Basic_map.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/basic_figure/Basic_map.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/basic_figure/cbarrow.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/basic_figure/lldistkm.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/basic_figure/tight_subplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/comparison.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/emdna_gif/data_pre.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/emdna_gif/data_pre.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/emdna_gif/plot_gif.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_distribution/cbarrow.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_distribution/ens_map.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_distribution/ens_map.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_distribution/ens_map_teaserproduct.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_distribution/ens_plot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_distribution/ens_plot_compare.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_distribution/ens_plot_teaserproduct.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_distribution/gra_ensmap.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_distribution/tight_subplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/5metrics/Plato_metric.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/5metrics/comp.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/5metrics/compare_andrew.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/5metrics/f_metric.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/5metrics/metric_cal.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/5metrics/simple_plot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/5metrics/variability.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/bss_crpss/bss_rpss.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/bss_crpss/bss_rpss.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/bss_crpss/bss_rpss_plot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/bss_crpss/bssrpss_negative.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/bss_crpss/gra_bsrpss.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/bss_crpss/negative_latlon.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/bss_crpss/tight_subplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/climPoP/plot_pop.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/climPoP/plothist.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/climPoP/pop_Clim.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/climPoP/pop_Clim_hist.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/climPoP/pop_evaluate.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/climPoP/tight_subplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/compare_andrew_me/compare.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/cross_validate/analysis.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/cross_validate/crossvalidate.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/cross_validate/crossvalidate_old.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/cross_validate/dailyregress_vs_station.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/cross_validate/ensemble_vs_station.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/cross_validate/f_metric_cal.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/cross_validate/regress_vs_station_old.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/data_pre/1data_read_validate/GHCN_data_assemble.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/data_pre/1data_read_validate/GHCN_read_plato.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/data_pre/1data_read_validate/Plato_assemble.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/data_pre/1data_read_validate/Plato_read.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/data_pre/1data_read_validate/arcgridread_tgq.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/data_pre/1data_read_validate/f_GHCN_read.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/data_pre/4extract_data/Plato_extract.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/data_pre/4extract_data/andrew_extract.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/data_pre/4extract_data/f_ens_data.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/data_pre/4extract_data/f_ens_data_andrew.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/data_pre/4extract_data/f_gauge_data.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/data_pre/4extract_data/gra_extract.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/data_pre/4extract_data/main_extract.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/data_pre/4extract_data/main_extract.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/rank_histogram/data_pre.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/rank_histogram/data_pre.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/rank_histogram/gra_datapre.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/rank_histogram/plot_rank.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/rank_histogram/plot_rank_old.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/rank_histogram/rank_diagram.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/rank_histogram/tight_subplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/relia_discri_matlab/f_discrimination_data.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/relia_discri_matlab/f_probability_data.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/relia_discri_matlab/f_reliability_data.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/relia_discri_matlab/plot_reliability_discrimination.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/relia_discri_matlab/tight_subplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/relia_discri_python/Discrimination_Reliability.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/relia_discri_python/Plato_relia.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/relia_discri_python/plot_reliability_discrimination.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/relia_discri_python/rel_dis_datapre.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/relia_discri_python/tight_subplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/rndnum_example/rndnum_plot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/timeseries/timeseries.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/ens_validation/validation_station/valstn.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/error_compare.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/format_convert/format_convert.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/gmet_gif/calpcp_fromGMET.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/gmet_gif/first results.pptx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/gmet_gif/pcp_cprob.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/gmet_gif/pcp_rndnum.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/gmet_gif/pop_regression.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/gmet_gif/prcp_gif.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/gmet_gif/prcp_gif_mulmembers.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/gmet_gif/tight_subplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/gmet_gif/tmean_gif_mulmembers.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/gmet_gif/trange_gif_mulmembers.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/gain_vs_distance/gain_vs_dist_oiregrea.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/gain_vs_distance/lldistkm.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/gain_vs_distance/oi_vs_rea.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/gain_vs_distance/oi_vs_reg.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/gain_vs_distance/oi_vsreg_rea.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/gain_vs_distance/tight_subplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/calculate_mean.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/cbarrow.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/f_metric_cal.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/metric_main.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/oi_vs_rea.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/oi_vs_reg.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/oi_vsreg_rea.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/oi_gain/tight_subplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/rea_reg_vs_distance/oi_rea_reg.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/rea_reg_vs_distance/oi_rea_reg_met.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/rea_reg_vs_distance/rearegoi_plot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/rea_reg_vs_distance/rearegoi_plot_backup.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/oi_vsreg_rea/rea_reg_vs_distance/tight_subplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/plot_gif.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/plotfigure.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/pop_analysis/boxplot2.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/pop_analysis/cbarrow.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/pop_analysis/minmax.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/pop_analysis/multiple_boxplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/pop_analysis/pop_analysis.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/pop_analysis/pop_map.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/pop_analysis/pop_plot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/pop_analysis/tight_subplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/cbarrow.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/f_metric_cal.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/metric_main.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/prcp_metric_map.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/prcp_metric_map_nrmse.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/prcp_plot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/prcp_plot_nrmse.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/tight_subplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/tmean_metric_map.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/tmean_metric_map2.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/tmean_plot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/tmean_plot2.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/trange_metric_map.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/trange_metric_map_nrmse.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/trange_plot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/rea_corrmerge/trange_plot_nrmse.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/scatter_oi/Scatter_prcp.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/scatter_oi/Scatter_tmean.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/scatter_oi/Scatter_trange.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/scatter_oi/f_datapre.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/scatter_oi/scatterplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/scatter_oi/tight_subplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/schematic_subfig/corr_ratio.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/schematic_subfig/correctionratio_subfig.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/schematic_subfig/downscale_201808.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/schematic_subfig/downscale_subfig.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/schematic_subfig/ensemble_example.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/schematic_subfig/ensemble_prepare.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/schematic_subfig/ensemble_subfig.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/schematic_subfig/stn_regression_metric.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/schematic_subfig/stnregression_subfig.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/schematic_subfig/tight_subplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/spatialmap_oi/metric_prcp.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/spatialmap_oi/metric_tmean.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/spatialmap_oi/metric_trange.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/spatialmap_oi/oimetric.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/spatialmap_oi/tight_subplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/stn_obs_flag/extract_obsflag.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/bss.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/calculate_m.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_1.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_10.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_11.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_12.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_13.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_14.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_15.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_16.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_17.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_18.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_19.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_2.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_20.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_21.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_3.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_4.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_5.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_6.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_7.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_8.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/discr_relia_9.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/tight_subplot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/analysis/transform_results.pptx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/GG_countour.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/Hellinger_distance.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/Lognormal_contour.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/Weibull_contour.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/Weibull_stn.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/boxcox_compare.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/fminsearchbnd.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/fminsearchcon.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/gamma_test.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/ggFit.docx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/gg_analysis.pptx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/gg_era5.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/gg_jra55.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/gg_merra2.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/gg_parameter.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/gg_rea.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/gg_stn.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/gg_stn.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/lognormal_stn.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/lognormal_stn.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/prcp_analysis.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/trans_simon10.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/transform_compare.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/transform_retransform.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/distribution_compare/weibull_stn.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/transform_compare/f_bc_optimize.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/transform_compare/f_lkurtosis.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/transform_compare/f_lmom.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/transform_compare/f_lskew.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/transform_compare/f_s9_optimize.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/transformation/transform_compare/main.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/jupyter_tests/Evaluation.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/jupyter_tests/Example_map.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/jupyter_tests/Main_test.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/jupyter_tests/gmetdata_test.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/jupyter_tests/oi_griderror_test.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/jupyter_tests/oimerge_analysis.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/jupyter_tests/oimerge_test.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/jupyter_tests/prcp_transform_test.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/jupyter_tests/reacorrection_analysis.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/jupyter_tests/readown_analysis.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/jupyter_tests/readown_test.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/jupyter_tests/reamerge_analysis.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/jupyter_tests/reamerge_corr_test.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/jupyter_tests/reanalysis_pop.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/jupyter_tests/reanalysis_test.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/jupyter_tests/reapop_analysis.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/jupyter_tests/toxicstation_prcp_test.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/jupyter_tests/toxicstation_tmean_test.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/ERA5_read_plato.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/JRA55_read_plato.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/MERRA2_read_plato.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/Plato_era.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/Plato_jra.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/Plato_merra.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/arcgridread_tgq.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/f_ERA5_read.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/f_JRA55_read.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/f_MERRA2_read.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reanalysis_preprocess/f_save_nc.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s1_prepare_stndata.py" beforeDir="false" afterPath="$PROJECT_DIR$/s1_prepare_stndata.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/s2_find_nearstn.py" beforeDir="false" afterPath="$PROJECT_DIR$/s2_find_nearstn.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -308,28 +48,7 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.s3_stn_regression_onerun">
-    <configuration name="ERA5land_download" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="pyGMET" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$USER_HOME$/Downloads" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$USER_HOME$/Downloads/ERA5land_download.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python.testcase_simple_regression">
     <configuration name="s1_prepare_stndata" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="pyGMET" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -414,13 +133,34 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="testcase_simple_regression" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="pyGMET" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/testcase_simple_regression.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.testcase_simple_regression" />
         <item itemvalue="Python.s3_stn_regression_onerun" />
         <item itemvalue="Python.s2_find_nearstn" />
         <item itemvalue="Python.s1_prepare_stndata" />
         <item itemvalue="Python.s3_stn_regression_newpredictor" />
-        <item itemvalue="Python.ERA5land_download" />
       </list>
     </recent_temporary>
   </component>
