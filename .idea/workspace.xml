@@ -2,12 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
-      <change afterPath="$PROJECT_DIR$/Fortran_Python_SpeedCompare/estimate_forcing_regression_pureReg.f90" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/pyGMET.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/pyGMET.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testcase_simple_regression.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,20 +29,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/Fortran_Python_SpeedCompare" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
-  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "dart.analysis.tool.window.visible": "false"
+  }
+}]]></component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/Fortran_Python_SpeedCompare" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/analysis/ens_validation/bss_crpss" />
       <recent name="$PROJECT_DIR$/analysis/ens_validation/rank_histogram" />
       <recent name="$PROJECT_DIR$/analysis/ens_validation/4extract_data" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
     </key>
   </component>
   <component name="RunManager" selected="Python.testcase_simple_regression (1)">
@@ -164,7 +164,7 @@
       </list>
     </recent_temporary>
   </component>
-  <component name="SpellCheckerSettings" BundledDictionaries="0" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" Dictionaries="0" CorrectionsLimit="5" DefaultDictionary="application-level" UseSingleDictionary="true" />
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -183,39 +183,11 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State>
-              <option name="COLUMN_ORDER" />
-            </State>
+            <State />
           </value>
         </entry>
       </map>
     </option>
-  </component>
-  <component name="WindowStateProjectService">
-    <state x="386" y="235" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1666726331664">
-      <screen x="0" y="25" width="1920" height="963" />
-    </state>
-    <state x="386" y="235" key="#com.intellij.fileTypes.FileTypeChooser/0.25.1920.963/-1680.25.1680.1025@0.25.1920.963" timestamp="1666726331664" />
-    <state width="1335" height="129" key="GridCell.Tab.0.bottom" timestamp="1666726374719">
-      <screen x="0" y="25" width="1920" height="963" />
-    </state>
-    <state width="1335" height="129" key="GridCell.Tab.0.bottom/0.25.1920.963/-1680.25.1680.1025@0.25.1920.963" timestamp="1666726374719" />
-    <state width="1335" height="129" key="GridCell.Tab.0.center" timestamp="1666726374718">
-      <screen x="0" y="25" width="1920" height="963" />
-    </state>
-    <state width="1335" height="129" key="GridCell.Tab.0.center/0.25.1920.963/-1680.25.1680.1025@0.25.1920.963" timestamp="1666726374718" />
-    <state width="1335" height="129" key="GridCell.Tab.0.left" timestamp="1666726374718">
-      <screen x="0" y="25" width="1920" height="963" />
-    </state>
-    <state width="1335" height="129" key="GridCell.Tab.0.left/0.25.1920.963/-1680.25.1680.1025@0.25.1920.963" timestamp="1666726374718" />
-    <state width="1335" height="129" key="GridCell.Tab.0.right" timestamp="1666726374718">
-      <screen x="0" y="25" width="1920" height="963" />
-    </state>
-    <state width="1335" height="129" key="GridCell.Tab.0.right/0.25.1920.963/-1680.25.1680.1025@0.25.1920.963" timestamp="1666726374718" />
-    <state x="271" y="63" key="SettingsEditor" timestamp="1666716555998">
-      <screen x="0" y="25" width="1920" height="963" />
-    </state>
-    <state x="271" y="63" key="SettingsEditor/0.25.1920.963/-1680.25.1680.1025@0.25.1920.963" timestamp="1666716555998" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
