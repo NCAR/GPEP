@@ -2,38 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
-      <change afterPath="$PROJECT_DIR$/main_daily_GMETcompare.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/s4_grid_regression.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/pyGMET.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/pyGMET.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/Untitled-checkpoint.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/regression.py" beforeDir="false" afterPath="$PROJECT_DIR$/regression.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/s10_month2year.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s11_finalcheck.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s12_subsetting.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s13_create_example_data.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s4_stn_check.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s5_rea_downscale.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s6_rea_corrmerge_LS.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s6_rea_corrmerge_No.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s6_rea_corrmerge_QM.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s7_rea_pop.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s7_rea_pop_threshold.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s8.5_undercatch_ratio.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s8.6_prcp_transform.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s8.7_prcp_ensemble.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s8.7_prcp_ensemble_fixbc.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s8_oimerge.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s8_oimerge_200424test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s8_oimerge_200424test_analyze.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s9_gmet_datapre.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/slurm_copernicus_s8.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/slurm_gra_example.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/slurm_gra_s3.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/slurm_gra_subset.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/slurm_plato_example.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/testcode.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/plot_GMET_outputs-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/plot_GMET_outputs-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/plot_GMET_outputs.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/plot_GMET_outputs.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
