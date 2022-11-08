@@ -572,7 +572,11 @@ def station_rea_error(prcp_stn, tmean_stn, trange_stn, stninfo, near_stn_prcpLoc
 
 def regression(prcp_stn, tmean_stn, trange_stn, pcp_err_stn, tmean_err_stn, trange_err_stn, stninfo, gridinfo,
                mask, near_grid_prcpLoc, near_grid_prcpWeight, near_grid_tempLoc, near_grid_tempWeight,
-               nearstn_min, nearstn_max, trans_exp, trans_mode):
+               nearstn_min, nearstn_max, trans_exp, trans_mode, uncert_mode='station_interpolation'):
+    # uncert_mode:
+    # station_interpolation: leave-one-out to get error at each station, and then interpolate errors to grids
+    # gmet_regression: Estimate uncertainty for a grid cell using leave-one-out regression methods (more regression loops)
+
     nstn, ntimes = np.shape(prcp_stn)
     nrows, ncols, nvars = np.shape(gridinfo)
 
@@ -671,8 +675,11 @@ def regression(prcp_stn, tmean_stn, trange_stn, pcp_err_stn, tmean_err_stn, tran
                         pcp[rr, cc, t] = pcpreg
 
                         # 6.4.3 estimate pcp error
-                        err0 = pcp_err_stn[w_pcp_1d_loc, t]
-                        pcp_err[rr, cc, t] = (np.sum((err0 ** 2) * w_pcp_1d) / np.sum(w_pcp_1d)) ** 0.5
+                        if uncert_mode == 'station_interpolation':
+                            err0 = pcp_err_stn[w_pcp_1d_loc, t]
+                            pcp_err[rr, cc, t] = (np.sum((err0 ** 2) * w_pcp_1d) / np.sum(w_pcp_1d)) ** 0.5
+                        elif uncert_mode == 'gmet_regression':
+                            pcp_err[rr, cc, t] = GMETstyle_leave_one_out_uncertainty(x_red_use, y_prcp_red, w_pcp_red)
 
                 ############################################################################################################
 
@@ -717,8 +724,11 @@ def regression(prcp_stn, tmean_stn, trange_stn, pcp_err_stn, tmean_err_stn, tran
                         tmean[rr, cc, t] = tmeanreg
 
                         # error estimation
-                        err0 = tmean_err_stn[w_temp_1d_loc, t]
-                        tmean_err[rr, cc, t] = (np.sum((err0 ** 2) * w_temp_1d) / np.sum(w_temp_1d)) ** 0.5
+                        if uncert_mode == 'station_interpolation':
+                            err0 = tmean_err_stn[w_temp_1d_loc, t]
+                            tmean_err[rr, cc, t] = (np.sum((err0 ** 2) * w_temp_1d) / np.sum(w_temp_1d)) ** 0.5
+                        elif uncert_mode == 'gmet_regression':
+                            tmean_err[rr, cc, t] = GMETstyle_leave_one_out_uncertainty(x_red_use, y_tmean_red, w_temp_red)
 
                         # 6.5.2 estimate trange and its error
                         b = least_squares(x_red_use, y_trange_red, twx_red)
@@ -727,8 +737,12 @@ def regression(prcp_stn, tmean_stn, trange_stn, pcp_err_stn, tmean_err_stn, tran
                         trange[rr, cc, t] = trangereg
 
                         # error estimation
-                        err0 = trange_err_stn[w_temp_1d_loc, t]
-                        trange_err[rr, cc, t] = (np.sum((err0 ** 2) * w_temp_1d) / np.sum(w_temp_1d)) ** 0.5
+                        # error estimation
+                        if uncert_mode == 'station_interpolation':
+                            err0 = trange_err_stn[w_temp_1d_loc, t]
+                            trange_err[rr, cc, t] = (np.sum((err0 ** 2) * w_temp_1d) / np.sum(w_temp_1d)) ** 0.5
+                        elif uncert_mode == 'gmet_regression':
+                            trange_err[rr, cc, t] = GMETstyle_leave_one_out_uncertainty(x_red_use, y_trange_red, w_temp_red)
 
     return pop, pcp, tmean, trange, pcp_err, tmean_err, trange_err, y_max
 
@@ -826,3 +840,59 @@ def error_after_residualcorrection(data_ori, data_reg, nearloc, nearweight):
         res_after_corr[i, :] = res_after_corri
 
     return res_after_corr
+
+
+# GMET-style k-fold cross validation to calculate the uncertainty estimation for the grid cell
+# for simplicity, only leave-one-out is considered here
+def GMETstyle_leave_one_out_uncertainty(X, Y, W):
+    # Translated from https://github.com/NCAR/GMET/blob/14f33ad8b985d74a86ebab2c46fe7aa67cedc477/source/sp_regression/kfold_crossval.f90
+    # X: [nstn, npredictors]
+    # Y: [nstn]
+    # W: [nstn, nstn]
+
+    weightSum = 0.0
+    errorSum = 0.0
+
+    # initalize weight vector variable
+    nstn = len(Y)
+    w_1d = np.zeros(nstn)
+    for i in range(nstn):
+        w_1d[i] = W[i, i]
+
+    # loop through the kfold trials (leave one out here)
+    for i in range(nstn):
+
+        # ! extract vectors of training and test indices for each trial (for code readability)
+        test_indices = [i]
+        train_indices = np.setdiff1d(np.arange(nstn), test_indices)
+
+        # ! station predictor array, values and weights -- training sample
+        x_xval_train = X[train_indices, :]
+        y_xval_train = Y[train_indices]
+        w_xval_train = W[train_indices, :][:, train_indices]
+
+        # ! create transposed matrices for least squares and non-singular matrix check
+        tx_xval_train = np.transpose(x_xval_train)
+        twx_xval_train = np.matmul(tx_xval_train, w_xval_train)
+        vv = np.max(np.abs(twx_xval_train), axis=1)
+
+
+        if np.any(vv == 0):
+            # ! if matrix is singular, default to calculating weighted error around the mean value of the obs test sample (eg variance)
+
+            # for leave one out, this step just result an error of zero
+            pass
+        else:
+            # ! otherwise regression can be performed for the current training sample
+            B = least_squares(x_xval_train, y_xval_train, twx_xval_train) # ! regress on training sample
+            # ! regression prediction for test record
+            varTmp =  np.dot(X[test_indices, :], B)
+            # ! sum error for tests
+            errorSum = errorSum + w_1d[test_indices] * (varTmp - Y[test_indices]) ** 2
+
+            weightSum = weightSum + np.sum(w_1d[test_indices])
+
+    # ! normalize and convert error variance into error standard deviation
+    varUncert = (errorSum / weightSum) ** 0.5
+
+    return varUncert

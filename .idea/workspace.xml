@@ -2,9 +2,38 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
+      <change afterPath="$PROJECT_DIR$/main_daily_GMETcompare.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/s4_grid_regression.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/pyGMET.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/pyGMET.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/Untitled-checkpoint.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/regression.py" beforeDir="false" afterPath="$PROJECT_DIR$/regression.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/s10_month2year.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s11_finalcheck.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s12_subsetting.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s13_create_example_data.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s4_stn_check.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s5_rea_downscale.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s6_rea_corrmerge_LS.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s6_rea_corrmerge_No.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s6_rea_corrmerge_QM.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s7_rea_pop.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s7_rea_pop_threshold.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s8.5_undercatch_ratio.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s8.6_prcp_transform.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s8.7_prcp_ensemble.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s8.7_prcp_ensemble_fixbc.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s8_oimerge.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s8_oimerge_200424test.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s8_oimerge_200424test_analyze.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/s9_gmet_datapre.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/slurm_copernicus_s8.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/slurm_gra_example.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/slurm_gra_s3.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/slurm_gra_subset.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/slurm_plato_example.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/testcode.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,17 +58,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "dart.analysis.tool.window.visible": "false"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/guoqiang/Github/meteorological_dataset/PyGMET&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/Fortran_Python_SpeedCompare" />
       <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/Fortran_Python_SpeedCompare" />
       <recent name="$PROJECT_DIR$/analysis/ens_validation/bss_crpss" />
       <recent name="$PROJECT_DIR$/analysis/ens_validation/rank_histogram" />
       <recent name="$PROJECT_DIR$/analysis/ens_validation/4extract_data" />
@@ -48,8 +79,8 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.testcase_simple_regression (1)">
-    <configuration name="s1_prepare_stndata" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.main_daily_GMETcompare">
+    <configuration name="main_daily_GMETcompare" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="pyGMET" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -61,7 +92,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/s1_prepare_stndata.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main_daily_GMETcompare.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -156,11 +187,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.main_daily_GMETcompare" />
         <item itemvalue="Python.testcase_simple_regression (1)" />
         <item itemvalue="Python.testcase_simple_regression" />
         <item itemvalue="Python.s3_stn_regression_onerun" />
         <item itemvalue="Python.s2_find_nearstn" />
-        <item itemvalue="Python.s1_prepare_stndata" />
       </list>
     </recent_temporary>
   </component>
@@ -188,16 +219,5 @@
         </entry>
       </map>
     </option>
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/s6_rea_corrmerge_QM.py</url>
-          <line>8</line>
-          <option name="timeStamp" value="10" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>
