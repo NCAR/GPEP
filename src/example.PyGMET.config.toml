@@ -87,3 +87,4 @@ initial_distance = 100
 
 # overwrite flags
 overwrite_stninfo = false
+overwrite_weight = false

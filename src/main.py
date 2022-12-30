@@ -6,7 +6,8 @@ import numpy as np
 import xarray as xr
 
 import data_processing
-import near_stn_info
+import near_stn_search
+import calculate_weight
 
 config_file = "example.PyGMET.config.toml"
 
@@ -22,9 +23,12 @@ print(config)
 config = data_processing.assemble_fortran_GMET_stns_to_one_file(config)
 
 ########################################################################################################################
-# assemble individual stations and station attributes (e.g., lat, lon) to one netcdf file
-config = near_stn_info.get_near_station_info_and_weight(config)
-
+# get near station info for each station/grid
+config = near_stn_search.get_near_station_info(config)
 
 ########################################################################################################################
-# 
+# calculate weights based on near station info. this step is independent to enable flexible weight test if needed.
+config = calculate_weight.calculate_weight_using_nearstn_info(config)
+
+########################################################################################################################
+# regression part-1: leave-one-out station regression (i.e., at station points)

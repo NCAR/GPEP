@@ -1,4 +1,4 @@
-import os.path
+import os
 import sys, time
 import xarray as xr
 import numpy as np
@@ -14,12 +14,6 @@ def distance(lat1, lon1, lat2, lon2):
     d = radius * c
     return d
 
-
-def distanceweight(dist, maxdist = 100, exp = 3):
-    if np.max(dist) > maxdist:
-        maxdist = np.max(dist) + 1
-    weight = (1 - (dist / maxdist) ** exp) ** exp
-    return weight
 
 def find_nearstn_for_one_target(lat_tar, lon_tar, lat_stn, lon_stn, try_radius, initial_radius, nearstn_min, nearstn_max):
     # lat_tar/lon_tar: one value
@@ -121,40 +115,9 @@ def find_nearstn_for_InStn(lat_stn, lon_stn, try_radius, nearstn_min, nearstn_ma
     return nearIndex, nearDistance
 
 
-def calculate_weights_from_distance(nearDistance, initial_distance=100, exp=3):
-    # calculate weights
-
-    if nearDistance.ndim == 2:
-        nstn = nearDistance.shape[0]
-        nearWeight = np.nan * np.ones([nstn, nearDistance.shape[1]], dtype=np.float32)
-        for i in range(nstn):
-            disti = nearDistance[i, :]
-            if disti[0] >= 0:
-                disti = disti[disti>=0]
-                max_dist = np.max([initial_distance, np.max(disti) + 1])
-                nearWeight[i, 0:len(disti)] = distanceweight(disti, max_dist, exp)
-
-    elif nearDistance.ndim == 3:
-        nrow = nearDistance.shape[0]
-        ncol = nearDistance.shape[1]
-        nearWeight = np.nan * np.ones([nrow, ncol, nearDistance.shape[2]], dtype=np.float32)
-        for i in range(nrow):
-            for j in range(ncol):
-                distij = nearDistance[i, j, :]
-                if distij[0] >= 0:
-                    distij = distij[distij>=0]
-                    max_dist = np.max([initial_distance, np.max(distij) + 1])
-                    nearWeight[i, j, 0:len(distij)] = distanceweight(distij, max_dist, exp)
-
-    else:
-        sys.exit('Error! nearDistance must have ndim 2 or 3.')
-
-    return nearWeight
-
-def get_near_station_info_and_weight(config):
+def get_near_station_info(config):
 
     t1 = time.time()
-
 
     # parse and change configurations
     path_stn_info = config['path_stn_info']
@@ -181,11 +144,8 @@ def get_near_station_info_and_weight(config):
     grid_lon_name = 'longitude'
     grid_mask_name = 'mask'
 
-
-    weight_exp = 3
-
     print('#' * 50)
-    print('Get near station information and weights')
+    print('Get near station information')
     print('#' * 50)
     print('input file_allstn:', file_allstn)
     print('input infile_grid_domain:', infile_grid_domain)
@@ -260,22 +220,18 @@ def get_near_station_info_and_weight(config):
 
         ########################################################################################################################
         # find nearby stations for stations/grids
+        t11=time.time()
         nearIndex_Grid, nearDistance_Grid = find_nearstn_for_Grids(lat_stn, lon_stn, lat_grid, lon_grid, mask_grid, try_radius, nearstn_min, nearstn_max, initial_distance)
         nearIndex_InStn, nearDistance_InStn = find_nearstn_for_InStn(lat_stn, lon_stn, try_radius, nearstn_min, nearstn_max, initial_distance)
-
-        ########################################################################################################################
-        # calculate weights using distance
-        nearWeight_Grid = calculate_weights_from_distance(nearDistance_Grid, initial_distance, weight_exp)
-        nearWeight_InStn = calculate_weights_from_distance(nearDistance_InStn, initial_distance, weight_exp)
+        t22 = time.time()
+        print('Time cost (seconds) of getting near station index and distance:', t22-t11)
 
         ########################################################################################################################
         # add near info to output file
         ds_nearinfo['nearIndex_Grid_' + vari] = xr.DataArray(nearIndex_Grid, dims=('y', 'x', 'near'))
         ds_nearinfo['nearDistance_Grid_' + vari] = xr.DataArray(nearDistance_Grid, dims=('y', 'x', 'near'))
-        ds_nearinfo['nearWeight_Grid_' + vari] = xr.DataArray(nearWeight_Grid, dims=('y', 'x', 'near'))
         ds_nearinfo['nearIndex_InStn_' + vari] = xr.DataArray(nearIndex_InStn, dims=('stn', 'near'))
         ds_nearinfo['nearDistance_InStn_' + vari] = xr.DataArray(nearDistance_InStn, dims=('stn', 'near'))
-        ds_nearinfo['nearWeight_InStn_' + vari] = xr.DataArray(nearWeight_InStn, dims=('stn', 'near'))
 
     # save to output files
     encoding = {}
