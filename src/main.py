@@ -8,6 +8,7 @@ import xarray as xr
 import data_processing
 import near_stn_search
 import calculate_weight
+import regression
 
 config_file = "example.PyGMET.config.toml"
 
@@ -31,4 +32,16 @@ config = near_stn_search.get_near_station_info(config)
 config = calculate_weight.calculate_weight_using_nearstn_info(config)
 
 ########################################################################################################################
-# regression part-1: leave-one-out station regression (i.e., at station points)
+# regression:
+# leave-one-out station regression (i.e., at station points)
+config = regression.main_regression(config, 'loo')
+
+# grid regression
+config = regression.main_regression(config, 'grid')
+
+########################################################################################################################
+# get uncertainty estimation based on difference between leave-one-out station regression estimates and station observations
+# interpolation from points to grids
+
+
+

@@ -71,20 +71,44 @@ outpath_parent = "/Users/guoqiang/Research/PyGMET_testout"
 # target period
 date_start = "2017-02-01"
 date_end = "2017-02-15"
+date_batch = "Pending" # a function is needed to calculate and
 
-# target output variables (currently, only prcp, tmean, trange)
-target_vars = ['prcp', 'tmean', 'trange']
+# input/output variables (currently, only prcp, tmean, trange)
+input_vars = ['prcp', 'tmin', 'tmax'] # variables in the raw station files
+target_vars = ['prcp', 'tmean', 'trange'] # target output variables. tmean and trange are supported. meanwhile, any var from input_vars is accepted
+minRange_vars = [0, -100, 1] # >=. Daily limits slightly beyond global records from google search. 1 for Trange is arbitrary.
+maxRange_vars = [2000, 60, 60] # <=. Daily limits slightly beyond global records from google search.
+transform_vars = ['boxcox', '', ''] # There is a section at the end of the config file defining various transformation
+#target_vars = ['prcp', 'tmean', 'trange', 'tmin', 'tmax'] # target output variables. tmean and trange are supported. meanwhile, any var from input_vars is accepted
+#minRange_vars = [0, -100, 1, -100, -100] # >=. Daily limits slightly beyond global records from google search. 1 for Trange is arbitrary.
+#maxRange_vars = [2000, 60, 60, 60, 60] # <=. Daily limits slightly beyond global records from google search.
+#transform_vars = ['boxcoxnono', 'anything cannot be found in [transform] section will activate non transformation', '', '', ''] # There is a section at the end of the config file defining various transformation
 
-# Number of stations to consider for each target point
+# Number of stations to consider for each target point. nearstn_min<=nearstn_max.
 nearstn_min = 35  # nearby stations: minimum number
 nearstn_max = 35  # nearby stations: maximum number
 
-# first try this radius (km). if not enough, expand
+# first try this radius (km). if not enough, expand. Could be useful to reduce computation time for large domain search.
 try_radius = 10000
 
 # Initial Search Distance in km (expanded if need be)
 initial_distance = 100
 
+# predictors used in regression. Station and grid variable names should be unified in the future.
+predictor_name_static_stn = ['lat', 'lon', 'elev', 'slp_n', 'slp_e'] # variable names in station attribute file
+predictor_name_static_grid = ['latitude', 'longitude', 'elev', 'gradient_n_s', 'gradient_w_e'] # variable names in station attribute file
+
 # overwrite flags
 overwrite_stninfo = false
 overwrite_weight = false
+overwrite_loo_reg = false
+overwrite_grid_reg = false
+
+
+[transform]
+# note: the name must be consistent with transform_vars
+[transform.boxcox]
+exp = 4
+[transform.ToBeAdded]
+example_param_a = 5
+example_param_b = -2

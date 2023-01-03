@@ -1,9 +1,50 @@
 # all data processing related functions
 
 import os, time
+import sys
+
 import pandas as pd
 import numpy as np
 import xarray as xr
+
+########################################################################################################################
+# data transformation
+
+def boxcox_transform(data, texp=4):
+    # transform prcp to approximate normal distribution
+    # mode: box-cox; power-law
+    if not isinstance(data, np.ndarray):
+        data = np.array(data)
+    data[data<0] = 0
+    datat = (data ** (1 / texp) - 1) / (1 / texp)
+    # datat[data < -3] = -3
+    return datat
+
+
+def boxcox_retransform(data, texp=4):
+    # transform prcp to approximate normal distribution
+    # mode: box-cox; power-law
+    if not isinstance(data, np.ndarray):
+        data = np.array(data)
+    data[data<-texp] = -texp
+    datat = (data / texp + 1) ** texp
+    return datat
+
+def data_transformation(data, method, settings, mode='transform'):
+    if method == 'boxcox':
+        if mode == 'transform':
+            data = boxcox_transform(data, settings['exp'])
+        elif mode == 'retransform':
+            data = boxcox_retransform(data, settings['exp'])
+        else:
+            sys.exit('Unknow transformation mode')
+    else:
+        sys.exit('Unknown transformation method')
+    return data
+
+
+########################################################################################################################
+# input station data processing
 
 def assemble_fortran_GMET_stns_to_one_file(config):
     # Fortran GMET assumes that each station has an independent file. PyGMET assumes that point-based stations are
@@ -23,22 +64,21 @@ def assemble_fortran_GMET_stns_to_one_file(config):
     input_stn_list = config['input_stn_list']
     input_stn_path = config['input_stn_path']
     file_allstn = config['file_allstn']
+    input_vars = config['input_vars']
+    target_vars = config['target_vars']
+    minRange_vars = config['minRange_vars']
+    maxRange_vars = config['maxRange_vars']
+    transform_vars = config['transform_vars']
+    transform_settings = config['transform']
 
     # settings and prints
-    minTrange = 1  # hard-coded setting
-    var_names = ['prcp', 'tmin', 'tmax'] # variables in the files
-    add_tmean_trange = True # if tmin and tmax are present, calculate tmean and trange
-
     print('#' * 50)
     print('Assembling individual station files to one single file')
     print('#' * 50)
     print('Input station list:', input_stn_list)
     print('Input station folder:', input_stn_path)
     print('Output station file:', file_allstn)
-    print('Target variables:', var_names)
-    print('add_tmean_trange:', add_tmean_trange)
-    if add_tmean_trange:
-        print('minTrange:', minTrange)
+    print('Target variables:', input_vars)
 
     if os.path.isfile(file_allstn):
         print('Note! Output station file exists')
@@ -48,7 +88,7 @@ def assemble_fortran_GMET_stns_to_one_file(config):
             print('overwrite_stninfo is False. Skip station assembling.')
             return config
 
-    # start assembling
+    # load station data
     df_stn = pd.read_csv(input_stn_list)
     nstn = len(df_stn)
 
@@ -57,7 +97,7 @@ def assemble_fortran_GMET_stns_to_one_file(config):
         time_coord = ds.time
         ntime = len(ds.time)
 
-    var_values = np.nan * np.zeros([nstn, ntime, len(var_names)], dtype=np.float32)
+    var_values = np.nan * np.zeros([nstn, ntime, len(input_vars)], dtype=np.float32)
     print(f'Station number: {nstn}')
     print(f'Time steps: {ntime}')
     print('Start assembling ... ')
@@ -65,9 +105,9 @@ def assemble_fortran_GMET_stns_to_one_file(config):
     for i in range(nstn):
         infilei = f'{input_stn_path}/{df_stn.stnid.values[i]}.nc'
         dsi = xr.load_dataset(infilei)
-        for j in range(len(var_names)):
-            if var_names[j] in dsi.data_vars:
-                var_values[i, :, j] = np.squeeze(dsi[var_names[j]].values)
+        for j in range(len(input_vars)):
+            if input_vars[j] in dsi.data_vars:
+                var_values[i, :, j] = np.squeeze(dsi[input_vars[j]].values)
 
     ds_stn = xr.Dataset()
     ds_stn.coords['time'] = time_coord
@@ -76,17 +116,45 @@ def assemble_fortran_GMET_stns_to_one_file(config):
     for col in df_stn.columns:
         ds_stn[col] = xr.DataArray(df_stn[col].values, dims=('stn'))
 
-    for i in range(len(var_names)):
-        ds_stn[var_names[i]] = xr.DataArray(var_values[:, :, i], dims=('stn', 'time'))
+    for i in range(len(input_vars)):
+        ds_stn[input_vars[i]] = xr.DataArray(var_values[:, :, i], dims=('stn', 'time'))
 
-    # add tmean and trange
-    if (add_tmean_trange == True) and ('tmin' in ds_stn.data_vars) and ('tmax' in ds_stn.data_vars):
-        ds_stn['tmean'] = (ds_stn['tmin'] + ds_stn['tmax']) / 2
-        ds_stn['trange'] = np.abs(ds_stn['tmax'] - ds_stn['tmin'])
-        # constrain trange
-        v = ds_stn['trange'].values
-        v[v < minTrange] = minTrange
-        ds_stn['trange'].values = v
+    # add tmean and trange if needed
+    if ('tmean' in target_vars) and (not 'tmean' in input_vars) :
+        if ('tmin' in ds_stn.data_vars) and ('tmax' in ds_stn.data_vars):
+            ds_stn['tmean'] = (ds_stn['tmin'] + ds_stn['tmax']) / 2
+        else:
+            sys.exit('Error. tmean is in target_vars, but raw station data do not contain tmin and tmax!')
+
+    if ('trange' in target_vars) and (not 'trange' in input_vars) :
+        if ('tmin' in ds_stn.data_vars) and ('tmax' in ds_stn.data_vars):
+            ds_stn['trange'] = np.abs(ds_stn['tmax'] - ds_stn['tmin'])
+        else:
+            sys.exit('Error. trange is in target_vars, but raw station data do not contain tmin and tmax!')
+
+    # constrain variables
+    for i in range(len(target_vars)):
+        vari = target_vars[i]
+        if vari in ds_stn.data_vars:
+            v = ds_stn[vari].values
+            if np.any(v < minRange_vars[i]):
+                print(f'{vari} station data has values < {minRange_vars[i]}. Adjust those to {minRange_vars[i]}.')
+                v[v < minRange_vars[i]] = minRange_vars[i]
+            if np.any(v > maxRange_vars[i]):
+                print(f'{vari} station data has values > {maxRange_vars[i]}. Adjust those to {maxRange_vars[i]}.')
+                v[v > maxRange_vars[i]] = maxRange_vars[i]
+            ds_stn[vari].values = v
+
+    # transform variables
+    print('Transform variables if relevant settings are provided')
+    for i in range(len(transform_vars)):
+        if transform_vars[i] in transform_settings:
+            tvar = target_vars[i] + '_' + transform_vars[i]
+            print(f'Perform {transform_vars[i]} transformation for {target_vars[i]}. Add a new variable {tvar} to output station file.')
+            ds_stn[tvar] = ds_stn[vari].copy()
+            ds_stn[tvar].values = data_transformation(ds_stn[target_vars[i]].values, transform_vars[i], transform_settings[transform_vars[i]], 'transform')
+        else:
+            print(f'Do not perform transformation for {target_vars[i]}')
 
     # save to output files
     encoding = {}
