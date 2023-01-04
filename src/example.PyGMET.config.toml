@@ -100,6 +100,7 @@ predictor_name_static_grid = ['latitude', 'longitude', 'elev', 'gradient_n_s', '
 
 # overwrite flags
 overwrite_stninfo = false
+overwrite_station_cc = false
 overwrite_weight = false
 overwrite_loo_reg = false
 overwrite_grid_reg = false

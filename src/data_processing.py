@@ -148,7 +148,7 @@ def assemble_fortran_GMET_stns_to_one_file(config):
     # transform variables
     print('Transform variables if relevant settings are provided')
     for i in range(len(transform_vars)):
-        if transform_vars[i] in transform_settings:
+        if len(transform_vars[i])>0:
             tvar = target_vars[i] + '_' + transform_vars[i]
             print(f'Perform {transform_vars[i]} transformation for {target_vars[i]}. Add a new variable {tvar} to output station file.')
             ds_stn[tvar] = ds_stn[vari].copy()

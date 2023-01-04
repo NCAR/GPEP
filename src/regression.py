@@ -4,6 +4,7 @@ import numpy as np
 import xarray as xr
 from tqdm.contrib import itertools
 from data_processing import data_transformation
+import spatial_extrapolation
 import sys, os
 
 ########################################################################################################################
@@ -107,13 +108,6 @@ def weight_linear_regression(nearinfo, weightnear, datanear, tarinfo):
 
     return datatar
 
-# from sklearn.linear_model import LinearRegression
-# def weight_linear_regression(nearinfo, weightnear, datanear, tarinfo):
-#     model = LinearRegression()
-#     model = model.fit(nearinfo, datanear, sample_weight=weightnear)
-#     datatar = model.predict(tarinfo[np.newaxis, :])
-#     return datatar
-
 def weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
 
     w_pcp_red = np.diag(np.squeeze(weightnear))
@@ -132,14 +126,22 @@ def weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
 
     return pop
 
-# from sklearn.linear_model import LogisticRegression
-# def weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
-#
-#     model = LogisticRegression(solver='liblinear')
-#     model = model.fit(nearinfo, datanear, sample_weight=weightnear)
-#     pop = model.predict_proba(tarinfo[np.newaxis,:])[0, 1]
-#
-#     return pop
+###########################
+# regression using Python sklearn package: easier to use, but slower and a bit different from the above functions
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LogisticRegression
+def sklearn_weight_linear_regression(nearinfo, weightnear, datanear, tarinfo):
+    model = LinearRegression()
+    model = model.fit(nearinfo, datanear, sample_weight=weightnear)
+    datatar = model.predict(tarinfo[np.newaxis, :])
+    return datatar
+def sklearn_weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
+
+    model = LogisticRegression(solver='liblinear')
+    model = model.fit(nearinfo, datanear, sample_weight=weightnear)
+    pop = model.predict_proba(tarinfo[np.newaxis,:])[0, 1]
+    return pop
+
 
 ########################################################################################################################
 # wrapped up regression functions
@@ -254,7 +256,7 @@ def main_regression(config, target):
         near_keyword = 'Grid'
 
     print('#' * 50)
-    print('Gridded regression')
+    print(f'{target} regression')
     print('#' * 50)
     print('Input file_allstn:', file_allstn)
     print('Input file_stn_nearinfo:', file_stn_nearinfo)
@@ -289,13 +291,15 @@ def main_regression(config, target):
     elif target == 'loo':
         ds_out.coords['stn'] = ds_stn.stn.values
 
+    ########################################################################################################################
+    # loop variables
     for vn in range(len(target_vars)):
 
         var_name = target_vars[vn]
         print('Regression for:', var_name)
 
         # transformed or not
-        if transform_vars[vn] in transform_settings:
+        if len(transform_vars[vn]) > 0:
             var_name_trans = var_name + '_' + transform_vars[vn]
             print(f'Variable {var_name} is transformed using {transform_vars[vn]}')
             print(f'{var_name_trans} instead of {var_name} will be loaded from the station data file {file_allstn}.')
@@ -404,17 +408,17 @@ def main_regression(config, target):
 
         ########################################################################################################################
         # if the variable is prcp, do logistic regression too
-        # if var_name == 'prcp':
-        #     print('Add pop logistic regression')
-        #     if len(var_name_trans) > 0: # this means previous step uses transformed precipitation, while for logistic regression, we use raw precipitation
-        #         stn_value = ds_stn[var_name].values
-        #         print('negative values', np.sum(stn_value<0))
-        #     stn_value[stn_value > 0] = 1
-        #     estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic')
-        #     if estimates.ndim == 3:
-        #         ds_out['pop'] = xr.DataArray(estimates, dims=('y', 'x', 'time'))
-        #     elif estimates.ndim == 2:
-        #         ds_out['pop'] = xr.DataArray(estimates, dims=('stn', 'time'))
+        if var_name == 'prcp':
+            print('Add pop logistic regression')
+            if len(var_name_trans) > 0: # this means previous step uses transformed precipitation, while for logistic regression, we use raw precipitation
+                stn_value = ds_stn[var_name].values
+                print('negative values', np.sum(stn_value<0))
+            stn_value[stn_value > 0] = 1
+            estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic')
+            if estimates.ndim == 3:
+                ds_out['pop'] = xr.DataArray(estimates, dims=('y', 'x', 'time'))
+            elif estimates.ndim == 2:
+                ds_out['pop'] = xr.DataArray(estimates, dims=('stn', 'time'))
 
     # save output file
     encoding = {}

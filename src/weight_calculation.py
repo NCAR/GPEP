@@ -4,9 +4,8 @@ import xarray as xr
 import numpy as np
 
 def distanceweight(dist, maxdist = 100, exp = 3):
-    if np.max(dist) > maxdist:
-        maxdist = np.max(dist) + 1
     weight = (1 - (dist / maxdist) ** exp) ** exp
+    weight[dist > maxdist] = 0
     return weight
 
 
