@@ -76,10 +76,9 @@ def probabilistic_estimate_for_one_var(var_name, reg_estimate, reg_error, pop, r
     else:
         ens_estimate = perturb_estimates_general(reg_estimate, reg_error, random_field, minrndnum, maxrndnum)
 
-    # add to output ds
+    # # add to output ds
     ds_out[var_name] = xr.DataArray(ens_estimate, dims=('lat', 'lon', 'time'))
     ds_out[var_name + '_rnd'] = xr.DataArray(random_field, dims=('lat', 'lon', 'time'))
-    del ens_estimate
 
     return ds_out
 

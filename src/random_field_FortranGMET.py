@@ -1,6 +1,5 @@
 # generate random numbers
 
-import random
 import numpy as np
 
 # random field generation using Fortran GMET codes
@@ -192,7 +191,7 @@ def field_rand(spcorr_jpos, spcorr_ipos, spcorr_wght, spcorr_sdev, iorder, jorde
         ilat = jorder[igrd]
         # ! assign a random number to the first grid-point
         if igrd == 0:
-            aran = random.gauss(0, 1)
+            aran = np.random.normal(0, 1)
             cran[ilon, ilat] = aran
         # ! process gridpoints 2,...,n
         else:
@@ -205,7 +204,7 @@ def field_rand(spcorr_jpos, spcorr_ipos, spcorr_wght, spcorr_sdev, iorder, jorde
                 jlat = spcorr_jpos[ilon, ilat][iprev]
                 vprv[iprev] = cran[jlon, jlat] # (previously generated point)
             # ! and generate the "current" point
-            aran = random.gauss(0, 1)
+            aran = np.random.normal(0, 1)
             xbar = np.dot(vprv[0:nprv], spcorr_wght[ilon, ilat][0:nprv])
             cran[ilon, ilat] = xbar + spcorr_sdev[ilon, ilat] * aran
 

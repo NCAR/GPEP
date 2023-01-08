@@ -104,8 +104,9 @@ ensemble_number = 5
 # master probabilistic seed: control all probabilistic process (e.g., generating other random seeds)
 master_seed = 20230104
 
-# variable space and temporal correlation length. the list corresponds to target_vars. -9999 means calculation based available station data
-clen = [150, 800, 800]
+# variable space and temporal correlation length. the list corresponds to target_vars. negative values mean calculation based available station data
+clen = [150, 800, 300]
+#clen = [-999, -999, -999]
 
 # overwrite existing files
 overwrite_stninfo = false
