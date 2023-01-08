@@ -1,23 +1,8 @@
 # generate random numbers
 
-from random import gauss
+import random
 import numpy as np
 
-########################################################################################################################
-# shared utilities
-def update_randomfield_use_autocc(auto_cc, old_rf, new_rf):
-    # update using temporal auto (i.e., lag-1) correlation
-    new_rf = old_rf * auto_cc + new_rf * np.sqrt(1 - auto_cc ** 2)
-    return new_rf
-
-
-def update_randomfield_use_crosscc(cross_cc, source_rf, target_rf):
-    # source_rf: this random field will be used to adjust the target_rf
-    target_rf = source_rf * cross_cc(1) + np.sqrt(1 - cross_cc**2) * target_rf
-    return target_rf
-
-
-########################################################################################################################
 # random field generation using Fortran GMET codes
 # translation from: https://github.com/NCAR/GMET/blob/master/source/ens_generation/spcorr_grd.f90, and https://github.com/NCAR/GMET/blob/master/source/ens_generation/field_rand.f90
 
@@ -191,11 +176,15 @@ def spcorr_grd(grid_lat, grid_lon, clen, outfile):
 
 
 
-def field_rand(spcorr_jpos, spcorr_ipos, spcorr_wght, spcorr_sdev, iorder, jorder):
+def field_rand(spcorr_jpos, spcorr_ipos, spcorr_wght, spcorr_sdev, iorder, jorder, seed=np.nan):
     # ----------------------------------------------------------------------------------------
     # GET THE NUMBER OF X AND Y POINTS AND ALLOCATE SPACE FOR THE RANDOM GRID
     # ----------------------------------------------------------------------------------------
-    nlon, nlat = spcorr_jpos.shape
+
+    if ~np.isnan(seed):
+        np.random.seed(seed)
+
+    nlon, nlat = spcorr_jpos.shape # nlon or nlat just represents row/col, not related to real lat/lon
     cran = np.nan * np.zeros([nlon, nlat], dtype=float)
 
     for igrd in range(nlon * nlat):
@@ -203,7 +192,7 @@ def field_rand(spcorr_jpos, spcorr_ipos, spcorr_wght, spcorr_sdev, iorder, jorde
         ilat = jorder[igrd]
         # ! assign a random number to the first grid-point
         if igrd == 0:
-            aran = gauss(0, 1)
+            aran = random.gauss(0, 1)
             cran[ilon, ilat] = aran
         # ! process gridpoints 2,...,n
         else:
@@ -216,23 +205,9 @@ def field_rand(spcorr_jpos, spcorr_ipos, spcorr_wght, spcorr_sdev, iorder, jorde
                 jlat = spcorr_jpos[ilon, ilat][iprev]
                 vprv[iprev] = cran[jlon, jlat] # (previously generated point)
             # ! and generate the "current" point
-            aran = gauss(0, 1)
+            aran = random.gauss(0, 1)
             xbar = np.dot(vprv[0:nprv], spcorr_wght[ilon, ilat][0:nprv])
             cran[ilon, ilat] = xbar + spcorr_sdev[ilon, ilat] * aran
 
-
-
-# random field generation using Fortran GMET codes
-########################################################################################################################
-
-
-
-
-
-
-
-
-
-
-
+    return cran
 

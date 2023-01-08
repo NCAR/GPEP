@@ -5,7 +5,7 @@ import numpy as np
 from scipy import special
 import os, sys
 
-import random_field_generation_FortranGMET as rfgen
+import random_field_FortranGMET as rf_FGMET
 from data_processing import data_transformation
 
 
@@ -84,20 +84,34 @@ def probabilistic_estimate_for_one_var(var_name, reg_estimate, reg_error, pop, r
     return ds_out
 
 
+def generate_random_numbers(masterseed, n=1):
+    np.random.seed(masterseed)
+    return np.random.randint(0, 2**16, n)
+
+
 def generate_probabilistic_estimates(config):
     # parse and change configurations
     outpath_parent = config['outpath_parent']
     path_ensemble = f'{outpath_parent}/ensemble_outputs'
     os.makedirs(path_ensemble, exist_ok=True)
     config['path_ensemble'] = path_ensemble
-
     file_ens_prefix = f'{path_ensemble}/Ensemble_estimate_'
     config['file_ens_prefix'] = file_ens_prefix
+
+
+    path_spcorr = f'{outpath_parent}/spcorr'
+    os.makedirs(path_spcorr, exist_ok=True)
+    config['path_rfweight'] = path_spcorr
+
+    file_spcorr_prefix = f'{path_spcorr}/spcorr_'
+    config['file_spcorr_prefix'] = file_spcorr_prefix
 
     # in/out information to this function
     file_stn_cc = config['file_stn_cc']
     file_grid_reg = config['file_grid_reg']
     file_grid_error = config['file_grid_error']
+    file_ens_prefix = config['file_ens_prefix']
+    file_spcorr_prefix = file_spcorr_prefix
 
     target_vars = config['target_vars']
     transform_vars = config['transform_vars']
@@ -105,7 +119,8 @@ def generate_probabilistic_estimates(config):
     ensemble_number = config['ensemble_number']
     master_seed = config['master_seed']
     clen_config = config['clen']
-    overwrite_ens_flag = config['overwrite_ens_flag']
+    overwrite_ens = config['overwrite_ens']
+    overwrite_spcorr = config['overwrite_spcorr']
 
     maxrndnum = 3.99  # minimum and maximum random number following GMET scripts
     minrndnum = -3.99
@@ -121,11 +136,11 @@ def generate_probabilistic_estimates(config):
     ########################################################################################################################
     # create all seeds used to generate random fields
     with xr.open_dataset(file_grid_reg) as ds_grid_reg:
-        date0 = int(ds_grid_reg.time[0].dt.strftime('%Y%m%d'))
+        date0 = int(ds_grid_reg.time[0].dt.strftime('%Y%m%d%H'))
         ntime = len(ds_grid_reg.time)
 
-    master_seed = master_seed + date0
-    seeds_rf = rfgen.gs_better_seeds(len(target_vars) * ensemble_number * ntime, master_seed)
+    master_seed = master_seed + date0 # ensure different input batches have different seeds
+    seeds_rf = generate_random_numbers(master_seed, len(target_vars) * ensemble_number * ntime)
     seeds_rf = np.reshape(seeds_rf, [len(target_vars), ensemble_number, ntime])
     seeds_rf2 = {}
     for i in range(len(target_vars)):
@@ -209,6 +224,41 @@ def generate_probabilistic_estimates(config):
     del transform_vars2
 
     ########################################################################################################################
+    # generate spatial correlation structure
+
+    for var_name in target_vars:
+        file_spcor = f'{file_spcorr_prefix}{var_name}.npz'
+        if os.path.isfile(file_spcor):
+            print(f'spcorr outfile exists: {file_spcor}')
+            if overwrite_ens == True:
+                print('overwrite_spcorr is True. Overwrite it.')
+            else:
+                print('overwrite_spcorr is False. Skip spcorr generation.')
+                continue
+        else:
+            print('Creating spcorr outfile:', file_spcor)
+        grid_lat = np.tile(lat[:, np.newaxis], [1, len(lon)])
+        grid_lon = np.tile(lon[np.newaxis, :], [len(lat), 1])
+        rf_FGMET.spcorr_grd(grid_lat, grid_lon, allvar_clen[var_name], file_spcor)
+
+    spcorr_jpos = {}
+    spcorr_ipos = {}
+    spcorr_wght = {}
+    spcorr_sdev = {}
+    iorder = {}
+    jorder = {}
+    for var_name in target_vars:
+        file_spcor = f'{file_spcorr_prefix}{var_name}.npz'
+        dtmp = np.load(file_spcor, allow_pickle=True)
+        spcorr_jpos[var_name] = dtmp['spcorr_jpos']
+        spcorr_ipos[var_name] = dtmp['spcorr_ipos']
+        spcorr_wght[var_name] = dtmp['spcorr_wght']
+        spcorr_sdev[var_name] = dtmp['spcorr_sdev']
+        iorder[var_name] = dtmp['iorder']
+        jorder[var_name] = dtmp['jorder']
+
+
+    ########################################################################################################################
     # probabilistic estimates
     for ens in range(ensemble_number):
 
@@ -216,10 +266,10 @@ def generate_probabilistic_estimates(config):
         outfile_ens = f'{file_ens_prefix}{ens + 1:03}.nc'
         if os.path.isfile(outfile_ens):
             print(f'Ensemble outfile exists: {outfile_ens}')
-            if overwrite_ens_flag == True:
-                print('overwrite_ens_flag is True. Overwrite it.')
+            if overwrite_ens == True:
+                print('#overwrite_ens is True. Overwrite it.')
             else:
-                print('overwrite_ens_flag is False. Skip probabilistic estimation.')
+                print('#overwrite_ens is False. Skip probabilistic estimation.')
                 continue
 
         # initialize outputs
@@ -239,7 +289,7 @@ def generate_probabilistic_estimates(config):
             # generate random numbers
             random_field = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
             for i in range(ntime):
-                rndi = rfgen.generate_Gaussian_latlon_random_field(lat, lon, allvar_clen[var_name], seeds_rf[var_name][ens, i])
+                rndi = rf_FGMET.field_rand(spcorr_jpos[var_name], spcorr_ipos[var_name], spcorr_wght[var_name], spcorr_sdev[var_name], iorder[var_name], jorder[var_name], seeds_rf[var_name][ens, i])
                 if i == 0:
                     random_field[:, :, i] = rndi
                 else:
@@ -260,7 +310,7 @@ def generate_probabilistic_estimates(config):
                     # generate random numbers
                     random_field_dep = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
                     for i in range(ntime):
-                        rndi = rfgen.generate_Gaussian_latlon_random_field(lat, lon, allvar_clen[var_name], seeds_rf[var_name_dep][ens, i])
+                        rndi = rf_FGMET.field_rand(spcorr_jpos[var_name_dep], spcorr_ipos[var_name_dep], spcorr_wght[var_name_dep], spcorr_sdev[var_name_dep], iorder[var_name_dep], jorder[var_name_dep], seeds_rf[var_name_dep][ens, i])
                         random_field_dep[:, :, i] = rndi
                     random_field_dep = random_field * target_vars_dependent_cross_cc[d] + np.sqrt(1 - target_vars_dependent_cross_cc[d]**2)*random_field_dep
                     del random_field

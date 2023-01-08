@@ -4,7 +4,6 @@ import numpy as np
 import xarray as xr
 from tqdm.contrib import itertools
 from data_processing import data_transformation
-import spatial_extrapolation
 import sys, os
 
 ########################################################################################################################

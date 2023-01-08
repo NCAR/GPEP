@@ -113,7 +113,8 @@ overwrite_station_cc = false
 overwrite_weight = false
 overwrite_loo_reg = false
 overwrite_grid_reg = false
-overwrite_ens_flag = false
+overwrite_ens = false
+overwrite_spcorr = false
 
 
 [transform]
