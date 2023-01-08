@@ -187,10 +187,6 @@ def loop_regression_2Dor3D(stn_data, stn_predictor, tar_nearIndex, tar_nearWeigh
 
             # interpolation for every time step
             for d in range(ntime):
-                if r ==0 and c==100 and d==10:
-                    abc=123
-                    cde=123
-
 
                 ydata_near = np.squeeze(stn_data[sample_nearIndex, d])
                 if len(np.unique(ydata_near)) == 1:  # e.g., for prcp, all zero

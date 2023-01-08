@@ -1,9 +1,5 @@
-import glob
 
-import toml, os, time, sys
-import pandas as pd
-import numpy as np
-import xarray as xr
+import toml
 
 import data_processing
 import near_stn_search
@@ -11,6 +7,7 @@ import weight_calculation
 import regression
 import spatial_extrapolation
 import data_correlation
+import probabilistic_estimation
 
 config_file = "example.PyGMET.config.toml"
 
@@ -49,7 +46,12 @@ config = spatial_extrapolation.station_error_extrapolation((config))
 
 ########################################################################################################################
 # probabilistic estimation
+
+# 1. get space and time correlations
 config = data_correlation.station_space_time_correlation(config)
+
+# 2. probabilistic estimation
+config = probabilistic_estimation.generate_probabilistic_estimates(config)
 
 
 

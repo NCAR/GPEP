@@ -58,14 +58,60 @@ def station_spatial_correlation(lat, lon, data):
     return cc_pair, dist_pair, index_pair
 
 
-def func_clen_exp2p(x, a, b):
-    y = np.exp(-(x/a)**b)
+
+def func_clen_exp1p(x, a):
+    # regression of spatial correlation length
+    y = np.exp(-x/a)
     return y
+
+def func_clen_Gaussian_gstools(x, a):
+    # regression of spatial correlation length
+    y = np.exp(-(x/a)**2)
+    return y
+
+
+# def func_clen_exp2p(x, a, b):
+#     # regression of spatial correlation length
+#     y = np.exp(-(x/a)**b)
+#     return y
+
+
+def func_clen_exp2p(x, a, b):
+    # regression of spatial correlation length
+    y = b * np.exp(-x/a)
+    return y
+
+
+def func_clen_exp3p(x, a, b, c):
+    # regression of spatial correlation length
+    y = c * np.exp(- (x/a) ** b)
+    return y
+
+
+def hist_xy(x, y):
+    binnum = 20 # divide x into binnum bins
+    smpnum = int(len(x)/binnum) # sample number in each bin
+    index = np.argsort(x)
+    x = x[index]
+    y = y[index]
+    x2 = []
+    y2 = []
+
+    for i in range(binnum):
+        x2.append(np.median(x[i * smpnum:(i + 1) * smpnum]))
+        y2.append(np.median(y[i * smpnum:(i + 1) * smpnum]))
+
+    return np.array(x2), np.array(y2)
+
+
+
+
+
 
 def station_space_time_correlation(config):
     # parse and change configurations
     path_stn_info = config['path_stn_info']
-    file_stn_cc = f'{path_stn_info}/station_time_space_correlation.nc'
+    file_stn_cc = f'{path_stn_info}/stn_time_space_correlation.nc'
     config['file_stn_cc'] = file_stn_cc
 
     # in/out information to this function
@@ -125,16 +171,14 @@ def station_space_time_correlation(config):
         cc_pair, dist_pair, index_pair = station_spatial_correlation(lat, lon, stn_value)
 
         index = ~np.isnan(dist_pair + cc_pair)
-        popt, pcov = curve_fit(func_clen_exp2p, dist_pair[index], cc_pair[index])
-        clen = popt[0] # spatial correlation length
+        # popt, pcov = curve_fit(func_clen_exp2p, dist_pair[index], cc_pair[index])
+        popt, pcov = curve_fit(func_clen_exp1p, dist_pair[index], cc_pair[index])
 
-        ds_out[f'{var_name}_space_pair_cc'] = xr.DataArray(cc_pair, dims=('pair'))
-        ds_out[f'{var_name}_space_pair_dist'] = xr.DataArray(dist_pair, dims=('pair'))
-        ds_out[f'{var_name}_space_pair_index'] = xr.DataArray(index_pair, dims=('pair', 'pind'))
-        ds_out[f'{var_name}_space_Clen'] = xr.DataArray([clen], dims=('z'))
-
-
-
+        # ds_out[f'{var_name}_space_pair_cc'] = xr.DataArray(cc_pair, dims=('pair'))
+        # ds_out[f'{var_name}_space_pair_dist'] = xr.DataArray(dist_pair, dims=('pair'))
+        # ds_out[f'{var_name}_space_pair_index'] = xr.DataArray(index_pair, dims=('pair', 'pind'))
+        ds_out[f'{var_name}_space_Clen'] = xr.DataArray([popt[0]], dims=('z'))
+        # ds_out[f'{var_name}_space_param2'] = xr.DataArray([popt[1]], dims=('z'))
 
     ########################################################################################################################
     # calculate cross correlation
@@ -149,7 +193,7 @@ def station_space_time_correlation(config):
         cc = station_cross_correlation(data1, data2)
 
         ds_out['prcp_trange_cc_cross'] = xr.DataArray(cc, dims=('stn'))
-        ds_out['prcp_trange_cc_cross_mean'] = xr.DataArray(np.nanmean(cc), dims=('stn'))
+        ds_out['prcp_trange_cc_cross_mean'] = xr.DataArray([np.nanmean(cc)], dims=('z'))
 
     ########################################################################################################################
     # save output file

@@ -98,12 +98,22 @@ initial_distance = 100
 predictor_name_static_stn = ['lat', 'lon', 'elev', 'slp_n', 'slp_e'] # variable names in station attribute file
 predictor_name_static_grid = ['latitude', 'longitude', 'elev', 'gradient_n_s', 'gradient_w_e'] # variable names in station attribute file
 
-# overwrite flags
+# ensemble settings
+ensemble_number = 5
+
+# master probabilistic seed: control all probabilistic process (e.g., generating other random seeds)
+master_seed = 20230104
+
+# variable space and temporal correlation length. the list corresponds to target_vars. -9999 means calculation based available station data
+clen = [150, 800, 800]
+
+# overwrite existing files
 overwrite_stninfo = false
 overwrite_station_cc = false
 overwrite_weight = false
 overwrite_loo_reg = false
 overwrite_grid_reg = false
+overwrite_ens_flag = false
 
 
 [transform]

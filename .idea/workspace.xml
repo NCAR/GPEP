@@ -2,15 +2,19 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dd28c71d-3c6d-4fb6-9bf1-7668a419c94f" name="Default Changelist" comment="ont">
-      <change afterPath="$PROJECT_DIR$/src/data_correlation.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/spatial_extrapolation.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/probabilistic_estimation.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/random_field_generation_FortranGMET.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/random_field_generation_gstools.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/pyGMET.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/pyGMET.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/SHARP_PyGMET.pptx" beforeDir="false" afterPath="$PROJECT_DIR$/SHARP_PyGMET.pptx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/calculate_weight.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/weight_calculation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/data_correlation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/data_correlation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/data_processing.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/data_processing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/example.PyGMET.config.toml" beforeDir="false" afterPath="$PROJECT_DIR$/src/example.PyGMET.config.toml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/regression.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/regression.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/~$SHARP_PyGMET.pptx" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,14 +44,17 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "dart.analysis.tool.window.visible": "false",
-    "last_opened_file_path": "/Users/guoqiang/Github/meteorological_dataset/PyGMET/Fortran_Python_SpeedCompare",
-    "settings.editor.selected.configurable": "editor.preferences.tabs"
+    "last_opened_file_path": "/Users/guoqiang/Github/meteorological_dataset/PyGMET/src",
+    "settings.editor.selected.configurable": "reference.idesettings.debugger.python"
   }
 }]]></component>
+  <component name="PyDebuggerOptionsProvider">
+    <option name="myDropIntoDebuggerOnFailedTests" value="true" />
+  </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/Fortran_Python_SpeedCompare" />
       <recent name="$PROJECT_DIR$/src" />
+      <recent name="$PROJECT_DIR$/Fortran_Python_SpeedCompare" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/analysis/ens_validation/bss_crpss" />
       <recent name="$PROJECT_DIR$/analysis/ens_validation/rank_histogram" />
@@ -57,7 +64,7 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.main">
+  <component name="RunManager" selected="Python.random_field_generation_FortranGMET">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="pyGMET" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -100,7 +107,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="s3_stn_regression_onerun" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="random_field_generation_FortranGMET" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="pyGMET" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -108,11 +115,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/s3_stn_regression_onerun.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/random_field_generation_FortranGMET.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -165,11 +172,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.random_field_generation_FortranGMET" />
         <item itemvalue="Python.main" />
         <item itemvalue="Python.testcase_simple_regression (1)" />
         <item itemvalue="Python.main_daily_GMETcompare" />
         <item itemvalue="Python.testcase_simple_regression" />
-        <item itemvalue="Python.s3_stn_regression_onerun" />
       </list>
     </recent_temporary>
   </component>
@@ -197,16 +204,5 @@
         </entry>
       </map>
     </option>
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <default-breakpoints>
-        <breakpoint type="python-exception">
-          <properties notifyOnTerminate="true" exception="BaseException">
-            <option name="notifyOnTerminate" value="true" />
-          </properties>
-        </breakpoint>
-      </default-breakpoints>
-    </breakpoint-manager>
   </component>
 </project>
