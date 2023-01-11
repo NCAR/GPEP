@@ -11,10 +11,10 @@ Note: All outputs are provided as netcdf4 files
 - Set up Python environment  
 Required packages should be introduced here in the form of requirements.txt or environment.yml
 
-- Prepare the configuration file
+- Prepare the configuration file  
 Use testcase.config.toml in ./src as the template to set up new cases
 
-- Run PyGMET
+- Run PyGMET  
 python main.py testcase.config.toml
 
 # Existing PyGMET Datasets
@@ -27,7 +27,7 @@ The PyGMET_SHARP branch is the most recent. Branch structure may be changed duri
 
 # References:
 ## PyGMET
-Tang, G., Clark, M. P., & Papalexiou, S. M. (2022). EM-Earth: The Ensemble Meteorological Dataset for Planet Earth. Bulletin of the American Meteorological Society, 103(4), E996–E1018. https://doi.org/10.1175/BAMS-D-21-0106.1
+Tang, G., Clark, M. P., & Papalexiou, S. M. (2022). EM-Earth: The Ensemble Meteorological Dataset for Planet Earth. Bulletin of the American Meteorological Society, 103(4), E996–E1018. https://doi.org/10.1175/BAMS-D-21-0106.1  
 Tang, G., Clark, M. P., Papalexiou, S. M., Newman, A. J., Wood, A. W., Brunet, D., & Whitfield, P. H. (2021). EMDNA: an Ensemble Meteorological Dataset for North America. Earth System Science Data, 13(7), 3337–3362. https://doi.org/10.5194/essd-13-3337-2021
 ## Original GMET
 Newman, A. J. et al. (2020) ‘Probabilistic Spatial Meteorological Estimates for Alaska and the Yukon’, Journal of Geophysical Research: Atmospheres, 125(22), pp. 1–21. doi: 10.1029/2020JD032696.   
