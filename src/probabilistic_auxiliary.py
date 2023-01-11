@@ -2,6 +2,7 @@
 
 import numpy as np
 import xarray as xr
+from tqdm.contrib import itertools
 import sys, os
 
 from weight_calculation import distanceweight
@@ -10,6 +11,32 @@ def weighted_mean(data, weight):
     weight = weight / np.sum(weight)
     return np.dot(data, weight)
 
+
+def nearby_station_statistics(stn_data, tar_nearIndex, method):
+    # find every target point, find the max value of nearby estimates
+
+    if tar_nearIndex.ndim == 2:
+        # make it a 3D array to be consistent
+        tar_nearIndex = tar_nearIndex[np.newaxis, :, :]
+
+    nstn, ntime = np.shape(stn_data)
+    nrow, ncol, nearmax = np.shape(tar_nearIndex)
+    estimates = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
+
+    for r, c in itertools.product(range(nrow), range(ncol)):
+        sample_nearIndex = tar_nearIndex[r, c, :]
+        index_valid = sample_nearIndex >= 0
+        if np.sum(index_valid) > 0:
+            sample_nearIndex = sample_nearIndex[index_valid]
+            ydata_near = stn_data[sample_nearIndex, :]
+            if method == 'max':
+                estimates[r, c, :] = np.nanmax(ydata_near, axis=0)
+            elif method == 'min':
+                estimates[r, c, :] = np.nanmin(ydata_near, axis=0)
+            else:
+                sys.exit('Unknown method!')
+
+    return np.squeeze(estimates)
 
 
 def extrapolation(datain, nearstn_loc, nearstn_DistOrWeright, weighttype, excflag=0):
@@ -68,14 +95,16 @@ def extrapolation(datain, nearstn_loc, nearstn_DistOrWeright, weighttype, excfla
     return dataout
 
 
-def station_error_extrapolation(config):
+def extrapolate_auxiliary_info(config):
 
     # parse and change configurations
     outpath_parent = config['outpath_parent']
     path_regression = f'{outpath_parent}/regression_outputs'
     os.makedirs(path_regression, exist_ok=True)
-    file_grid_error = f'{path_regression}/Grid_Error.nc'  # leave one out regression
-    config['file_grid_error'] = file_grid_error
+
+    datestamp = f"{config['date_start'].replace('-', '')}-{config['date_end'].replace('-', '')}"
+    file_grid_auxiliary = f'{path_regression}/Auxiliary_{datestamp}.nc'  # leave one out regression
+    config['file_grid_auxiliary'] = file_grid_auxiliary
 
 
     # in/out information to this function
@@ -83,7 +112,7 @@ def station_error_extrapolation(config):
     file_loo_reg = config['file_loo_reg']
     file_stn_nearinfo = config['file_stn_nearinfo']
     file_stn_weight = config['file_stn_weight']
-    file_grid_error = config['file_grid_error']
+    file_grid_auxiliary = config['file_grid_auxiliary']
 
     target_vars = config['target_vars']
     transform_vars = config['transform_vars']
@@ -95,10 +124,10 @@ def station_error_extrapolation(config):
     print('Input file_loo_reg:', file_loo_reg)
     print('Input file_stn_nearinfo:', file_stn_nearinfo)
     print('Input file_stn_weight:', file_stn_weight)
-    print('Output file_grid_error:', file_grid_error)
+    print('Output file_grid_auxiliary:', file_grid_auxiliary)
     print('Target variables:', target_vars)
 
-    if os.path.isfile(file_grid_error):
+    if os.path.isfile(file_grid_auxiliary):
         print('Note! Output gridded error file exists')
         if overwrite_loo_reg == True:
             print('overwrite_loo_reg is True. Continue.')
@@ -180,17 +209,32 @@ def station_error_extrapolation(config):
         error = error ** 0.5
 
         if len(var_name_trans) > 0:
-            var_name_save = var_name_trans
+            var_name_save = 'uncert_' + var_name_trans
         else:
-            var_name_save = var_name
+            var_name_save = 'uncert_' + var_name
 
         ds_out[var_name_save] = xr.DataArray(error, dims=('y', 'x', 'time'))
+
+        ########################################################################################################################
+        # if the variable is prcp, find the maximum precipitation from nearby stations
+        # currently, not within the config file
+        if var_name == 'prcp':
+            print('Add max nearby precipitation')
+            estimates = nearby_station_statistics(stn_value, nearIndex, 'max')
+            if len(var_name_trans) > 0:
+                var_name_save = f'nearmax_{var_name_trans}'
+            else:
+                var_name_save = f'nearmax_{var_name}'
+            if estimates.ndim == 3:
+                ds_out[var_name_save] = xr.DataArray(estimates, dims=('y', 'x', 'time'))
+            elif estimates.ndim == 2:
+                ds_out[var_name_save] = xr.DataArray(estimates, dims=('stn', 'time'))
 
     # save output file
     encoding = {}
     for var in ds_out.data_vars:
         encoding[var] = {'zlib': True, 'complevel': 4}
 
-    ds_out.to_netcdf(file_grid_error, encoding=encoding)
+    ds_out.to_netcdf(file_grid_auxiliary, encoding=encoding)
 
     return config

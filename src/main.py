@@ -1,22 +1,21 @@
-
-import toml
-
+import toml, json
 import data_processing
 import near_stn_search
 import weight_calculation
 import regression
-import spatial_extrapolation
+import probabilistic_auxiliary
 import data_correlation
 import probabilistic_estimation
 
-config_file = "example.PyGMET.config.toml"
+config_file = "testcase.config.toml"
+# config_file = sys.argv[1]
 
 ########################################################################################################################
 # load configuration file
 
 config = toml.load(config_file)
-print(config)
-
+print('Configuration file:', config_file)
+print(json.dumps(config, sort_keys=True, indent=4))
 
 ########################################################################################################################
 # assemble individual stations and station attributes (e.g., lat, lon) to one netcdf file
@@ -41,8 +40,7 @@ config = regression.main_regression(config, 'grid')
 ########################################################################################################################
 # get uncertainty estimation based on difference between leave-one-out station regression estimates and station observations
 # interpolation from points to grids
-config = spatial_extrapolation.station_error_extrapolation((config))
-
+config = probabilistic_auxiliary.extrapolate_auxiliary_info((config))
 
 ########################################################################################################################
 # probabilistic estimation

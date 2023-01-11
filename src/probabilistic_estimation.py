@@ -64,17 +64,31 @@ def perturb_estimates_general(data, uncert, rndnum, minrndnum=-3.99, maxrndnum=3
     return data_out
 
 
-def probabilistic_estimate_for_one_var(var_name, reg_estimate, reg_error, pop, random_field, minrndnum, maxrndnum, transform_method, transform_setting, ds_out):
+def probabilistic_estimate_for_one_var(var_name, reg_estimate, reg_error, nearby_stn_max, pop, random_field, minrndnum, maxrndnum, transform_method, transform_setting, ds_out):
     # generate probabilistic estimates
     if var_name == 'prcp':
         ens_estimate = perturb_estimates_precipitation(reg_estimate, reg_error, pop, random_field, minrndnum, maxrndnum)
         # back transformation
         if len(transform_method) > 0:
+            minprcp = 0.01
             ens_estimate = data_transformation(ens_estimate, transform_method, transform_setting, 'retransform')
-            ens_estimate[ens_estimate < 0.001] = 0
-            ens_estimate[(ens_estimate > 0.001) & (ens_estimate < 0.1)] = 0.1
+            ens_estimate[ens_estimate < minprcp] = 0
+            ens_estimate[(ens_estimate > minprcp) & (ens_estimate < minprcp)] = minprcp
     else:
         ens_estimate = perturb_estimates_general(reg_estimate, reg_error, random_field, minrndnum, maxrndnum)
+
+    # max limit: may be changed in the future ...
+    if nearby_stn_max.size > 0:
+        if not var_name == 'prcp':
+            sys.exit('The code cannot address probabilistic max limit of variables other than prcp!')
+        else:
+            if len(transform_method) > 0:
+                precip_err_cap = 0.2 # hard coded ...
+                nearby_stn_max = data_transformation(nearby_stn_max+reg_error*precip_err_cap, transform_method, transform_setting, 'retransform')
+            else:
+                nearby_stn_max = nearby_stn_max + reg_error * 2 # no reference at all ...
+            mask = ens_estimate > nearby_stn_max
+            ens_estimate[mask] = nearby_stn_max[mask]
 
     # # add to output ds
     ds_out[var_name] = xr.DataArray(ens_estimate, dims=('lat', 'lon', 'time'))
@@ -108,7 +122,7 @@ def generate_probabilistic_estimates(config):
     # in/out information to this function
     file_stn_cc = config['file_stn_cc']
     file_grid_reg = config['file_grid_reg']
-    file_grid_error = config['file_grid_error']
+    file_grid_auxiliary = config['file_grid_auxiliary']
     file_ens_prefix = config['file_ens_prefix']
     file_spcorr_prefix = file_spcorr_prefix
 
@@ -120,6 +134,7 @@ def generate_probabilistic_estimates(config):
     clen_config = config['clen']
     overwrite_ens = config['overwrite_ens']
     overwrite_spcorr = config['overwrite_spcorr']
+    datestamp = f"{config['date_start'].replace('-', '')}-{config['date_end'].replace('-', '')}"
 
     maxrndnum = 3.99  # minimum and maximum random number following GMET scripts
     minrndnum = -3.99
@@ -154,6 +169,7 @@ def generate_probabilistic_estimates(config):
     allvar_clen = {}
     allvar_reg_estimate = {}
     allvar_reg_error = {}
+    nearby_stn_max = {}
 
     # auto correlation
     with xr.open_dataset(file_stn_cc) as ds_stn_cc:
@@ -165,7 +181,7 @@ def generate_probabilistic_estimates(config):
             else:
                 allvar_clen[var_name] = ds_stn_cc[var_name + '_space_Clen'].values
 
-    # estimates
+    # regression estimates
     with xr.open_dataset(file_grid_reg) as ds_grid_reg:
         for vn in range(len(target_vars)):
             var_name = target_vars[vn]
@@ -179,14 +195,22 @@ def generate_probabilistic_estimates(config):
         lon = ds_grid_reg.x.values
         time = ds_grid_reg.time.values
 
-    # estimate error
-    with xr.open_dataset(file_grid_error) as ds_grid_error:
+    # auxiliary info: estimate error and nearby_stn_max
+    with xr.open_dataset(file_grid_auxiliary) as ds_grid_aux:
         for vn in range(len(target_vars)):
             var_name = target_vars[vn]
             if len(transform_vars[vn]) > 0:
-                allvar_reg_error[var_name] = ds_grid_error[var_name + '_' + transform_vars[vn]].values
+                allvar_reg_error[var_name] = ds_grid_aux['uncert_' + var_name + '_' + transform_vars[vn]].values
+                if var_name == 'prcp':
+                    nearby_stn_max[var_name] = ds_grid_aux['nearmax_' + var_name + '_' + transform_vars[vn]].values
+                else:
+                    nearby_stn_max[var_name] = np.array([])
             else:
-                allvar_reg_error[var_name] = ds_grid_error[var_name].values
+                allvar_reg_error[var_name] = ds_grid_aux['uncert_' + var_name].values
+                if var_name == 'prcp':
+                    nearby_stn_max[var_name] = ds_grid_aux['nearmax_' + var_name].values
+                else:
+                    nearby_stn_max[var_name] = np.array([])
 
     nrow, ncol, ntime = allvar_reg_error[var_name].shape
 
@@ -229,7 +253,7 @@ def generate_probabilistic_estimates(config):
         file_spcor = f'{file_spcorr_prefix}{var_name}.npz'
         if os.path.isfile(file_spcor):
             print(f'spcorr outfile exists: {file_spcor}')
-            if overwrite_ens == True:
+            if overwrite_spcorr == True:
                 print('overwrite_spcorr is True. Overwrite it.')
             else:
                 print('overwrite_spcorr is False. Skip spcorr generation.')
@@ -262,7 +286,7 @@ def generate_probabilistic_estimates(config):
     for ens in range(ensemble_number):
 
         # define output file name
-        outfile_ens = f'{file_ens_prefix}{ens + 1:03}.nc'
+        outfile_ens = f'{file_ens_prefix}{datestamp}_{ens + 1:03}.nc'
         if os.path.isfile(outfile_ens):
             print(f'Ensemble outfile exists: {outfile_ens}')
             if overwrite_ens == True:
@@ -297,7 +321,7 @@ def generate_probabilistic_estimates(config):
             random_field[np.isnan(allvar_reg_estimate[var_name])] = np.nan
 
             # probabilistic estimation
-            ds_out = probabilistic_estimate_for_one_var(var_name, allvar_reg_estimate[var_name], allvar_reg_error[var_name],
+            ds_out = probabilistic_estimate_for_one_var(var_name, allvar_reg_estimate[var_name], allvar_reg_error[var_name], nearby_stn_max[var_name],
                                                         pop, random_field, minrndnum, maxrndnum, transform_vars[var_name], transform_settings[transform_vars[var_name]], ds_out)
 
             # is any linked variable
@@ -316,8 +340,8 @@ def generate_probabilistic_estimates(config):
                     random_field_dep[np.isnan(allvar_reg_estimate[var_name_dep])] = np.nan
 
                     # probabilistic estimation
-                    ds_out = probabilistic_estimate_for_one_var(var_name_dep, allvar_reg_estimate[var_name_dep], allvar_reg_error[var_name_dep], pop, random_field_dep, minrndnum, maxrndnum,
-                                                                transform_vars[var_name_dep], transform_settings[transform_vars[var_name_dep]], ds_out)
+                    ds_out = probabilistic_estimate_for_one_var(var_name_dep, allvar_reg_estimate[var_name_dep], allvar_reg_error[var_name_dep], nearby_stn_max[var_name],
+                                                                pop, random_field_dep, minrndnum, maxrndnum, transform_vars[var_name_dep], transform_settings[transform_vars[var_name_dep]], ds_out)
 
 
         # save output file
