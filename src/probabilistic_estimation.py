@@ -290,9 +290,9 @@ def generate_probabilistic_estimates(config):
         if os.path.isfile(outfile_ens):
             print(f'Ensemble outfile exists: {outfile_ens}')
             if overwrite_ens == True:
-                print('#overwrite_ens is True. Overwrite it.')
+                print('overwrite_ens is True. Overwrite it.')
             else:
-                print('#overwrite_ens is False. Skip probabilistic estimation.')
+                print('overwrite_ens is False. Skip probabilistic estimation.')
                 continue
 
         # initialize outputs

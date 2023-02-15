@@ -1,5 +1,6 @@
 
 import numpy as np
+import pandas as pd
 import xarray as xr
 from tqdm.contrib import itertools
 from data_processing import data_transformation
@@ -254,6 +255,8 @@ def weight_linear_regression(nearinfo, weightnear, datanear, tarinfo):
 
     return datatar
 
+
+
 def weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
 
     w_pcp_red = np.diag(np.squeeze(weightnear))
@@ -271,6 +274,20 @@ def weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
         pop = 1 / (1 + np.exp(zb))
 
     return pop
+
+def check_predictor_matrix_behavior(nearinfo, weightnear):
+    # check to see if the station predictor matrix will be well behaved
+    w_pcp_red = np.diag(np.squeeze(weightnear))
+    tx_red = np.transpose(nearinfo)
+    twx_red = np.matmul(tx_red, w_pcp_red)
+    tmp = np.matmul(twx_red, nearinfo)
+    vv =  np.max(np.abs(tmp), axis=1)
+    if np.any(vv==0):
+        flag = False # bad performance
+    else:
+        flag = True # good performance
+    return flag
+
 
 ###########################
 # regression using Python sklearn package: easier to use, but slower and a bit different from the above functions
@@ -290,9 +307,166 @@ def sklearn_weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
 
 
 ########################################################################################################################
+# dynmaic predictor-related functions
+def initial_check_dynamic_predictor(dynamic_predictor_name, dynamic_predictor_filelist, target_vars):
+
+    if not isinstance(dynamic_predictor_name, list):
+        sys.exit(f'Error! dynamic_predictor_name must be a list.')
+
+    if (len(target_vars) != len(dynamic_predictor_name)) and (len(dynamic_predictor_name) > 0):
+        sys.exit(f'Error! len(dynamic_predictor_name)>0 but is different from len(target_vars)!')
+
+    flag = False
+    if not os.path.isfile(dynamic_predictor_filelist):
+        print('Do not find dynamic_predictor_filelist:', dynamic_predictor_filelist)
+    elif len(dynamic_predictor_name) == 0:
+        print('dynamic_predictor_name length is 0')
+    else:
+        with open(dynamic_predictor_filelist, 'r') as f:
+            file0 = f.readline().strip()
+        if not os.path.isfile(file0):
+            print(f'Do not find the first file: {file0} in dynamic_predictor_filelist: {dynamic_predictor_filelist}')
+        else:
+            # with nc.Dataset(file0) as ds:
+            with xr.open_dataset(file0) as ds:
+                for i in range(len(dynamic_predictor_name)):
+                    tmp = []
+                    for v in dynamic_predictor_name[i]:
+                        # if v in ds.variables.keys():
+                        if v in ds.data_vars:
+                            print(f'Include {v} as a dynamic predictor for {target_vars[i]}')
+                            tmp.append(v)
+                        else:
+                            print(f'Cannot find {v} in {file0}. Do not include it as a dynamic predictor for {target_vars[i]}')
+                    if len(tmp) > 0:
+                        flag = True
+                    dynamic_predictor_name[i] = tmp
+
+    if flag == False:
+        print('Dynamic predictor is not activated')
+    else:
+        print(f'Dynamic predictor is activated. Dynamic predicotrs are {dynamic_predictor_name}')
+    return flag
+
+def map_filelist_timestep(dynamic_predictor_filelist, timeseries):
+    # for every time step, find the corresponding input file
+
+    # get file list
+    filelist = []
+    with open(dynamic_predictor_filelist, 'r') as f:
+        for line in f:
+            filelist.append(line.strip())
+
+    # make a dateframe containing all time steps
+    df = pd.DataFrame()
+    for i in range(len(filelist)):
+        with xr.open_dataset(filelist[i]) as ds:
+            timei = ds.time.values
+            files = [filelist[i]] * len(timei)
+            dfi = pd.DataFrame({'intime': timei, 'file': files, 'ind': np.arange(len(timei))})
+            df = pd.concat((df, dfi))
+
+    # for each time step, find the closest
+    df_mapping = pd.DataFrame()
+    for t in timeseries:
+        if t >= df['intime'].iloc[0] and t <= df['intime'].iloc[-1]: # don't extrapolate 
+            indi = np.argmin(np.abs(df['intime'] - t)) # nearest neighbor
+            df_mapping = pd.concat((df_mapping, df.iloc[[indi]]))
+        else:
+            df_mapping = pd.concat((df_mapping, pd.DataFrame({'intime': [np.nan], 'file': [''], 'ind': [np.nan]})))
+
+    df_mapping['tartime'] = timeseries
+    df_mapping.index = np.arange(len(df_mapping))
+
+    return df_mapping
+
+# def read_timestep_input_data(df_mapping, tarindex, varnames):
+#     # not finished
+#     df = df_mapping.iloc[tarindex]
+#     with xr.open_dataset(df['file']) as ds:
+#         ds = ds.isel(time=tarindex)
+#         ds = ds[varnames]
+#         ds = ds.load()
+#     return ds
+
+
+def read_period_input_data(df_mapping, varnames):
+    # read and
+    # select period
+    # select variables
+
+    # tarlon/tarlat: target lat/lon vector
+    # default: dynmaic input files must have lat/lon dimensions
+
+    files = np.unique(df_mapping['file'].values)
+    files = [f for f in files if len(f)>0]
+
+    intime = df_mapping['intime'].values
+    intime = intime[~np.isnan(intime)]
+
+    tartime = df_mapping['tartime'].values
+
+    if len(files) == 0:
+        print('Warning! Cannot find any valid dynamic input files')
+        ds = xr.Dataset()
+    else:
+        ds = xr.open_mfdataset(files)
+        if np.any([not d in ds.dims for d in ['time', 'lat','lon']]):
+            sys.exit(f'Dynamic input files must have lat, lon, and time dimensions!')
+        # select ...
+        ds = ds[varnames]
+        ds = ds.sel(time=slice(tartime[0], tartime[-1]))
+        ds = ds.load()
+        ds = ds.interp(time=tartime, method='nearest')
+    return ds
+
+
+def regrid_xarray(ds, tarlon, tarlat, target):
+    # if target='1D', tarlon and tarlat are vector of station points
+    # if target='2D', tarlon and tarlat are vector defining grids
+
+    # regridding: space and time
+    if target == '2D':
+
+        ds = ds.transpose('time', 'lat', 'lon')
+
+        if ds.lat.values[0] > ds.lat.values[1]:
+            ds = ds.sel(lat=slice(tarlat[-1], tarlat[0]))
+        else:
+            ds = ds.sel(lat=slice(tarlat[0], tarlat[-1]))
+        if ds.lon.values[0] > ds.lon.values[1]:
+            ds = ds.sel(lon=slice(tarlon[-1], tarlon[0]))
+        else:
+            ds = ds.sel(lon=slice(tarlon[0], tarlon[-1]))
+
+        ds_out = ds.interp(lat=tarlat, lon=tarlon, method='linear')
+
+    elif target == '1D':
+        tarlat = xr.DataArray(tarlat, dims=('z'))
+        tarlon = xr.DataArray(tarlon, dims=('z'))
+        ds_out = ds.interp(lat=tarlat, lon=tarlon, method='linear')
+        ds_out = ds_out.transpose('time', 'z')
+
+    else:
+        sys.exit('Unknown target')
+
+    return ds_out
+
+
+
+def flatten_list(lst):
+    flat_list = []
+    for item in lst:
+        if isinstance(item, list):
+            flat_list.extend(flatten_list(item))
+        else:
+            flat_list.append(item)
+    return flat_list
+
+########################################################################################################################
 # wrapped up regression functions
 
-def loop_regression_2Dor3D(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method):
+def loop_regression_2Dor3D(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, dynamic_predictors={}):
     # regression for 2D (vector) or 3D (array) inputs
     # 2D:
     # stn_data: [input station, time steps]
@@ -305,11 +479,21 @@ def loop_regression_2Dor3D(stn_data, stn_predictor, tar_nearIndex, tar_nearWeigh
     # nearIndex/nearWeight: [row, col, number of nearby stations]
     # tar_predictor: [row, col, number of predictors]
 
-    if tar_nearIndex.ndim == 2:
-        # make it a 3D array to be consistent
-        tar_nearIndex = tar_nearIndex[np.newaxis, :, :]
-        tar_nearWeight = tar_nearWeight[np.newaxis, :, :]
-        tar_predictor = tar_predictor[np.newaxis, :, :]
+    # np.savez_compressed('../docs/data_for_parallel_test.npz', stn_data=stn_data, stn_predictor=stn_predictor,
+    #                     tar_nearIndex=tar_nearIndex, tar_nearWeight=tar_nearWeight, tar_predictor=tar_predictor, method=method, dynamic_predictors=dynamic_predictors)
+
+    if len(dynamic_predictors) == 0:
+        dynamic_predictors['flag'] = False
+
+    # if tar_nearIndex.ndim == 2:
+    #     # make it a 3D array to be consistent
+    #     tar_nearIndex = tar_nearIndex[np.newaxis, :, :]
+    #     tar_nearWeight = tar_nearWeight[np.newaxis, :, :]
+    #     tar_predictor = tar_predictor[np.newaxis, :, :]
+    #
+    #     if dynamic_predictors['flag'] == True:
+    #         # change raw dim: [n_feature, n_time, n_station] to [n_feature, n_time, 1, n_station]
+    #         dynamic_predictors['tar_predictor_dynamic'] = dynamic_predictors['tar_predictor_dynamic'][:, :, np.newaxis, :]
 
 
     nstn, ntime = np.shape(stn_data)
@@ -328,8 +512,8 @@ def loop_regression_2Dor3D(stn_data, stn_predictor, tar_nearIndex, tar_nearWeigh
             sample_weight = tar_nearWeight[r, c, :][index_valid]
             sample_weight = sample_weight / np.sum(sample_weight)
 
-            xdata_near = stn_predictor[sample_nearIndex, :]
-            xdata_g = tar_predictor[r, c, :]
+            xdata_near0 = stn_predictor[sample_nearIndex, :]
+            xdata_g0 = tar_predictor[r, c, :]
 
             # interpolation for every time step
             for d in range(ntime):
@@ -338,6 +522,28 @@ def loop_regression_2Dor3D(stn_data, stn_predictor, tar_nearIndex, tar_nearWeigh
                 if len(np.unique(ydata_near)) == 1:  # e.g., for prcp, all zero
                     ydata_tar = ydata_near[0]
                 else:
+
+                    # add dynamic predictors if flag is true and predictors are good
+                    xdata_near = xdata_near0
+                    xdata_g = xdata_g0
+                    if dynamic_predictors['flag'] == True:
+                        xdata_near_add = dynamic_predictors['stn_predictor_dynamic'][:, d, sample_nearIndex].T
+                        xdata_g_add = dynamic_predictors['tar_predictor_dynamic'][:, d, r, c]
+                        if np.all(~np.isnan(xdata_near_add)) and np.all(~np.isnan(xdata_g_add)):
+                            xdata_near_try = np.hstack((xdata_near, xdata_near_add))
+                            xdata_g_try = np.hstack((xdata_g, xdata_g_add))
+                            # check if dynamic predictors are good for regression
+                            if check_predictor_matrix_behavior(xdata_near_try, sample_weight) == True:
+                                xdata_near = xdata_near_try
+                                xdata_g = xdata_g_try
+                            else:
+                                xdata_near_try = np.hstack((xdata_near, xdata_near_add[:, ~dynamic_predictors['predictor_checkflag']]))
+                                xdata_g_try = np.hstack((xdata_g, xdata_g_add[~dynamic_predictors['predictor_checkflag']]))
+                                if check_predictor_matrix_behavior(xdata_near_try, sample_weight) == True:
+                                    xdata_near = xdata_near_try
+                                    xdata_g = xdata_g_try
+
+                    # regression
                     if method == 'linear':
                         ydata_tar = weight_linear_regression(xdata_near, sample_weight, ydata_near, xdata_g)
                     elif method == 'logistic':
@@ -347,6 +553,124 @@ def loop_regression_2Dor3D(stn_data, stn_predictor, tar_nearIndex, tar_nearWeigh
                 estimates[r, c, d] = ydata_tar
     return np.squeeze(estimates)
 
+
+def init_worker(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, dynamic_predictors):
+    # Using a dictionary is not strictly necessary. You can also
+    # use global variables.
+    var_dict['stn_data'] = stn_data
+    var_dict['stn_predictor'] = stn_predictor
+    var_dict['tar_nearIndex'] = tar_nearIndex
+    var_dict['tar_nearWeight'] = tar_nearWeight
+    var_dict['tar_predictor'] = tar_predictor
+    var_dict['method'] = method
+    var_dict['dynamic_predictors'] = dynamic_predictors
+
+
+
+def worker_func(r, c):
+    stn_data = var_dict['stn_data']
+    stn_predictor = var_dict['stn_predictor']
+    tar_nearIndex = var_dict['tar_nearIndex']
+    tar_nearWeight = var_dict['tar_nearWeight']
+    tar_predictor = var_dict['tar_predictor']
+    method = var_dict['method']
+    dynamic_predictors = var_dict['dynamic_predictors']
+
+    nstn, ntime = np.shape(stn_data)
+    nrow, ncol, nearmax = np.shape(tar_nearIndex)
+
+    # prepare xdata and sample weight for training and weights of neighboring stations
+    sample_nearIndex = tar_nearIndex[r, c, :]
+    index_valid = sample_nearIndex >= 0
+
+    if np.sum(index_valid) > 0:
+        sample_nearIndex = sample_nearIndex[index_valid]
+
+        sample_weight = tar_nearWeight[r, c, :][index_valid]
+        sample_weight = sample_weight / np.sum(sample_weight)
+
+        xdata_near0 = stn_predictor[sample_nearIndex, :]
+        xdata_g0 = tar_predictor[r, c, :]
+
+        # interpolation for every time step
+        for d in range(ntime):
+
+            ydata_near = np.squeeze(stn_data[sample_nearIndex, d])
+            if len(np.unique(ydata_near)) == 1:  # e.g., for prcp, all zero
+                ydata_tar = ydata_near[0]
+            else:
+
+                # add dynamic predictors if flag is true and predictors are good
+                xdata_near = xdata_near0
+                xdata_g = xdata_g0
+                if dynamic_predictors['flag'] == True:
+                    xdata_near_add = dynamic_predictors['stn_predictor_dynamic'][:, d, sample_nearIndex].T
+                    xdata_g_add = dynamic_predictors['tar_predictor_dynamic'][:, d, r, c]
+                    if np.all(~np.isnan(xdata_near_add)) and np.all(~np.isnan(xdata_g_add)):
+                        xdata_near_try = np.hstack((xdata_near, xdata_near_add))
+                        xdata_g_try = np.hstack((xdata_g, xdata_g_add))
+                        # check if dynamic predictors are good for regression
+                        if check_predictor_matrix_behavior(xdata_near_try, sample_weight) == True:
+                            xdata_near = xdata_near_try
+                            xdata_g = xdata_g_try
+                        else:
+                            xdata_near_try = np.hstack(
+                                (xdata_near, xdata_near_add[:, ~dynamic_predictors['predictor_checkflag']]))
+                            xdata_g_try = np.hstack((xdata_g, xdata_g_add[~dynamic_predictors['predictor_checkflag']]))
+                            if check_predictor_matrix_behavior(xdata_near_try, sample_weight) == True:
+                                xdata_near = xdata_near_try
+                                xdata_g = xdata_g_try
+
+                # regression
+                if method == 'linear':
+                    ydata_tar = weight_linear_regression(xdata_near, sample_weight, ydata_near, xdata_g)
+                elif method == 'logistic':
+                    ydata_tar = weight_logistic_regression(xdata_near, sample_weight, ydata_near, xdata_g)
+                else:
+                    sys.exit(f'Unknonwn regression method: {method}')
+
+def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, dynamic_predictors={}):
+    # regression for 2D (vector) or 3D (array) inputs
+    # 2D:
+    # stn_data: [input station, time steps]
+    # stn_predictor: [input station, number of predictors]
+    # nearIndex/nearWeight: [target point, number of nearby stations]
+    # tar_predictor: [target point, number of predictors]
+    # 3D:
+    # stn_data: [input station, time steps]
+    # stn_predictor: [input station, number of predictors]
+    # nearIndex/nearWeight: [row, col, number of nearby stations]
+    # tar_predictor: [row, col, number of predictors]
+
+    import multiprocessing
+    from multiprocessing import Pool
+
+    # np.savez_compressed('../docs/data_for_parallel_test.npz', stn_data=stn_data, stn_predictor=stn_predictor,
+    #                     tar_nearIndex=tar_nearIndex, tar_nearWeight=tar_nearWeight, tar_predictor=tar_predictor, method=method, dynamic_predictors=dynamic_predictors)
+
+    if len(dynamic_predictors) == 0:
+        dynamic_predictors['flag'] = False
+
+    # if tar_nearIndex.ndim == 2:
+    #     # make it a 3D array to be consistent
+    #     tar_nearIndex = tar_nearIndex[np.newaxis, :, :]
+    #     tar_nearWeight = tar_nearWeight[np.newaxis, :, :]
+    #     tar_predictor = tar_predictor[np.newaxis, :, :]
+    #
+    #     if dynamic_predictors['flag'] == True:
+    #         # change raw dim: [n_feature, n_time, n_station] to [n_feature, n_time, 1, n_station]
+    #         dynamic_predictors['tar_predictor_dynamic'] = dynamic_predictors['tar_predictor_dynamic'][:, :, np.newaxis, :]
+
+
+    nstn, ntime = np.shape(stn_data)
+    nrow, ncol, nearmax = np.shape(tar_nearIndex)
+    estimates = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
+
+    items = [(r,c) for r, c in itertools.product(range(nrow), range(ncol))]
+    with Pool(processes=5, initializer=init_worker, initargs=(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, dynamic_predictors)) as pool:
+        result = pool.starmap(worker_func, items)
+
+    return np.squeeze(estimates)
 
 ########################################################################################################################
 
@@ -389,6 +713,10 @@ def main_regression(config, target):
     transform_vars = config['transform_vars']
     transform_settings = config['transform']
 
+    dynamic_predictor_name = config['dynamic_predictor_name']
+    dynamic_predictor_filelist = config['dynamic_predictor_filelist']
+    dynamic_predictor_check = config['dynamic_predictor_check']
+
     overwrite_flag = overwrite_flag
 
     if target == 'loo':
@@ -415,6 +743,8 @@ def main_regression(config, target):
             print('overwrite_flag is False. Skip regression.')
             return config
 
+    dynamic_flag = initial_check_dynamic_predictor(dynamic_predictor_name, dynamic_predictor_filelist, target_vars)
+
     ########################################################################################################################
     # initialize outputs
     with xr.open_dataset(file_allstn) as ds_stn:
@@ -432,6 +762,24 @@ def main_regression(config, target):
         ds_out.coords['y'] = yaxis
     elif target == 'loo':
         ds_out.coords['stn'] = ds_stn.stn.values
+
+    ########################################################################################################################
+    # load dynamic factors if dynamic_flag == True
+    # this costs more memory than reading for each time step, but reduces interpolation time. this could be a challenge for large domain
+
+    if dynamic_flag == True:
+
+        allvars = flatten_list(dynamic_predictor_name)
+
+        df_mapping = map_filelist_timestep(dynamic_predictor_filelist, timeaxis)
+        ds_dynamic = read_period_input_data(df_mapping, allvars)
+
+        ds_dynamic_stn = regrid_xarray(ds_dynamic, ds_stn.lon.values, ds_stn.lat.values, '1D')
+        if target == 'grid':
+            ds_dynamic_tar = regrid_xarray(ds_dynamic, xaxis, yaxis, '2D')
+        elif target == 'loo':
+            ds_dynamic_tar = ds_dynamic_stn.copy()
+
 
     ########################################################################################################################
     # loop variables
@@ -522,9 +870,24 @@ def main_regression(config, target):
         tar_predictor = predictor_static_target
         del predictor_static_stn, predictor_static_target
 
+        # dynmaic predictors
+        predictor_dynamic = {}
+        predictor_dynamic['flag'] = dynamic_flag
+
+        if dynamic_flag == True:
+            # stn_predictor_dynamic dim: [n_feature, n_time, n_station]
+            # tar_predictor_dynamic dim: [n_feature, n_time, n_station] or [n_feature, n_time, n_row, n_col]
+            predictor_dynamic['stn_predictor_dynamic'] = np.stack([ds_dynamic_stn[v].values for v in dynamic_predictor_name[vn]], axis=0)
+            predictor_dynamic['tar_predictor_dynamic'] = np.stack([ds_dynamic_tar[v].values for v in dynamic_predictor_name[vn]], axis=0)
+            predictor_dynamic['predictor_checkflag'] = np.array([v in dynamic_predictor_check for v in dynamic_predictor_name[vn]])
+
+            if target == 'loo':
+                # change raw dim: [n_feature, n_time, n_station] to [n_feature, n_time, 1, n_station]
+                predictor_dynamic['tar_predictor_dynamic'] = predictor_dynamic['tar_predictor_dynamic'][:, :, np.newaxis, :]
+
         ########################################################################################################################
         # get estimates at station points
-        estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear')
+        estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic)
 
         # constrain trange
         estimates = np.squeeze(estimates)
@@ -554,9 +917,9 @@ def main_regression(config, target):
             print('Add pop logistic regression')
             if len(var_name_trans) > 0: # this means previous step uses transformed precipitation, while for logistic regression, we use raw precipitation
                 stn_value = ds_stn[var_name].values
-                print('negative values', np.sum(stn_value<0))
+                print('Number of negative values', np.sum(stn_value<0))
             stn_value[stn_value > 0] = 1
-            estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic')
+            estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic)
             if estimates.ndim == 3:
                 ds_out['pop'] = xr.DataArray(estimates, dims=('y', 'x', 'time'))
             elif estimates.ndim == 2:

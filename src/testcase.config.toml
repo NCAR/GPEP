@@ -64,6 +64,16 @@ overwrite_grid_reg = false
 overwrite_ens = false
 overwrite_spcorr = false
 
+# dynamic factors
+# if don't want to use dynamic factors, just give invalid dynamic_predictor_name or dynamic_predictor_filelist
+# dynamic_predictor_name = [] # don't use dynamic predictors
+dynamic_predictor_name = [['cube_root_prec_rate', 'tmp_2m'],
+                          ['cube_root_prec_rate', 'tmp_2m'],
+                          ['cube_root_prec_rate', 'tmp_2m'],
+                          ]
+dynamic_predictor_filelist = "/Users/guoqiang/Github/GMET/test_cases/cali2017/griddata_standard/grid_file_list.txt"
+dynamic_predictor_check = ['cube_root_prec_rate'] # check whether they are good in regression. For example, precipitation may have many zero values.
+
 
 [transform]
 # note: the name must be consistent with transform_vars
