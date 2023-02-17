@@ -10,8 +10,8 @@ import numpy as np
 import pandas as pd
 import os, glob
 
-inpath = '/Users/guoqiang/Github/GMET/test_cases/cali2017/griddata'
-outpath = '/Users/guoqiang/Github/GMET/test_cases/cali2017/griddata_standard'
+inpath = './cali2017/griddata'
+outpath = './cali2017/griddata_standard'
 os.makedirs(outpath, exist_ok=True)
 
 # change lat/lon
@@ -39,4 +39,5 @@ for i in range(4):
 
 with open(f'{outpath}/grid_file_list.txt', 'w') as f:
     for l in outfilelist:
+        l = os.path.abspath(l)
         _ = f.write(l+'\n')

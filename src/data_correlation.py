@@ -173,6 +173,7 @@ def station_space_time_correlation(config):
     print('Input file_allstn:', file_allstn)
     print('Output file_stn_cc:', file_stn_cc)
     print('Target variables:', target_vars)
+    print('Number of processes:', num_processes)
 
     if os.path.isfile(file_stn_cc):
         print('Note! Station correlation file exists')

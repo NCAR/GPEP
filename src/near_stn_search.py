@@ -202,6 +202,7 @@ def get_near_station_info(config):
     print('nearstn_max:', nearstn_max)
     print('try_radius:', try_radius)
     print('initial_distance:', initial_distance)
+    print('Number of processes:', num_processes)
 
     if os.path.isfile(file_stn_nearinfo):
         print('Note! Near station info file exists')

@@ -360,7 +360,74 @@ def generate_random_numbers(masterseed, n=1):
 #
 #     return config
 
+def spcorr_structure(config):
 
+    t1 = time.time()
+
+    # parse and change configurations
+    outpath_parent = config['outpath_parent']
+    path_ensemble = f'{outpath_parent}/ensemble_outputs'
+    os.makedirs(path_ensemble, exist_ok=True)
+    config['path_ensemble'] = path_ensemble
+    file_ens_prefix = f'{path_ensemble}/Ensemble_estimate_'
+    config['file_ens_prefix'] = file_ens_prefix
+
+
+    path_spcorr = f'{outpath_parent}/spcorr'
+    os.makedirs(path_spcorr, exist_ok=True)
+    config['path_rfweight'] = path_spcorr
+
+    file_spcorr_prefix = f'{path_spcorr}/spcorr_'
+    config['file_spcorr_prefix'] = file_spcorr_prefix
+
+    # in/out information to this function
+    file_stn_cc = config['file_stn_cc']
+    file_grid_reg = config['file_grid_reg']
+    file_spcorr_prefix = file_spcorr_prefix
+
+    target_vars = config['target_vars']
+    clen_config = config['clen']
+    overwrite_spcorr = config['overwrite_spcorr']
+
+
+    print(f'Generating spatial correlation structure')
+
+    # spatial correlation
+    allvar_clen = {}
+    with xr.open_dataset(file_stn_cc) as ds_stn_cc:
+        for i in range(len(target_vars)):
+            var_name = target_vars[i]
+            if clen_config[i] > 0:
+                allvar_clen[var_name] = clen_config[i]
+            else:
+                allvar_clen[var_name] = ds_stn_cc[var_name + '_space_Clen'].values
+
+    # regression estimates
+    with xr.open_dataset(file_grid_reg) as ds_grid_reg:
+        lat = ds_grid_reg.y.values
+        lon = ds_grid_reg.x.values
+
+
+    grid_lat = np.tile(lat[:, np.newaxis], [1, len(lon)])
+    grid_lon = np.tile(lon[np.newaxis, :], [len(lat), 1])
+
+    for var_name in target_vars:
+        file_spcor = f'{file_spcorr_prefix}{var_name}.npz'
+        if os.path.isfile(file_spcor):
+            print(f'spcorr outfile exists: {file_spcor}')
+            if overwrite_spcorr == True:
+                print('overwrite_spcorr is True. Overwrite it.')
+                _ = os.remove(file_spcor)
+                rf_FGMET.spcorr_grd(grid_lat, grid_lon, allvar_clen[var_name], file_spcor)
+            else:
+                print('overwrite_spcorr is False. Skip spcorr generation.')
+                continue
+        else:
+            print('Creating spcorr outfile:', file_spcor)
+            rf_FGMET.spcorr_grd(grid_lat, grid_lon, allvar_clen[var_name], file_spcor)
+
+    t2 = time.time()
+    print('Successful structure generation. Time cost (sec):', t2-t1)
 
 
 def generate_probabilistic_estimates_serial(config, member_range=[]):
@@ -513,24 +580,6 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
     ########################################################################################################################
     # generate spatial correlation structure
 
-    grid_lat = np.tile(lat[:, np.newaxis], [1, len(lon)])
-    grid_lon = np.tile(lon[np.newaxis, :], [len(lat), 1])
-
-    for var_name in target_vars:
-        file_spcor = f'{file_spcorr_prefix}{var_name}.npz'
-        if os.path.isfile(file_spcor):
-            print(f'spcorr outfile exists: {file_spcor}')
-            if overwrite_spcorr == True:
-                print('overwrite_spcorr is True. Overwrite it.')
-                _ = os.remove(file_spcor)
-                rf_FGMET.spcorr_grd(grid_lat, grid_lon, allvar_clen[var_name], file_spcor)
-            else:
-                print('overwrite_spcorr is False. Skip spcorr generation.')
-                continue
-        else:
-            print('Creating spcorr outfile:', file_spcor)
-            rf_FGMET.spcorr_grd(grid_lat, grid_lon, allvar_clen[var_name], file_spcor)
-
     spcorr_jpos = {}
     spcorr_ipos = {}
     spcorr_wght = {}
@@ -620,15 +669,20 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
     t2 = time.time()
     print(f'Complete probabilistic estimation of {target_vars} with linked vars {linkvar} for member range {member_range}. Time cost (sec): {t2-t1}')
 
-def generate_probabilistic_estimates(config, num_processes=4):
+def generate_probabilistic_estimates(config):
     t1 = time.time()
+
+    ensemble_number = config['ensemble_number']
+    num_processes = config['num_processes']
+
     print('#' * 50)
     print('Probabilistic estimation')
     print('#' * 50)
     print('Target variables:', config['target_vars'])
-    print('Link variables:', config['linkvar'])
+    print('Number of processes:', num_processes)
 
-    ensemble_number = config['ensemble_number']
+    spcorr_structure(config)
+
     items = [(config, [e, e+1]) for e in range(ensemble_number)]
     with Pool(num_processes) as pool:
         pool.starmap(generate_probabilistic_estimates_serial, items)

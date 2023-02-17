@@ -704,6 +704,8 @@ def main_regression(config, target):
     dynamic_predictor_filelist = config['dynamic_predictor_filelist']
     dynamic_predictor_check = config['dynamic_predictor_check']
 
+    num_processes = config['num_processes']
+
     overwrite_flag = overwrite_flag
 
     if target == 'loo':
@@ -721,6 +723,7 @@ def main_regression(config, target):
     print('Output regression file:', outfile)
     print('Output target:', target)
     print('Target variables:', target_vars)
+    print('Number of processes:', num_processes)
 
     if os.path.isfile(outfile):
         print('Note! Output regression file exists')
@@ -874,7 +877,7 @@ def main_regression(config, target):
 
         ########################################################################################################################
         # get estimates at station points
-        estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic)
+        estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic, num_processes)
 
         # constrain trange
         estimates = np.squeeze(estimates)
@@ -906,7 +909,7 @@ def main_regression(config, target):
                 stn_value = ds_stn[var_name].values
                 print('Number of negative values', np.sum(stn_value<0))
             stn_value[stn_value > 0] = 1
-            estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic)
+            estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic, num_processes)
             if estimates.ndim == 3:
                 ds_out['pop'] = xr.DataArray(estimates, dims=('y', 'x', 'time'))
             elif estimates.ndim == 2:
