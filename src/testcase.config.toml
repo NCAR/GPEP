@@ -6,6 +6,9 @@ name = "PyGMET for SHARP"
 date = "2022-12"
 affiliation = "NCAR CGD"
 
+# worker number (cpu cores) for parallelization. Better to be <= ensemble_number
+num_processes = 5
+
 # station input data (Fortran GMET input format station)
 input_stn_list = "../test_cases/cali2017/inputs/CALI.screened_stn_list_slope.v3.csv"
 input_stn_path = "../test_cases/cali2017/stndata"
@@ -71,7 +74,7 @@ dynamic_predictor_name = [['cube_root_prec_rate', 'tmp_2m'],
                           ['cube_root_prec_rate', 'tmp_2m'],
                           ['cube_root_prec_rate', 'tmp_2m'],
                           ]
-dynamic_predictor_filelist = "/Users/guoqiang/Github/GMET/test_cases/cali2017/griddata_standard/grid_file_list.txt"
+dynamic_predictor_filelist = "../test_cases/cali2017/griddata_standard/grid_file_list.txt"
 dynamic_predictor_check = ['cube_root_prec_rate'] # check whether they are good in regression. For example, precipitation may have many zero values.
 
 

@@ -2,6 +2,8 @@
 import numpy as np
 import pandas as pd
 import xarray as xr
+# import multiprocessing
+from multiprocessing import Pool
 from tqdm.contrib import itertools
 from data_processing import data_transformation
 import sys, os, math
@@ -554,34 +556,39 @@ def loop_regression_2Dor3D(stn_data, stn_predictor, tar_nearIndex, tar_nearWeigh
     return np.squeeze(estimates)
 
 
+########################################################################################################################
+# parallel version of loop regression: independent processes and large memory use if there are many cpus
+
 def init_worker(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, dynamic_predictors):
     # Using a dictionary is not strictly necessary. You can also
     # use global variables.
-    var_dict['stn_data'] = stn_data
-    var_dict['stn_predictor'] = stn_predictor
-    var_dict['tar_nearIndex'] = tar_nearIndex
-    var_dict['tar_nearWeight'] = tar_nearWeight
-    var_dict['tar_predictor'] = tar_predictor
-    var_dict['method'] = method
-    var_dict['dynamic_predictors'] = dynamic_predictors
+    global mppool_ini_dict
+    mppool_ini_dict = {}
+    mppool_ini_dict['stn_data'] = stn_data
+    mppool_ini_dict['stn_predictor'] = stn_predictor
+    mppool_ini_dict['tar_nearIndex'] = tar_nearIndex
+    mppool_ini_dict['tar_nearWeight'] = tar_nearWeight
+    mppool_ini_dict['tar_predictor'] = tar_predictor
+    mppool_ini_dict['method'] = method
+    mppool_ini_dict['dynamic_predictors'] = dynamic_predictors
 
 
-
-def worker_func(r, c):
-    stn_data = var_dict['stn_data']
-    stn_predictor = var_dict['stn_predictor']
-    tar_nearIndex = var_dict['tar_nearIndex']
-    tar_nearWeight = var_dict['tar_nearWeight']
-    tar_predictor = var_dict['tar_predictor']
-    method = var_dict['method']
-    dynamic_predictors = var_dict['dynamic_predictors']
+def regression_for_one_point(r, c):
+    stn_data = mppool_ini_dict['stn_data']
+    stn_predictor = mppool_ini_dict['stn_predictor']
+    tar_nearIndex = mppool_ini_dict['tar_nearIndex']
+    tar_nearWeight = mppool_ini_dict['tar_nearWeight']
+    tar_predictor = mppool_ini_dict['tar_predictor']
+    method = mppool_ini_dict['method']
+    dynamic_predictors = mppool_ini_dict['dynamic_predictors']
 
     nstn, ntime = np.shape(stn_data)
-    nrow, ncol, nearmax = np.shape(tar_nearIndex)
 
     # prepare xdata and sample weight for training and weights of neighboring stations
     sample_nearIndex = tar_nearIndex[r, c, :]
     index_valid = sample_nearIndex >= 0
+
+    ydata_tar = np.nan * np.zeros(ntime)
 
     if np.sum(index_valid) > 0:
         sample_nearIndex = sample_nearIndex[index_valid]
@@ -597,7 +604,7 @@ def worker_func(r, c):
 
             ydata_near = np.squeeze(stn_data[sample_nearIndex, d])
             if len(np.unique(ydata_near)) == 1:  # e.g., for prcp, all zero
-                ydata_tar = ydata_near[0]
+                ydata_tar[d] = ydata_near[0]
             else:
 
                 # add dynamic predictors if flag is true and predictors are good
@@ -623,52 +630,31 @@ def worker_func(r, c):
 
                 # regression
                 if method == 'linear':
-                    ydata_tar = weight_linear_regression(xdata_near, sample_weight, ydata_near, xdata_g)
+                    ydata_tar[d] = weight_linear_regression(xdata_near, sample_weight, ydata_near, xdata_g)
                 elif method == 'logistic':
-                    ydata_tar = weight_logistic_regression(xdata_near, sample_weight, ydata_near, xdata_g)
+                    ydata_tar[d] = weight_logistic_regression(xdata_near, sample_weight, ydata_near, xdata_g)
                 else:
                     sys.exit(f'Unknonwn regression method: {method}')
 
-def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, dynamic_predictors={}):
-    # regression for 2D (vector) or 3D (array) inputs
-    # 2D:
-    # stn_data: [input station, time steps]
-    # stn_predictor: [input station, number of predictors]
-    # nearIndex/nearWeight: [target point, number of nearby stations]
-    # tar_predictor: [target point, number of predictors]
-    # 3D:
-    # stn_data: [input station, time steps]
-    # stn_predictor: [input station, number of predictors]
-    # nearIndex/nearWeight: [row, col, number of nearby stations]
-    # tar_predictor: [row, col, number of predictors]
+    return ydata_tar
 
-    import multiprocessing
-    from multiprocessing import Pool
-
-    # np.savez_compressed('../docs/data_for_parallel_test.npz', stn_data=stn_data, stn_predictor=stn_predictor,
-    #                     tar_nearIndex=tar_nearIndex, tar_nearWeight=tar_nearWeight, tar_predictor=tar_predictor, method=method, dynamic_predictors=dynamic_predictors)
+def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, dynamic_predictors={}, num_processes=4):
 
     if len(dynamic_predictors) == 0:
         dynamic_predictors['flag'] = False
 
-    # if tar_nearIndex.ndim == 2:
-    #     # make it a 3D array to be consistent
-    #     tar_nearIndex = tar_nearIndex[np.newaxis, :, :]
-    #     tar_nearWeight = tar_nearWeight[np.newaxis, :, :]
-    #     tar_predictor = tar_predictor[np.newaxis, :, :]
-    #
-    #     if dynamic_predictors['flag'] == True:
-    #         # change raw dim: [n_feature, n_time, n_station] to [n_feature, n_time, 1, n_station]
-    #         dynamic_predictors['tar_predictor_dynamic'] = dynamic_predictors['tar_predictor_dynamic'][:, :, np.newaxis, :]
-
-
     nstn, ntime = np.shape(stn_data)
     nrow, ncol, nearmax = np.shape(tar_nearIndex)
-    estimates = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
 
-    items = [(r,c) for r, c in itertools.product(range(nrow), range(ncol))]
-    with Pool(processes=5, initializer=init_worker, initargs=(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, dynamic_predictors)) as pool:
-        result = pool.starmap(worker_func, items)
+    items = [(r, c) for r in range(nrow) for c in range(ncol)]
+
+    with Pool(processes=num_processes, initializer=init_worker, initargs=(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, dynamic_predictors)) as pool:
+        result = pool.starmap(regression_for_one_point, items)
+
+    estimates = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
+    for i in range(len(items)):
+        indi = items[i]
+        estimates[indi[0], indi[1], :] = result[i]
 
     return np.squeeze(estimates)
 
@@ -676,6 +662,7 @@ def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearInde
 
 def main_regression(config, target):
     # target: loo (leave one out station) or grid
+    t1 = time.time()
 
     # parse and change configurations
     outpath_parent = config['outpath_parent']
@@ -887,7 +874,7 @@ def main_regression(config, target):
 
         ########################################################################################################################
         # get estimates at station points
-        estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic)
+        estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic)
 
         # constrain trange
         estimates = np.squeeze(estimates)
@@ -919,7 +906,7 @@ def main_regression(config, target):
                 stn_value = ds_stn[var_name].values
                 print('Number of negative values', np.sum(stn_value<0))
             stn_value[stn_value > 0] = 1
-            estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic)
+            estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic)
             if estimates.ndim == 3:
                 ds_out['pop'] = xr.DataArray(estimates, dims=('y', 'x', 'time'))
             elif estimates.ndim == 2:
@@ -931,5 +918,9 @@ def main_regression(config, target):
         encoding[var] = {'zlib': True, 'complevel': 4}
 
     ds_out.to_netcdf(outfile, encoding=encoding)
+
+    t2 = time.time()
+    print('Time cost (seconds):', t2-t1)
+    print('Successful regression!\n\n')
 
     return config

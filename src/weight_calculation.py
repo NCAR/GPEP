@@ -95,6 +95,6 @@ def calculate_weight_using_nearstn_info(config):
 
     t2 = time.time()
     print('Time cost (seconds):', t2 - t1)
-    print('Successful weight calculation!')
+    print('Successful weight calculation!\n\n')
 
     return config

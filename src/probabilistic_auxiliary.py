@@ -3,7 +3,7 @@
 import numpy as np
 import xarray as xr
 from tqdm.contrib import itertools
-import sys, os
+import sys, os, time
 
 from weight_calculation import distanceweight
 
@@ -96,6 +96,7 @@ def extrapolation(datain, nearstn_loc, nearstn_DistOrWeright, weighttype, excfla
 
 
 def extrapolate_auxiliary_info(config):
+    t1 = time.time()
 
     # parse and change configurations
     outpath_parent = config['outpath_parent']
@@ -236,5 +237,9 @@ def extrapolate_auxiliary_info(config):
         encoding[var] = {'zlib': True, 'complevel': 4}
 
     ds_out.to_netcdf(file_grid_auxiliary, encoding=encoding)
+
+    t2 = time.time()
+    print('Time cost (seconds):', t2 - t1)
+    print('Successful station error interpolation!\n\n')
 
     return config

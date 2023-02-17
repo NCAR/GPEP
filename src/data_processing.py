@@ -166,7 +166,7 @@ def assemble_fortran_GMET_stns_to_one_file(config):
 
     t2 = time.time()
     print('Time cost (seconds):', t2-t1)
-    print('Successful assembling!')
+    print('Successful assembling!\n\n')
 
     return config
 

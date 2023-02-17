@@ -1,8 +1,11 @@
 # calculate temporal auto correlation or spatial correlation length
+import time
+
 import numpy as np
 import xarray as xr
 from near_stn_search import distance
 from scipy.optimize import curve_fit
+from multiprocessing import Pool
 import os
 
 
@@ -37,8 +40,23 @@ def station_cross_correlation(data1, data2):
         cc[i] = cal_cross_cc(data1[i, :], data2[i, :])
     return cc
 
+# parallel version
+def init_worker(data, lat, lon):
+    # Using a dictionary is not strictly necessary. You can also
+    # use global variables.
+    global mppool_ini_dict
+    mppool_ini_dict = {}
+    mppool_ini_dict['data'] = data
+    mppool_ini_dict['lat'] = lat
+    mppool_ini_dict['lon'] = lon
 
-def station_spatial_correlation(lat, lon, data):
+def single_cc_dist(i, j):
+    cc_pair = cal_cross_cc(mppool_ini_dict['data'][i, :], mppool_ini_dict['data'][j, :])
+    dist_pair = distance(mppool_ini_dict['lat'][i], mppool_ini_dict['lon'][i], mppool_ini_dict['lat'][j], mppool_ini_dict['lon'][j])
+    return cc_pair, dist_pair
+
+
+def station_spatial_correlation(lat, lon, data, num_processes=4):
     # cc between each pair of stations
     nstn = len(lat)
     npair = int(((nstn - 1) * nstn / 2))
@@ -46,16 +64,40 @@ def station_spatial_correlation(lat, lon, data):
     dist_pair = np.nan * np.zeros(npair)
     index_pair = np.nan * np.zeros([npair, 2])
 
+
+    items = [(i, j) for i in range(nstn - 1) for j in range(i + 1, nstn)]
+    with Pool(processes=num_processes, initializer=init_worker, initargs=(data, lat, lon)) as pool:
+        result = pool.starmap(single_cc_dist, items)
+
     flag = 0
-    for i in range(nstn-1):
-        for j in range(i+1, nstn):
-            cc_pair[flag] = cal_cross_cc(data[i, :], data[j, :])
-            dist_pair[flag] = distance(lat[i], lon[i], lat[j], lon[j])
-            index_pair[flag, 0] = i
-            index_pair[flag, 1] = j
-            flag = flag + 1
+    for i in range(len(items)):
+        cc_pair[flag] = result[i][0]
+        dist_pair[flag] = result[i][1]
+        index_pair[flag, 0] = items[i][0]
+        index_pair[flag, 1] = items[i][1]
+        flag = flag + 1
 
     return cc_pair, dist_pair, index_pair
+
+# # serial version
+# def station_spatial_correlation(lat, lon, data):
+#     # cc between each pair of stations
+#     nstn = len(lat)
+#     npair = int(((nstn - 1) * nstn / 2))
+#     cc_pair = np.nan * np.zeros(npair)
+#     dist_pair = np.nan * np.zeros(npair)
+#     index_pair = np.nan * np.zeros([npair, 2])
+#
+#     flag = 0
+#     for i in range(nstn-1):
+#         for j in range(i+1, nstn):
+#             cc_pair[flag] = cal_cross_cc(data[i, :], data[j, :])
+#             dist_pair[flag] = distance(lat[i], lon[i], lat[j], lon[j])
+#             index_pair[flag, 0] = i
+#             index_pair[flag, 1] = j
+#             flag = flag + 1
+#
+#     return cc_pair, dist_pair, index_pair
 
 
 
@@ -109,6 +151,8 @@ def hist_xy(x, y):
 
 
 def station_space_time_correlation(config):
+    t1 = time.time()
+
     # parse and change configurations
     path_stn_info = config['path_stn_info']
     file_stn_cc = f'{path_stn_info}/stn_time_space_correlation.nc'
@@ -119,6 +163,7 @@ def station_space_time_correlation(config):
     target_vars = config['target_vars']
     file_stn_cc = config['file_stn_cc']
     overwrite_station_cc = config['overwrite_station_cc']
+    num_processes = config['num_processes']
 
     lag = 1 # lag-1 cc
 
@@ -168,7 +213,7 @@ def station_space_time_correlation(config):
 
         # calculate space correlation
         print('Spatial correlation calculation for:', var_name)
-        cc_pair, dist_pair, index_pair = station_spatial_correlation(lat, lon, stn_value)
+        cc_pair, dist_pair, index_pair = station_spatial_correlation(lat, lon, stn_value, num_processes)
 
         index = ~np.isnan(dist_pair + cc_pair)
         # popt, pcov = curve_fit(func_clen_exp2p, dist_pair[index], cc_pair[index])
@@ -202,5 +247,9 @@ def station_space_time_correlation(config):
         encoding[var] = {'zlib': True, 'complevel': 4}
 
     ds_out.to_netcdf(file_stn_cc, encoding=encoding)
+
+    t2 = time.time()
+    print('Time cost (seconds):', t2 - t1)
+    print('Successful correlation calculation!\n\n')
 
     return config

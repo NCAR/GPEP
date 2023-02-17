@@ -3,7 +3,8 @@
 import xarray as xr
 import numpy as np
 from scipy import special
-import os, sys
+import os, sys, time
+from multiprocessing import Pool
 
 import random_field_FortranGMET as rf_FGMET
 from data_processing import data_transformation
@@ -102,7 +103,271 @@ def generate_random_numbers(masterseed, n=1):
     return np.random.randint(0, 2**16, n)
 
 
-def generate_probabilistic_estimates(config):
+# def generate_probabilistic_estimates(config):
+#     # parse and change configurations
+#     outpath_parent = config['outpath_parent']
+#     path_ensemble = f'{outpath_parent}/ensemble_outputs'
+#     os.makedirs(path_ensemble, exist_ok=True)
+#     config['path_ensemble'] = path_ensemble
+#     file_ens_prefix = f'{path_ensemble}/Ensemble_estimate_'
+#     config['file_ens_prefix'] = file_ens_prefix
+#
+#
+#     path_spcorr = f'{outpath_parent}/spcorr'
+#     os.makedirs(path_spcorr, exist_ok=True)
+#     config['path_rfweight'] = path_spcorr
+#
+#     file_spcorr_prefix = f'{path_spcorr}/spcorr_'
+#     config['file_spcorr_prefix'] = file_spcorr_prefix
+#
+#     # in/out information to this function
+#     file_stn_cc = config['file_stn_cc']
+#     file_grid_reg = config['file_grid_reg']
+#     file_grid_auxiliary = config['file_grid_auxiliary']
+#     file_ens_prefix = config['file_ens_prefix']
+#     file_spcorr_prefix = file_spcorr_prefix
+#
+#     target_vars = config['target_vars']
+#     transform_vars = config['transform_vars']
+#     transform_settings = config['transform']
+#     ensemble_number = config['ensemble_number']
+#     master_seed = config['master_seed']
+#     clen_config = config['clen']
+#     overwrite_ens = config['overwrite_ens']
+#     overwrite_spcorr = config['overwrite_spcorr']
+#     datestamp = f"{config['date_start'].replace('-', '')}-{config['date_end'].replace('-', '')}"
+#
+#     maxrndnum = 3.99  # minimum and maximum random number following GMET scripts
+#     minrndnum = -3.99
+#
+#     linkvar = {'prcp': 'trange'}  # random number generation dependence
+#
+#     print('#' * 50)
+#     print('Probabilistic estimation')
+#     print('#' * 50)
+#     print('Target variables:', target_vars)
+#     print('Link vars:', linkvar)
+#
+#     t1 = time.time()
+#
+#     ########################################################################################################################
+#     # create all seeds used to generate random fields
+#     with xr.open_dataset(file_grid_reg) as ds_grid_reg:
+#         date0 = int(ds_grid_reg.time[0].dt.strftime('%Y%m%d%H'))
+#         ntime = len(ds_grid_reg.time)
+#
+#     master_seed = master_seed + date0 # ensure different input batches have different seeds
+#     seeds_rf = generate_random_numbers(master_seed, len(target_vars) * ensemble_number * ntime)
+#     seeds_rf = np.reshape(seeds_rf, [len(target_vars), ensemble_number, ntime])
+#     seeds_rf2 = {}
+#     for i in range(len(target_vars)):
+#         seeds_rf2[target_vars[i]] = seeds_rf[i, :, :]
+#     seeds_rf = seeds_rf2
+#     del seeds_rf2
+#
+#     ########################################################################################################################
+#     # load data for regression
+#
+#     allvar_auto_lag1_cc = {}
+#     allvar_clen = {}
+#     allvar_reg_estimate = {}
+#     allvar_reg_error = {}
+#     nearby_stn_max = {}
+#
+#     # auto correlation
+#     with xr.open_dataset(file_stn_cc) as ds_stn_cc:
+#         for i in range(len(target_vars)):
+#             var_name = target_vars[i]
+#             allvar_auto_lag1_cc[var_name] = ds_stn_cc[var_name + '_cc_lag1_mean'].values
+#             if clen_config[i] > 0:
+#                 allvar_clen[var_name] = clen_config[i]
+#             else:
+#                 allvar_clen[var_name] = ds_stn_cc[var_name + '_space_Clen'].values
+#
+#     # regression estimates
+#     with xr.open_dataset(file_grid_reg) as ds_grid_reg:
+#         for vn in range(len(target_vars)):
+#             var_name = target_vars[vn]
+#             if len(transform_vars[vn]) > 0:
+#                 allvar_reg_estimate[var_name] = ds_grid_reg[var_name + '_' + transform_vars[vn]].values
+#             else:
+#                 allvar_reg_estimate[var_name] = ds_grid_reg[var_name].values
+#             if var_name == 'prcp':
+#                 pop = ds_grid_reg['pop'].values
+#         lat = ds_grid_reg.y.values
+#         lon = ds_grid_reg.x.values
+#         tartime = ds_grid_reg.time.values
+#
+#     # auxiliary info: estimate error and nearby_stn_max
+#     with xr.open_dataset(file_grid_auxiliary) as ds_grid_aux:
+#         for vn in range(len(target_vars)):
+#             var_name = target_vars[vn]
+#             if len(transform_vars[vn]) > 0:
+#                 allvar_reg_error[var_name] = ds_grid_aux['uncert_' + var_name + '_' + transform_vars[vn]].values
+#                 if var_name == 'prcp':
+#                     nearby_stn_max[var_name] = ds_grid_aux['nearmax_' + var_name + '_' + transform_vars[vn]].values
+#                 else:
+#                     nearby_stn_max[var_name] = np.array([])
+#             else:
+#                 allvar_reg_error[var_name] = ds_grid_aux['uncert_' + var_name].values
+#                 if var_name == 'prcp':
+#                     nearby_stn_max[var_name] = ds_grid_aux['nearmax_' + var_name].values
+#                 else:
+#                     nearby_stn_max[var_name] = np.array([])
+#
+#     nrow, ncol, ntime = allvar_reg_error[var_name].shape
+#
+#     ########################################################################################################################
+#     # dependent/independent variables and their correlation
+#
+#     target_vars_independent = []
+#     target_vars_dependent = []
+#     target_vars_dependent_cross_cc = []
+#     for v in target_vars:
+#         if not v in linkvar:
+#             target_vars_independent.append(v)
+#         else:
+#             target_vars_dependent.append(v)
+#
+#             cross_cc_varname1 = f'{v}_{linkvar[v]}_cc_cross_mean'
+#             cross_cc_varname2 = f'{linkvar[v]}_{v}_cc_cross_mean'
+#             if cross_cc_varname1 in ds_stn_cc:
+#                 crosscc = ds_stn_cc[cross_cc_varname1].values[0]
+#             elif cross_cc_varname2 in ds_stn_cc:
+#                 crosscc = ds_stn_cc[cross_cc_varname1].values[0]
+#             else:
+#                 sys.exit(f'Cannot find {cross_cc_varname1} or {cross_cc_varname1} in {file_stn_cc}')
+#             target_vars_dependent_cross_cc.append(crosscc)
+#
+#     # convert transform_vars to dict
+#     transform_vars2 = {}
+#     for i in range(len(target_vars)):
+#         transform_vars2[target_vars[i]] = transform_vars[i]
+#         if not transform_vars[i] in transform_settings:
+#             transform_settings[transform_vars[i]] = ''
+#
+#     transform_vars = transform_vars2
+#     del transform_vars2
+#
+#     ########################################################################################################################
+#     # generate spatial correlation structure
+#
+#     for var_name in target_vars:
+#         file_spcor = f'{file_spcorr_prefix}{var_name}.npz'
+#         if os.path.isfile(file_spcor):
+#             print(f'spcorr outfile exists: {file_spcor}')
+#             if overwrite_spcorr == True:
+#                 print('overwrite_spcorr is True. Overwrite it.')
+#             else:
+#                 print('overwrite_spcorr is False. Skip spcorr generation.')
+#                 continue
+#         else:
+#             print('Creating spcorr outfile:', file_spcor)
+#         grid_lat = np.tile(lat[:, np.newaxis], [1, len(lon)])
+#         grid_lon = np.tile(lon[np.newaxis, :], [len(lat), 1])
+#         rf_FGMET.spcorr_grd(grid_lat, grid_lon, allvar_clen[var_name], file_spcor)
+#
+#     spcorr_jpos = {}
+#     spcorr_ipos = {}
+#     spcorr_wght = {}
+#     spcorr_sdev = {}
+#     iorder = {}
+#     jorder = {}
+#     for var_name in target_vars:
+#         file_spcor = f'{file_spcorr_prefix}{var_name}.npz'
+#         dtmp = np.load(file_spcor, allow_pickle=True)
+#         spcorr_jpos[var_name] = dtmp['spcorr_jpos']
+#         spcorr_ipos[var_name] = dtmp['spcorr_ipos']
+#         spcorr_wght[var_name] = dtmp['spcorr_wght']
+#         spcorr_sdev[var_name] = dtmp['spcorr_sdev']
+#         iorder[var_name] = dtmp['iorder']
+#         jorder[var_name] = dtmp['jorder']
+#
+#     t2 = time.time()
+#     print('time', t2-t1)
+#     ########################################################################################################################
+#     # probabilistic estimates
+#     for ens in range(ensemble_number):
+#
+#         # define output file name
+#         outfile_ens = f'{file_ens_prefix}{datestamp}_{ens + 1:03}.nc'
+#         if os.path.isfile(outfile_ens):
+#             print(f'Ensemble outfile exists: {outfile_ens}')
+#             if overwrite_ens == True:
+#                 print('overwrite_ens is True. Overwrite it.')
+#             else:
+#                 print('overwrite_ens is False. Skip probabilistic estimation.')
+#                 continue
+#
+#         # initialize outputs
+#         ds_out = xr.Dataset()
+#         ds_out.coords['time'] = tartime
+#         ds_out.coords['lon'] = lon
+#         ds_out.coords['lat'] = lat
+#         ds_out.coords['z'] = [0]
+#
+#         # loop variables
+#
+#         for vn in range(len(target_vars_independent)):
+#
+#             var_name = target_vars_independent[vn]
+#             print(f'Probabilistic estimation for {var_name} and ensemble member {ens}--{ensemble_number}')
+#
+#             # generate random numbers
+#             t1=time.time()
+#             random_field = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
+#             for i in range(ntime):
+#                 rndi = rf_FGMET.field_rand(spcorr_jpos[var_name], spcorr_ipos[var_name], spcorr_wght[var_name], spcorr_sdev[var_name], iorder[var_name], jorder[var_name], seeds_rf[var_name][ens, i])
+#                 if i == 0:
+#                     random_field[:, :, i] = rndi
+#                 else:
+#                     random_field[:, :, i] = random_field[:, :, i - 1] * allvar_auto_lag1_cc[var_name] + np.sqrt(1 - allvar_auto_lag1_cc[var_name] ** 2) * rndi
+#
+#             random_field[np.isnan(allvar_reg_estimate[var_name])] = np.nan
+#             t2 = time.time()
+#             print('random time', t2-t1)
+#             # probabilistic estimation
+#             ds_out = probabilistic_estimate_for_one_var(var_name, allvar_reg_estimate[var_name], allvar_reg_error[var_name], nearby_stn_max[var_name],
+#                                                         pop, random_field, minrndnum, maxrndnum, transform_vars[var_name], transform_settings[transform_vars[var_name]], ds_out)
+#
+#             # is any linked variable
+#             for d in range(len(target_vars_dependent)):
+#                 var_name_dep = target_vars_dependent[d]
+#                 if linkvar[var_name_dep] == var_name:
+#                     print(f'Probabilistic estimation for {var_name_dep} and ensemble member {ens}--{ensemble_number}')
+#
+#                     # generate random numbers
+#                     random_field_dep = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
+#                     for i in range(ntime):
+#                         rndi = rf_FGMET.field_rand(spcorr_jpos[var_name_dep], spcorr_ipos[var_name_dep], spcorr_wght[var_name_dep], spcorr_sdev[var_name_dep], iorder[var_name_dep], jorder[var_name_dep], seeds_rf[var_name_dep][ens, i])
+#                         random_field_dep[:, :, i] = rndi
+#                     random_field_dep = random_field * target_vars_dependent_cross_cc[d] + np.sqrt(1 - target_vars_dependent_cross_cc[d]**2)*random_field_dep
+#                     del random_field
+#                     random_field_dep[np.isnan(allvar_reg_estimate[var_name_dep])] = np.nan
+#
+#                     # probabilistic estimation
+#                     ds_out = probabilistic_estimate_for_one_var(var_name_dep, allvar_reg_estimate[var_name_dep], allvar_reg_error[var_name_dep], nearby_stn_max[var_name],
+#                                                                 pop, random_field_dep, minrndnum, maxrndnum, transform_vars[var_name_dep], transform_settings[transform_vars[var_name_dep]], ds_out)
+#
+#
+#         # save output file
+#         ds_out = ds_out.transpose('time', 'lat', 'lon', 'z')
+#         ds_out = ds_out.fillna(-9999.0)
+#         encoding = {}
+#         for var in ds_out.data_vars:
+#             encoding[var] = {'zlib': True, 'complevel': 4, '_FillValue': -9999.0}
+#         ds_out.to_netcdf(outfile_ens, encoding=encoding)
+#
+#     return config
+
+
+
+
+def generate_probabilistic_estimates_serial(config, member_range=[]):
+    # most time cost comes from field_rand
+
+    t1 = time.time()
+
     # parse and change configurations
     outpath_parent = config['outpath_parent']
     path_ensemble = f'{outpath_parent}/ensemble_outputs'
@@ -141,11 +406,10 @@ def generate_probabilistic_estimates(config):
 
     linkvar = {'prcp': 'trange'}  # random number generation dependence
 
-    print('#' * 50)
-    print('Probabilistic estimation')
-    print('#' * 50)
-    print('Target variables:', target_vars)
-    print('Link vars:', linkvar)
+    if len(member_range) == 0:
+        member_range = [0, ensemble_number]
+
+    print(f'Starting probabilistic estimation of {target_vars} with linked vars {linkvar} for member range {member_range}')
 
     ########################################################################################################################
     # create all seeds used to generate random fields
@@ -193,7 +457,7 @@ def generate_probabilistic_estimates(config):
                 pop = ds_grid_reg['pop'].values
         lat = ds_grid_reg.y.values
         lon = ds_grid_reg.x.values
-        time = ds_grid_reg.time.values
+        tartime = ds_grid_reg.time.values
 
     # auxiliary info: estimate error and nearby_stn_max
     with xr.open_dataset(file_grid_auxiliary) as ds_grid_aux:
@@ -249,20 +513,23 @@ def generate_probabilistic_estimates(config):
     ########################################################################################################################
     # generate spatial correlation structure
 
+    grid_lat = np.tile(lat[:, np.newaxis], [1, len(lon)])
+    grid_lon = np.tile(lon[np.newaxis, :], [len(lat), 1])
+
     for var_name in target_vars:
         file_spcor = f'{file_spcorr_prefix}{var_name}.npz'
         if os.path.isfile(file_spcor):
             print(f'spcorr outfile exists: {file_spcor}')
             if overwrite_spcorr == True:
                 print('overwrite_spcorr is True. Overwrite it.')
+                _ = os.remove(file_spcor)
+                rf_FGMET.spcorr_grd(grid_lat, grid_lon, allvar_clen[var_name], file_spcor)
             else:
                 print('overwrite_spcorr is False. Skip spcorr generation.')
                 continue
         else:
             print('Creating spcorr outfile:', file_spcor)
-        grid_lat = np.tile(lat[:, np.newaxis], [1, len(lon)])
-        grid_lon = np.tile(lon[np.newaxis, :], [len(lat), 1])
-        rf_FGMET.spcorr_grd(grid_lat, grid_lon, allvar_clen[var_name], file_spcor)
+            rf_FGMET.spcorr_grd(grid_lat, grid_lon, allvar_clen[var_name], file_spcor)
 
     spcorr_jpos = {}
     spcorr_ipos = {}
@@ -280,11 +547,10 @@ def generate_probabilistic_estimates(config):
         iorder[var_name] = dtmp['iorder']
         jorder[var_name] = dtmp['jorder']
 
-
     ########################################################################################################################
     # probabilistic estimates
-    for ens in range(ensemble_number):
 
+    for ens in range(member_range[0], member_range[1]):
         # define output file name
         outfile_ens = f'{file_ens_prefix}{datestamp}_{ens + 1:03}.nc'
         if os.path.isfile(outfile_ens):
@@ -297,7 +563,7 @@ def generate_probabilistic_estimates(config):
 
         # initialize outputs
         ds_out = xr.Dataset()
-        ds_out.coords['time'] = time
+        ds_out.coords['time'] = tartime
         ds_out.coords['lon'] = lon
         ds_out.coords['lat'] = lat
         ds_out.coords['z'] = [0]
@@ -307,7 +573,7 @@ def generate_probabilistic_estimates(config):
         for vn in range(len(target_vars_independent)):
 
             var_name = target_vars_independent[vn]
-            print(f'Probabilistic estimation for {var_name} and ensemble member {ens}--{ensemble_number}')
+            # print(f'Probabilistic estimation for {var_name} and ensemble member {ens}--{ensemble_number}')
 
             # generate random numbers
             random_field = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
@@ -319,7 +585,6 @@ def generate_probabilistic_estimates(config):
                     random_field[:, :, i] = random_field[:, :, i - 1] * allvar_auto_lag1_cc[var_name] + np.sqrt(1 - allvar_auto_lag1_cc[var_name] ** 2) * rndi
 
             random_field[np.isnan(allvar_reg_estimate[var_name])] = np.nan
-
             # probabilistic estimation
             ds_out = probabilistic_estimate_for_one_var(var_name, allvar_reg_estimate[var_name], allvar_reg_error[var_name], nearby_stn_max[var_name],
                                                         pop, random_field, minrndnum, maxrndnum, transform_vars[var_name], transform_settings[transform_vars[var_name]], ds_out)
@@ -328,7 +593,7 @@ def generate_probabilistic_estimates(config):
             for d in range(len(target_vars_dependent)):
                 var_name_dep = target_vars_dependent[d]
                 if linkvar[var_name_dep] == var_name:
-                    print(f'Probabilistic estimation for {var_name_dep} and ensemble member {ens}--{ensemble_number}')
+                    # print(f'Probabilistic estimation for {var_name_dep} and ensemble member {ens}--{ensemble_number}')
 
                     # generate random numbers
                     random_field_dep = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
@@ -352,6 +617,23 @@ def generate_probabilistic_estimates(config):
             encoding[var] = {'zlib': True, 'complevel': 4, '_FillValue': -9999.0}
         ds_out.to_netcdf(outfile_ens, encoding=encoding)
 
-    return config
+    t2 = time.time()
+    print(f'Complete probabilistic estimation of {target_vars} with linked vars {linkvar} for member range {member_range}. Time cost (sec): {t2-t1}')
 
+def generate_probabilistic_estimates(config, num_processes=4):
+    t1 = time.time()
+    print('#' * 50)
+    print('Probabilistic estimation')
+    print('#' * 50)
+    print('Target variables:', config['target_vars'])
+    print('Link variables:', config['linkvar'])
+
+    ensemble_number = config['ensemble_number']
+    items = [(config, [e, e+1]) for e in range(ensemble_number)]
+    with Pool(num_processes) as pool:
+        pool.starmap(generate_probabilistic_estimates_serial, items)
+
+    t2 = time.time()
+    print('Time cost (seconds):', t2 - t1)
+    print('Successful probabilistic estimation!\n\n')
 

@@ -1,4 +1,4 @@
-import toml, json
+import toml, json, sys
 import data_processing
 import near_stn_search
 import weight_calculation
@@ -7,49 +7,53 @@ import probabilistic_auxiliary
 import data_correlation
 import probabilistic_estimation
 
-config_file = "testcase.config.toml"
-# config_file = sys.argv[1]
+if __name__ == '__main__':
 
-########################################################################################################################
-# load configuration file
+    config_file = "testcase.config.toml"
+    # config_file = sys.argv[1]
 
-config = toml.load(config_file)
-print('Configuration file:', config_file)
-print(json.dumps(config, sort_keys=True, indent=4))
+    ########################################################################################################################
+    # load configuration file
 
-########################################################################################################################
-# assemble individual stations and station attributes (e.g., lat, lon) to one netcdf file
-config = data_processing.assemble_fortran_GMET_stns_to_one_file(config)
+    config = toml.load(config_file)
+    print('#'*50)
+    print('Configuration file:', config_file)
+    print(json.dumps(config, sort_keys=True, indent=4))
+    print('#'*50, '\n'*2)
 
-########################################################################################################################
-# get near station info for each station/grid
-config = near_stn_search.get_near_station_info(config)
+    ########################################################################################################################
+    # assemble individual stations and station attributes (e.g., lat, lon) to one netcdf file
+    config = data_processing.assemble_fortran_GMET_stns_to_one_file(config)
 
-########################################################################################################################
-# calculate weights based on near station info. this step is independent to enable flexible weight test if needed.
-config = weight_calculation.calculate_weight_using_nearstn_info(config)
+    ########################################################################################################################
+    # get near station info for each station/grid
+    config = near_stn_search.get_near_station_info(config)
 
-########################################################################################################################
-# regression:
-# leave-one-out station regression (i.e., at station points)
-config = regression.main_regression(config, 'loo')
+    ########################################################################################################################
+    # calculate weights based on near station info. this step is independent to enable flexible weight test if needed.
+    config = weight_calculation.calculate_weight_using_nearstn_info(config)
 
-# grid regression
-config = regression.main_regression(config, 'grid')
+    ########################################################################################################################
+    # regression:
+    # leave-one-out station regression (i.e., at station points)
+    config = regression.main_regression(config, 'loo')
 
-########################################################################################################################
-# get uncertainty estimation based on difference between leave-one-out station regression estimates and station observations
-# interpolation from points to grids
-config = probabilistic_auxiliary.extrapolate_auxiliary_info((config))
+    # grid regression
+    config = regression.main_regression(config, 'grid')
 
-########################################################################################################################
-# probabilistic estimation
+    ########################################################################################################################
+    # get uncertainty estimation based on difference between leave-one-out station regression estimates and station observations
+    # interpolation from points to grids
+    config = probabilistic_auxiliary.extrapolate_auxiliary_info((config))
 
-# 1. get space and time correlations
-config = data_correlation.station_space_time_correlation(config)
+    ########################################################################################################################
+    # probabilistic estimation
 
-# 2. probabilistic estimation
-config = probabilistic_estimation.generate_probabilistic_estimates(config)
+    # 1. get space and time correlations
+    config = data_correlation.station_space_time_correlation(config)
+
+    # 2. probabilistic estimation
+    config = probabilistic_estimation.generate_probabilistic_estimates(config)
 
 
 
