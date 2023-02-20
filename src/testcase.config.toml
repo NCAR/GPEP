@@ -1,13 +1,14 @@
 # configuration file used to run GMET ensemble estimation
 
+
 author = "Guoqiang Tang"
 version = "0.0.1"
 name = "PyGMET for SHARP"
-date = "2022-12"
+date = "2023-02"
 affiliation = "NCAR CGD"
 
 # worker number (cpu cores) for parallelization. Better to be <= ensemble_number
-num_processes = 5
+num_processes = 1
 
 # station input data (Fortran GMET input format station)
 input_stn_list = "../test_cases/cali2017/inputs/CALI.screened_stn_list_slope.v3.csv"
@@ -34,6 +35,15 @@ transform_vars = ['boxcox', '', ''] # There is a section at the end of the confi
 #maxRange_vars = [2000, 60, 60, 60, 60] # <=. Daily limits slightly beyond global records from google search.
 #transform_vars = ['boxcoxnono', 'anything cannot be found in [transform] section will activate non transformation', '', '', ''] # There is a section at the end of the config file defining various transformation
 
+
+# direct: using raw time series to calculate autocorrelation; anomaly: using the anomaly of time series to calculate autocorrelation
+auto_corr_method = 'direct'
+# only effective for auto_corr_method=anomaly. rolling mean window size, which is used for variable lag auto correlation calculation
+rolling_window = [31, 31, 31] # 31-monthly rolling mean to remove monthly cycle. if
+
+# link variables
+linkvar = [ ['prcp', 'trange'], ]  # random number generation dependence, e.g., ['prcp', 'trange'] means prcp depends on trange
+
 # Number of stations to consider for each target point. nearstn_min<=nearstn_max.
 nearstn_min = 35  # nearby stations: minimum number
 nearstn_max = 35  # nearby stations: maximum number
@@ -55,8 +65,8 @@ ensemble_number = 5
 master_seed = 20230104
 
 # variable space and temporal correlation length. the list corresponds to target_vars. negative values mean calculation based available station data
-clen = [150, 800, 300]
-#clen = [-999, -999, -999]
+#clen = [150, 800, 300]
+clen = [-999, -999, -999]
 
 # overwrite existing files
 overwrite_stninfo = false

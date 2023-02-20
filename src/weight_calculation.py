@@ -57,6 +57,7 @@ def calculate_weight_using_nearstn_info(config):
     weight_exp = 3
     keyword = 'nearDistance' # defined in near station search
     keywords_drop = ['nearDistance', 'nearIndex']
+    truncation_dist = 1000 # stations beyond this distance have zero weights
 
     print('#' * 50)
     print('Calculate weights for near stations')
@@ -79,7 +80,12 @@ def calculate_weight_using_nearstn_info(config):
     for var in ds_inout.data_vars:
         if keyword in var:
             print('Processing:', var)
-            nearWeight = calculate_weights_from_distance(ds_inout[var].values, initial_distance, weight_exp)
+            nearDistance = ds_inout[var].values
+
+            nearWeight = calculate_weights_from_distance(nearDistance, initial_distance, weight_exp)
+
+            nearWeight[nearDistance > truncation_dist] = 0
+
             ds_inout[var.replace(keyword, 'nearWeight')] = xr.DataArray(nearWeight, dims=ds_inout[var].dims)
 
     # drop some vars

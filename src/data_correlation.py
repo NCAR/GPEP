@@ -1,4 +1,5 @@
 # calculate temporal auto correlation or spatial correlation length
+import sys
 import time
 
 import numpy as np
@@ -18,17 +19,16 @@ def cal_cross_cc(d1, d2):
     return cc
 
 
-def cal_auto_cc(data, lag=0):
-    cc = cal_cross_cc(data[:-lag], data[lag:])
-    return cc
-
-
 def station_lag_correlation(data, lag):
     # data: [number of stations, number of time steps]
     nstn, ntime = data.shape
     cc = np.nan * np.zeros(nstn)
     for i in range(nstn):
-        cc[i] = cal_auto_cc(data[i, :], lag)
+        d1 = data[i, :-lag]
+        d2 = data[i, lag:]
+        ind = ~np.isnan(d1+d2)
+        if np.sum(ind) > 2:
+            cc[i] = cal_cross_cc(d1[ind], d2[ind])
     return cc
 
 
@@ -164,8 +164,17 @@ def station_space_time_correlation(config):
     file_stn_cc = config['file_stn_cc']
     overwrite_station_cc = config['overwrite_station_cc']
     num_processes = config['num_processes']
+    auto_corr_method = config['auto_corr_method']
+    rolling_window = config['rolling_window']
+
+    linkvar0 = config['linkvar']
+    linkvar = {}
+    for v in linkvar0:
+        linkvar[v[0]] = v[1]
+
 
     lag = 1 # lag-1 cc
+
 
     print('#' * 50)
     print(f'Calculate station space and time correlation')
@@ -174,6 +183,7 @@ def station_space_time_correlation(config):
     print('Output file_stn_cc:', file_stn_cc)
     print('Target variables:', target_vars)
     print('Number of processes:', num_processes)
+    print('Linked variables:', linkvar)
 
     if os.path.isfile(file_stn_cc):
         print('Note! Station correlation file exists')
@@ -203,7 +213,17 @@ def station_space_time_correlation(config):
         # calculate auto correlation
         print('Auto correlation calculation for:', var_name)
         with xr.open_dataset(file_allstn) as ds_stn:
-            stn_value = ds_stn[var_name].values
+
+            # calculate var - moving_averaging(var) to remove monthly cycle
+            if auto_corr_method == 'direct':
+                stn_value = ds_stn[var_name].values
+            elif auto_corr_method == 'anomaly':
+                stn_value_raw = ds_stn[var_name].values
+                stn_value_mv = ds_stn[var_name].rolling(time=rolling_window, center=True).mean().values
+                stn_value = stn_value_raw - stn_value_mv
+            else:
+                sys.exit('Unknown auto_corr_method')
+
             lat = ds_stn['lat'].values
             lon = ds_stn['lon'].values
 
@@ -213,33 +233,47 @@ def station_space_time_correlation(config):
         ds_out[var_name + '_cc_lag1_mean'] = xr.DataArray([np.nanmean(cc)], dims=('z'))
 
         # calculate space correlation
-        print('Spatial correlation calculation for:', var_name)
-        cc_pair, dist_pair, index_pair = station_spatial_correlation(lat, lon, stn_value, num_processes)
-
-        index = ~np.isnan(dist_pair + cc_pair)
-        # popt, pcov = curve_fit(func_clen_exp2p, dist_pair[index], cc_pair[index])
-        popt, pcov = curve_fit(func_clen_exp1p, dist_pair[index], cc_pair[index])
-
-        # ds_out[f'{var_name}_space_pair_cc'] = xr.DataArray(cc_pair, dims=('pair'))
-        # ds_out[f'{var_name}_space_pair_dist'] = xr.DataArray(dist_pair, dims=('pair'))
-        # ds_out[f'{var_name}_space_pair_index'] = xr.DataArray(index_pair, dims=('pair', 'pind'))
-        ds_out[f'{var_name}_space_Clen'] = xr.DataArray([popt[0]], dims=('z'))
-        # ds_out[f'{var_name}_space_param2'] = xr.DataArray([popt[1]], dims=('z'))
+        # print('Spatial correlation calculation for:', var_name)
+        # cc_pair, dist_pair, index_pair = station_spatial_correlation(lat, lon, stn_value, num_processes)
+        #
+        # index = ~np.isnan(dist_pair + cc_pair)
+        # # popt, pcov = curve_fit(func_clen_exp2p, dist_pair[index], cc_pair[index])
+        # popt, pcov = curve_fit(func_clen_exp1p, dist_pair[index], cc_pair[index])
+        #
+        # # ds_out[f'{var_name}_space_pair_cc'] = xr.DataArray(cc_pair, dims=('pair'))
+        # # ds_out[f'{var_name}_space_pair_dist'] = xr.DataArray(dist_pair, dims=('pair'))
+        # # ds_out[f'{var_name}_space_pair_index'] = xr.DataArray(index_pair, dims=('pair', 'pind'))
+        # ds_out[f'{var_name}_space_Clen'] = xr.DataArray([popt[0]], dims=('z'))
+        # # ds_out[f'{var_name}_space_param2'] = xr.DataArray([popt[1]], dims=('z'))
 
     ########################################################################################################################
     # calculate cross correlation
     # just precipitation VS trange. This should be changed in the future to variable dependence setting without any hard-caoded variable
 
-    if ('prcp' in target_vars) and ('trange' in target_vars):
-        print('Calculate cross correlation between prcp and trange')
+    # calculate var - moving_averaging(var) to remove monthly cycle
+    for var1, var2 in linkvar.items():
+        print(f'Calculate cross correlation between {var1} and {var2}')
         with xr.open_dataset(file_allstn) as ds_stn:
-            data1 = ds_stn['prcp'].values
-            data2 = ds_stn['trange'].values
+            # data1 = ds_stn['prcp'].values
+
+            if auto_corr_method == 'direct':
+                data1 = ds_stn[var1].values
+                data2 = ds_stn[var2].values
+            elif auto_corr_method == 'anomaly':
+                stn_value_raw = ds_stn[var1].values
+                stn_value_mv = ds_stn[var1].rolling(time=rolling_window, center=True).mean().values
+                data1 = stn_value_raw - stn_value_mv
+
+                stn_value_raw = ds_stn[var2].values
+                stn_value_mv = ds_stn[var2].rolling(time=rolling_window, center=True).mean().values
+                data2 = stn_value_raw - stn_value_mv
+            else:
+                sys.exit('Unknown auto_corr_method')
 
         cc = station_cross_correlation(data1, data2)
 
-        ds_out['prcp_trange_cc_cross'] = xr.DataArray(cc, dims=('stn'))
-        ds_out['prcp_trange_cc_cross_mean'] = xr.DataArray([np.nanmean(cc)], dims=('z'))
+        ds_out[f'{var1}_{var2}_cc_cross'] = xr.DataArray(cc, dims=('stn'))
+        ds_out[f'{var1}_{var2}_cc_cross_mean'] = xr.DataArray([np.nanmean(cc)], dims=('z'))
 
     ########################################################################################################################
     # save output file

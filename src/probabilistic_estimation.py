@@ -471,7 +471,12 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
     maxrndnum = 3.99  # minimum and maximum random number following GMET scripts
     minrndnum = -3.99
 
-    linkvar = {'prcp': 'trange'}  # random number generation dependence
+    # linkvar = {'prcp': 'trange'}  # random number generation dependence
+    linkvar0 = config['linkvar']
+    linkvar = {}
+    for v in linkvar0:
+        linkvar[v[0]] = v[1]
+
 
     if len(member_range) == 0:
         member_range = [0, ensemble_number]
