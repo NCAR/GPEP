@@ -461,27 +461,30 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
     target_vars = config['target_vars']
     transform_vars = config['transform_vars']
     transform_settings = config['transform']
-    ensemble_number = config['ensemble_number']
+    ensemble_start = config['ensemble_start']
+    ensemble_end = config['ensemble_end']
     master_seed = config['master_seed']
     clen_config = config['clen']
     overwrite_ens = config['overwrite_ens']
     overwrite_spcorr = config['overwrite_spcorr']
     datestamp = f"{config['date_start'].replace('-', '')}-{config['date_end'].replace('-', '')}"
 
+    linkvar0 = config['linkvar']
+
     maxrndnum = 3.99  # minimum and maximum random number following GMET scripts
     minrndnum = -3.99
 
     # linkvar = {'prcp': 'trange'}  # random number generation dependence
-    linkvar0 = config['linkvar']
     linkvar = {}
     for v in linkvar0:
         linkvar[v[0]] = v[1]
 
-
+    ensemble_number = ensemble_end - ensemble_start + 1
     if len(member_range) == 0:
         member_range = [0, ensemble_number]
 
-    print(f'Starting probabilistic estimation of {target_vars} with linked vars {linkvar} for member range {member_range}')
+    member_range_2 = np.array(member_range) + ensemble_start
+    print(f'Starting probabilistic estimation of {target_vars} with linked vars {linkvar} for member range {member_range_2}')
 
     ########################################################################################################################
     # create all seeds used to generate random fields
@@ -489,7 +492,11 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
         date0 = int(ds_grid_reg.time[0].dt.strftime('%Y%m%d%H'))
         ntime = len(ds_grid_reg.time)
 
-    master_seed = master_seed + date0 # ensure different input batches have different seeds
+    if master_seed >= 0:
+        master_seed = master_seed + date0 # ensure different input batches have different seeds
+    else:
+        master_seed = np.random.randint(1e10)
+
     seeds_rf = generate_random_numbers(master_seed, len(target_vars) * ensemble_number * ntime)
     seeds_rf = np.reshape(seeds_rf, [len(target_vars), ensemble_number, ntime])
     seeds_rf2 = {}
@@ -606,7 +613,7 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
 
     for ens in range(member_range[0], member_range[1]):
         # define output file name
-        outfile_ens = f'{file_ens_prefix}{datestamp}_{ens + 1:03}.nc'
+        outfile_ens = f'{file_ens_prefix}{datestamp}_{ens + ensemble_start:03}.nc'
         if os.path.isfile(outfile_ens):
             print(f'Ensemble outfile exists: {outfile_ens}')
             if overwrite_ens == True:
@@ -672,12 +679,13 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
         ds_out.to_netcdf(outfile_ens, encoding=encoding)
 
     t2 = time.time()
-    print(f'Complete probabilistic estimation of {target_vars} with linked vars {linkvar} for member range {member_range}. Time cost (sec): {t2-t1}')
+    print(f'Complete probabilistic estimation of {target_vars} with linked vars {linkvar} for member range {member_range_2}. Time cost (sec): {t2-t1}')
 
 def generate_probabilistic_estimates(config):
     t1 = time.time()
 
-    ensemble_number = config['ensemble_number']
+    ensemble_start = config['ensemble_start']
+    ensemble_end = config['ensemble_end']
     num_processes = config['num_processes']
 
     print('#' * 50)
@@ -686,8 +694,13 @@ def generate_probabilistic_estimates(config):
     print('Target variables:', config['target_vars'])
     print('Number of processes:', num_processes)
 
+    if ensemble_start<0 or ensemble_end<0:
+        print('Stop generating ensemble estimates because ensemble_start or ensemble_start is negative.')
+        return
+
     spcorr_structure(config)
 
+    ensemble_number = ensemble_end - ensemble_start + 1
     items = [(config, [e, e+1]) for e in range(ensemble_number)]
     with Pool(num_processes) as pool:
         pool.starmap(generate_probabilistic_estimates_serial, items)

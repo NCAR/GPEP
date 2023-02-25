@@ -26,10 +26,10 @@ date_end = "2017-02-15"
 
 # input/output variables (currently, only prcp, tmean, trange)
 input_vars = ['prcp', 'tmin', 'tmax'] # variables in the raw station files
-target_vars = ['prcp', 'tmean', 'trange'] # target output variables. tmean and trange are supported. meanwhile, any var from input_vars (e.g., tmin tmax) is accepted
-minRange_vars = [0, -100, 1] # >=. Daily limits slightly beyond global records from google search. 1 for Trange is arbitrary. this is not used in probabilistic estimation
-maxRange_vars = [2000, 60, 60] # <=. Daily limits slightly beyond global records from google search. this is not used in probabilistic estimation
-transform_vars = ['boxcox', '', ''] # There is a section at the end of the config file defining various transformation
+target_vars = ['tmean'] # target output variables. tmean and trange are supported. meanwhile, any var from input_vars (e.g., tmin tmax) is accepted
+minRange_vars = [-100] # >=. Daily limits slightly beyond global records from google search. 1 for Trange is arbitrary. this is not used in probabilistic estimation
+maxRange_vars = [60] # <=. Daily limits slightly beyond global records from google search. this is not used in probabilistic estimation
+transform_vars = [ ''] # There is a section at the end of the config file defining various transformation
 #target_vars = ['prcp', 'tmean', 'trange', 'tmin', 'tmax'] # target output variables. tmean and trange are supported. meanwhile, any var from input_vars is accepted
 #minRange_vars = [0, -100, 1, -100, -100] # >=. Daily limits slightly beyond global records from google search. 1 for Trange is arbitrary.
 #maxRange_vars = [2000, 60, 60, 60, 60] # <=. Daily limits slightly beyond global records from google search.
@@ -39,10 +39,10 @@ transform_vars = ['boxcox', '', ''] # There is a section at the end of the confi
 # direct: using raw time series to calculate autocorrelation; anomaly: using the anomaly of time series to calculate autocorrelation
 auto_corr_method = 'direct'
 # only effective for auto_corr_method=anomaly. rolling mean window size, which is used for variable lag auto correlation calculation
-rolling_window = [31, 31, 31] # 31-monthly rolling mean to remove monthly cycle. if
+rolling_window = [31] # 31-monthly rolling mean to remove monthly cycle. if
 
 # link variables
-linkvar = [ ['prcp', 'trange'], ]  # random number generation dependence, e.g., ['prcp', 'trange'] means prcp depends on trange
+linkvar = [ ]  # random number generation dependence, e.g., ['prcp', 'trange'] means prcp depends on trange
 
 # Number of stations to consider for each target point. nearstn_min<=nearstn_max.
 nearstn_min = 35  # nearby stations: minimum number
@@ -59,14 +59,18 @@ predictor_name_static_stn = ['lat', 'lon', 'elev', 'slp_n', 'slp_e'] # variable 
 predictor_name_static_grid = ['latitude', 'longitude', 'elev', 'gradient_n_s', 'gradient_w_e'] # variable names in station attribute file
 
 # ensemble settings
-ensemble_number = 5
+# note: ensemble_start starts from 1, not 0
+ensemble_start = 1
+ensemble_end = 5
+
 
 # master probabilistic seed: control all probabilistic process (e.g., generating other random seeds)
+# a negative value means real random generation without reproducibility
 master_seed = 20230104
 
 # variable space and temporal correlation length. the list corresponds to target_vars. negative values mean calculation based available station data
 #clen = [150, 800, 300]
-clen = [-999, -999, -999]
+clen = [800]
 
 # overwrite existing files
 overwrite_stninfo = false
@@ -81,8 +85,6 @@ overwrite_spcorr = false
 # if don't want to use dynamic factors, just give invalid dynamic_predictor_name or dynamic_predictor_filelist
 # dynamic_predictor_name = [] # don't use dynamic predictors
 dynamic_predictor_name = [['cube_root_prec_rate', 'tmp_2m'],
-                          ['cube_root_prec_rate', 'tmp_2m'],
-                          ['cube_root_prec_rate', 'tmp_2m'],
                           ]
 dynamic_predictor_filelist = "../test_cases/cali2017/griddata_standard/grid_file_list.txt"
 dynamic_predictor_check = ['cube_root_prec_rate'] # check whether they are good in regression. For example, precipitation may have many zero values.

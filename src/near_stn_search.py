@@ -4,17 +4,23 @@ import xarray as xr
 import numpy as np
 import multiprocessing
 
+# def distance(lat1, lon1, lat2, lon2):
+#     # distance from lat/lon to km
+#     radius = 6371  # km
+#     dlat = np.radians(lat2 - lat1)
+#     dlon = np.radians(lon2 - lon1)
+#     a = np.sin(dlat / 2) * np.sin(dlat / 2) + np.cos(np.radians(lat1)) \
+#         * np.cos(np.radians(lat2)) * np.sin(dlon / 2) * np.sin(dlon / 2)
+#     c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
+#     d = radius * c
+#     return d
+
 def distance(lat1, lon1, lat2, lon2):
     # distance from lat/lon to km
-    radius = 6371  # km
-    dlat = np.radians(lat2 - lat1)
-    dlon = np.radians(lon2 - lon1)
-    a = np.sin(dlat / 2) * np.sin(dlat / 2) + np.cos(np.radians(lat1)) \
-        * np.cos(np.radians(lat2)) * np.sin(dlon / 2) * np.sin(dlon / 2)
-    c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
-    d = radius * c
+    lat1r, lon1r, lat2r, lon2r = np.radians(lat1), np.radians(lon1), np.radians(lat2), np.radians(lon2)
+    d = ((180 * 60) / np.pi) * (2 * np.arcsin(np.sqrt((np.sin((lat1r - lat2r) / 2)) ** 2 + np.cos(lat1r) * np.cos(lat2r) * (np.sin((lon1r - lon2r) / 2)) ** 2)))
+    d = d * 1.852 # nautical mile to km
     return d
-
 
 def find_nearstn_for_one_target(lat_tar, lon_tar, lat_stn, lon_stn, try_radius, initial_radius, nearstn_min, nearstn_max):
     # lat_tar/lon_tar: one value

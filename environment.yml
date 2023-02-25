@@ -1,0 +1,11 @@
+name: PyGMET-env
+channels:
+  - conda-forge
+dependencies:
+  - dask
+  - netcdf4
+  - scikit-learn
+  - scipy
+  - toml
+  - tqdm
+  - xarray

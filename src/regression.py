@@ -423,7 +423,7 @@ def read_period_input_data(df_mapping, varnames):
     return ds
 
 
-def regrid_xarray(ds, tarlon, tarlat, target):
+def regrid_xarray(ds, tarlon, tarlat, target, method='nearest'):
     # if target='1D', tarlon and tarlat are vector of station points
     # if target='2D', tarlon and tarlat are vector defining grids
 
@@ -441,13 +441,24 @@ def regrid_xarray(ds, tarlon, tarlat, target):
         else:
             ds = ds.sel(lon=slice(tarlon[0], tarlon[-1]))
 
-        ds_out = ds.interp(lat=tarlat, lon=tarlon, method='linear')
+        ds_out = ds.interp(lat=tarlat, lon=tarlon, method=method, kwargs={"fill_value": "extrapolate"})
 
     elif target == '1D':
         tarlat = xr.DataArray(tarlat, dims=('z'))
         tarlon = xr.DataArray(tarlon, dims=('z'))
-        ds_out = ds.interp(lat=tarlat, lon=tarlon, method='linear')
+        ds_out = ds.interp(lat=tarlat, lon=tarlon, method=method)
         ds_out = ds_out.transpose('time', 'z')
+
+        # for test
+        for v in ds_out.data_vars:
+            values = ds_out[v].values
+            for i in range(len(tarlon)):
+                londiff = ds.lon.values - tarlon.values[i]
+                latdiff = ds.lat.values - tarlat.values[i]
+                ind1 = np.argmin(np.abs(londiff))
+                ind2 = np.argmin(np.abs(latdiff))
+                values[:, i] = ds[v].values[:, ind2, ind1]
+            ds_out[v].values = values
 
     else:
         sys.exit('Unknown target')
@@ -467,6 +478,9 @@ def flatten_list(lst):
 
 ########################################################################################################################
 # wrapped up regression functions
+
+# loop_regression_2Dor3D is good, but multiprocessing version is not. check and combine them to one
+# remove the near station search dependence between trange and tmean
 
 def loop_regression_2Dor3D(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, dynamic_predictors={}):
     # regression for 2D (vector) or 3D (array) inputs
@@ -512,7 +526,6 @@ def loop_regression_2Dor3D(stn_data, stn_predictor, tar_nearIndex, tar_nearWeigh
             sample_nearIndex = sample_nearIndex[index_valid]
 
             sample_weight = tar_nearWeight[r, c, :][index_valid]
-            sample_weight = sample_weight / np.sum(sample_weight)
 
             xdata_near0 = stn_predictor[sample_nearIndex, :]
             xdata_g0 = tar_predictor[r, c, :]
@@ -595,7 +608,6 @@ def regression_for_blocks(r1, r2, c1, c2):
                 sample_nearIndex = sample_nearIndex[index_valid]
 
                 sample_weight = tar_nearWeight[r, c, :][index_valid]
-                sample_weight = sample_weight / np.sum(sample_weight)
 
                 xdata_near0 = stn_predictor[sample_nearIndex, :]
                 xdata_g0 = tar_predictor[r, c, :]
@@ -881,6 +893,7 @@ def main_regression(config, target):
 
         ########################################################################################################################
         # get estimates at station points
+        # estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic)
         estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic, num_processes)
 
         # constrain trange
@@ -913,6 +926,7 @@ def main_regression(config, target):
                 stn_value = ds_stn[var_name].values
                 print('Number of negative values', np.sum(stn_value<0))
             stn_value[stn_value > 0] = 1
+            # estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic)
             estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic, num_processes)
             if estimates.ndim == 3:
                 ds_out['pop'] = xr.DataArray(estimates, dims=('y', 'x', 'time'))
