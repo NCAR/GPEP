@@ -186,11 +186,7 @@ def extrapolate_auxiliary_info(config):
             if vtmp in ds_nearinfo.data_vars:
                 nearIndex = ds_nearinfo[vtmp].values
             else:
-                if var_name == 'trange':
-                    print(f'Use nearIndex_Grid_tmean for trange')
-                    nearIndex = ds_nearinfo[f'nearIndex_Grid_tmean'].values
-                else:
-                    sys.exit(f'Cannot find nearIndex_Grid_{var_name} in {file_stn_nearinfo}')
+                sys.exit(f'Cannot find nearIndex_Grid_{var_name} in {file_stn_nearinfo}')
 
         # weights
         with xr.open_dataset(file_stn_weight) as ds_weight:
@@ -198,11 +194,7 @@ def extrapolate_auxiliary_info(config):
             if vtmp in ds_weight.data_vars:
                 nearWeight = ds_weight[vtmp].values
             else:
-                if var_name == 'trange':
-                    print(f'Use nearWeight_Grid_tmean for trange')
-                    nearWeight = ds_weight[f'nearWeight_Grid_tmean'].values
-                else:
-                    sys.exit(f'Cannot find nearIndex_Grid_{var_name} in {file_stn_weight}')
+                sys.exit(f'Cannot find nearIndex_Grid_{var_name} in {file_stn_weight}')
 
         ########################################################################################################################
         # error interpolation

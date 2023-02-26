@@ -1,7 +1,7 @@
 # PyGMET
 PyGMET is the Python version of the Gridded Meteorological Ensemble Tool (GMET: https://github.com/NCAR/GMET). Although the Fortran version of GMET is used as the template, PyGMET has many technical differences and a flexible structure. Instead of focusing on precipitation and temperature, PyGMET can address any variable.  
 
-# What does PyGMET docd 
+# What does PyGMET do  
 - Deterministic estimates of any input variable (defined in the configure file)
 - Probabilistic estimates of any number of ensemble members
 - Intermediate outputs: spatiotemporally correlated random fields, spatial correlation, temporal auto correlation (lag 1), nearby station index/weights, etc ...  
@@ -11,18 +11,13 @@ All outputs are provided as netcdf4 files.
 # How to install PyGEMT
 PyGMET does not have harsh requirement on Python environment. It can be run as long as the packages listed in environment.yml or requirements.txt are installed. You can also create virtual environments following below instructions. 
 - pip    
-<code>
-cd /your/path/of/PyGMET  
+<code>cd /your/path/of/PyGMET  
 virtualenv PyGMET-env  
 source PyGMET-env/bin/activate  
-pip install -r requirements.txt  
-</code>
-
+pip install -r requirements.txt</code>
 - conda    
-<code>
-conda env create -f environment.yml
-conda activate PyGMET-env
-</code>
+<code>conda env create -f environment.yml
+conda activate PyGMET-env</code>
 
 # How to run PyGMET  
 1. Prepare the configuration file  
@@ -32,7 +27,7 @@ Use testcase.config.toml in ./src as the template to set up new cases. The confi
 python main.py config.toml  
 
 # Test case for PyGMET  
-The test case for raw GMET is directly used here. The below codes show how to get the test case and how to run the test case. 
+The test case for raw GMET is directly used here. The below codes show how to get the test case and how to run the test case.  
 <code>
 cd ./test_cases  
 python get_testcase.py  

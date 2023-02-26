@@ -427,10 +427,10 @@ def regrid_xarray(ds, tarlon, tarlat, target, method='nearest'):
     # if target='1D', tarlon and tarlat are vector of station points
     # if target='2D', tarlon and tarlat are vector defining grids
 
+    ds = ds.transpose('time', 'lat', 'lon')
+
     # regridding: space and time
     if target == '2D':
-
-        ds = ds.transpose('time', 'lat', 'lon')
 
         if ds.lat.values[0] > ds.lat.values[1]:
             ds = ds.sel(lat=slice(tarlat[-1], tarlat[0]))
@@ -444,21 +444,33 @@ def regrid_xarray(ds, tarlon, tarlat, target, method='nearest'):
         ds_out = ds.interp(lat=tarlat, lon=tarlon, method=method, kwargs={"fill_value": "extrapolate"})
 
     elif target == '1D':
-        tarlat = xr.DataArray(tarlat, dims=('z'))
-        tarlon = xr.DataArray(tarlon, dims=('z'))
-        ds_out = ds.interp(lat=tarlat, lon=tarlon, method=method)
-        ds_out = ds_out.transpose('time', 'z')
 
-        # for test
-        for v in ds_out.data_vars:
-            values = ds_out[v].values
-            for i in range(len(tarlon)):
-                londiff = ds.lon.values - tarlon.values[i]
-                latdiff = ds.lat.values - tarlat.values[i]
-                ind1 = np.argmin(np.abs(londiff))
-                ind2 = np.argmin(np.abs(latdiff))
-                values[:, i] = ds[v].values[:, ind2, ind1]
-            ds_out[v].values = values
+        # # simplest method if ds fully contains tarlon/tarlat. but for the testcase, some stations are outside the boundary defined by grid centers although they are still within the grids.
+        # # this method will create NaN
+        # tarlat = xr.DataArray(tarlat, dims=('z'))
+        # tarlon = xr.DataArray(tarlon, dims=('z'))
+        # ds_out = ds.interp(lat=tarlat, lon=tarlon, method=method)
+        # ds_out = ds_out.transpose('time', 'z')
+
+        # find the nearest grid
+        datamatch = np.nan * np.zeros([len(ds.time), len(tarlat), len(ds.data_vars)])
+        latstep = np.abs(tarlat[0] - tarlat[1])
+        lonstep = np.abs(tarlon[0] - tarlon[1])
+        varlist = [v for v in ds.data_vars]
+        for i in range(len(tarlon)):
+            londiff = np.abs(ds.lon.values - tarlon[i])
+            latdiff = np.abs(ds.lat.values - tarlat[i])
+            if np.min(latdiff) < latstep *2 and np.min(londiff) < lonstep * 2: # * 2 to allow a minimum extrapolation
+                ind1 = np.argmin(latdiff)
+                ind2 = np.argmin(londiff)
+                for j in range(len(varlist)):
+                    datamatch[:, i, j] = ds[varlist[j]].values[:, ind1, ind2]
+
+        ds_out = xr.Dataset()
+        ds_out.coords['time'] = ds['time'].values
+        ds_out.coords['z'] = np.arange(len(tarlon))
+        for j in range(len(varlist)):
+            ds_out[varlist[j]] = xr.DataArray(datamatch[:, :, j], dims=('time', 'z'))
 
     else:
         sys.exit('Unknown target')
@@ -495,22 +507,9 @@ def loop_regression_2Dor3D(stn_data, stn_predictor, tar_nearIndex, tar_nearWeigh
     # nearIndex/nearWeight: [row, col, number of nearby stations]
     # tar_predictor: [row, col, number of predictors]
 
-    # np.savez_compressed('../docs/data_for_parallel_test.npz', stn_data=stn_data, stn_predictor=stn_predictor,
-    #                     tar_nearIndex=tar_nearIndex, tar_nearWeight=tar_nearWeight, tar_predictor=tar_predictor, method=method, dynamic_predictors=dynamic_predictors)
 
     if len(dynamic_predictors) == 0:
         dynamic_predictors['flag'] = False
-
-    # if tar_nearIndex.ndim == 2:
-    #     # make it a 3D array to be consistent
-    #     tar_nearIndex = tar_nearIndex[np.newaxis, :, :]
-    #     tar_nearWeight = tar_nearWeight[np.newaxis, :, :]
-    #     tar_predictor = tar_predictor[np.newaxis, :, :]
-    #
-    #     if dynamic_predictors['flag'] == True:
-    #         # change raw dim: [n_feature, n_time, n_station] to [n_feature, n_time, 1, n_station]
-    #         dynamic_predictors['tar_predictor_dynamic'] = dynamic_predictors['tar_predictor_dynamic'][:, :, np.newaxis, :]
-
 
     nstn, ntime = np.shape(stn_data)
     nrow, ncol, nearmax = np.shape(tar_nearIndex)
@@ -542,21 +541,34 @@ def loop_regression_2Dor3D(stn_data, stn_predictor, tar_nearIndex, tar_nearWeigh
                     xdata_near = xdata_near0
                     xdata_g = xdata_g0
                     if dynamic_predictors['flag'] == True:
+
                         xdata_near_add = dynamic_predictors['stn_predictor_dynamic'][:, d, sample_nearIndex].T
                         xdata_g_add = dynamic_predictors['tar_predictor_dynamic'][:, d, r, c]
+
                         if np.all(~np.isnan(xdata_near_add)) and np.all(~np.isnan(xdata_g_add)):
-                            xdata_near_try = np.hstack((xdata_near, xdata_near_add))
-                            xdata_g_try = np.hstack((xdata_g, xdata_g_add))
-                            # check if dynamic predictors are good for regression
-                            if check_predictor_matrix_behavior(xdata_near_try, sample_weight) == True:
-                                xdata_near = xdata_near_try
-                                xdata_g = xdata_g_try
-                            else:
-                                xdata_near_try = np.hstack((xdata_near, xdata_near_add[:, ~dynamic_predictors['predictor_checkflag']]))
-                                xdata_g_try = np.hstack((xdata_g, xdata_g_add[~dynamic_predictors['predictor_checkflag']]))
-                                if check_predictor_matrix_behavior(xdata_near_try, sample_weight) == True:
-                                    xdata_near = xdata_near_try
-                                    xdata_g = xdata_g_try
+
+                            # unique value check
+                            uniquenum = np.zeros(xdata_near_add.shape[1])
+                            for i in range(xdata_near_add.shape[1]):
+                                uniquenum[i] = len(np.unique(xdata_near_add[i]))
+
+                            xdata_near_add = xdata_near_add[:, uniquenum > 1]
+                            xdata_g_add = xdata_g_add[uniquenum > 1]
+
+                            if xdata_near_add.size > 0:
+                                xdata_near = np.hstack((xdata_near, xdata_near_add))
+                                xdata_g = np.hstack((xdata_g, xdata_g_add))
+
+                            # # check if dynamic predictors are good for regression. not necessary after unique value check
+                            # if check_predictor_matrix_behavior(xdata_near_try, sample_weight) == True:
+                            #     xdata_near = xdata_near_try
+                            #     xdata_g = xdata_g_try
+                            # else:
+                            #     xdata_near_try = np.hstack((xdata_near, xdata_near_add[:, ~dynamic_predictors['predictor_checkflag']]))
+                            #     xdata_g_try = np.hstack((xdata_g, xdata_g_add[~dynamic_predictors['predictor_checkflag']]))
+                            #     if check_predictor_matrix_behavior(xdata_near_try, sample_weight) == True:
+                            #         xdata_near = xdata_near_try
+                            #         xdata_g = xdata_g_try
 
                     # regression
                     if method == 'linear':
@@ -565,7 +577,9 @@ def loop_regression_2Dor3D(stn_data, stn_predictor, tar_nearIndex, tar_nearWeigh
                         ydata_tar = weight_logistic_regression(xdata_near, sample_weight, ydata_near, xdata_g)
                     else:
                         sys.exit(f'Unknonwn regression method: {method}')
+
                 estimates[r, c, d] = ydata_tar
+
     return np.squeeze(estimates)
 
 
@@ -831,11 +845,7 @@ def main_regression(config, target):
             if vtmp in ds_nearinfo.data_vars:
                 nearIndex = ds_nearinfo[vtmp].values
             else:
-                if var_name == 'trange':
-                    print(f'Use nearIndex_{near_keyword}_tmean for trange')
-                    nearIndex = ds_nearinfo[f'nearIndex_{near_keyword}_tmean'].values
-                else:
-                    sys.exit(f'Cannot find nearIndex_{near_keyword}_{var_name} in {file_stn_nearinfo}')
+                sys.exit(f'Cannot find nearIndex_{near_keyword}_{var_name} in {file_stn_nearinfo}')
 
             if target == 'loo':
                 nearIndex = nearIndex[np.newaxis, :, :]
@@ -858,11 +868,7 @@ def main_regression(config, target):
             if vtmp in ds_weight.data_vars:
                 nearWeight = ds_weight[vtmp].values
             else:
-                if var_name == 'trange':
-                    print(f'Use nearWeight_{near_keyword}_tmean for trange')
-                    nearWeight = ds_weight[f'nearWeight_{near_keyword}_tmean'].values
-                else:
-                    sys.exit(f'Cannot find nearIndex_{near_keyword}_{var_name} in {file_stn_weight}')
+                sys.exit(f'Cannot find nearIndex_{near_keyword}_{var_name} in {file_stn_weight}')
 
             if target == 'loo':
                 nearWeight = nearWeight[np.newaxis, :, :]
@@ -893,10 +899,10 @@ def main_regression(config, target):
 
         ########################################################################################################################
         # get estimates at station points
-        # estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic)
-        estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic, num_processes)
+        estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic)
+        # estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic, num_processes)
 
-        # constrain trange
+        # constrain variables
         estimates = np.squeeze(estimates)
         if np.any(estimates < minRange_vars[vn]):
             print(f'{var_name} estimates have values < {minRange_vars[vn]}. Adjust those to {minRange_vars[vn]}.')
@@ -926,8 +932,8 @@ def main_regression(config, target):
                 stn_value = ds_stn[var_name].values
                 print('Number of negative values', np.sum(stn_value<0))
             stn_value[stn_value > 0] = 1
-            # estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic)
-            estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic, num_processes)
+            estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic)
+            # estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic, num_processes)
             if estimates.ndim == 3:
                 ds_out['pop'] = xr.DataArray(estimates, dims=('y', 'x', 'time'))
             elif estimates.ndim == 2:

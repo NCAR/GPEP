@@ -225,12 +225,6 @@ def get_near_station_info(config):
     lat_stn_raw = ds_stn[stn_lat_name].values
     lon_stn_raw = ds_stn[stn_lon_name].values
 
-    # check tmean and trange. they are calculated from tmin and tmax, and thus have the same valid stations. only find near station information for tmean
-    if 'tmean' in target_vars and 'trange' in target_vars:
-        print('Find both tmean and trange in target_vars. Remove Trange from near station search.')
-        target_vars = target_vars.copy()
-        target_vars.remove('trange')
-
     # for a variable, some stations do not have records
     var_mean = []
     lat_stn_valid = []
