@@ -423,9 +423,13 @@ def read_period_input_data(df_mapping, varnames):
     return ds
 
 
-def regrid_xarray(ds, tarlon, tarlat, target, method='nearest'):
+def regrid_xarray(ds, tarlon, tarlat, target, method):
     # if target='1D', tarlon and tarlat are vector of station points
     # if target='2D', tarlon and tarlat are vector defining grids
+
+    default_method = 'nearest'
+    if len(method) == 0:
+        method = default_method
 
     ds = ds.transpose('time', 'lat', 'lon')
 
@@ -441,30 +445,58 @@ def regrid_xarray(ds, tarlon, tarlat, target, method='nearest'):
         else:
             ds = ds.sel(lon=slice(tarlon[0], tarlon[-1]))
 
-        ds_out = ds.interp(lat=tarlat, lon=tarlon, method=method, kwargs={"fill_value": "extrapolate"})
+        if isinstance(method, str):
+            ds_out = ds.interp(lat=tarlat, lon=tarlon, method=method, kwargs={"fill_value": "extrapolate"})
+        else:
+            ds_out = xr.Dataset()
+            for v in ds.data_vars:
+                if v in method:
+                    methodv = method[v]
+                else:
+                    methodv = default_method
+                ds_out[v] = ds[v].interp(lat=tarlat, lon=tarlon, method=methodv, kwargs={"fill_value": "extrapolate"})
 
     elif target == '1D':
 
-        # # simplest method if ds fully contains tarlon/tarlat. but for the testcase, some stations are outside the boundary defined by grid centers although they are still within the grids.
-        # # this method will create NaN
-        # tarlat = xr.DataArray(tarlat, dims=('z'))
-        # tarlon = xr.DataArray(tarlon, dims=('z'))
-        # ds_out = ds.interp(lat=tarlat, lon=tarlon, method=method)
-        # ds_out = ds_out.transpose('time', 'z')
+        # simplest method if ds fully contains tarlon/tarlat
+        # but for the testcase, some stations are outside the boundary defined by grid centers although they are still within the grids.
+        # this method will create NaN
+        tarlatz = xr.DataArray(tarlat, dims=('z'))
+        tarlonz = xr.DataArray(tarlon, dims=('z'))
+        if isinstance(method, str):
+            ds_out = ds.interp(lat=tarlatz, lon=tarlonz, method=method)
+        else:
+            ds_out = xr.Dataset()
+            for v in ds.data_vars:
+                if v in method:
+                    methodv = method[v]
+                else:
+                    methodv = default_method
+                ds_out[v] = ds[v].interp(lat=tarlatz, lon=tarlonz, method=methodv)
 
-        # find the nearest grid
-        datamatch = np.nan * np.zeros([len(ds.time), len(tarlat), len(ds.data_vars)])
+        ds_out = ds_out.transpose('time', 'z')
+
+        # if there is any NaN values along the boundaries, fill them using nearest neighbor method
         latstep = np.abs(tarlat[0] - tarlat[1])
         lonstep = np.abs(tarlon[0] - tarlon[1])
-        varlist = [v for v in ds.data_vars]
+        varlist = [v for v in ds_out.data_vars]
+
+        datamatch = np.nan * np.zeros([len(ds.time), len(tarlat), len(ds.data_vars)])
+        for i in range(len(varlist)):
+            datamatch[:, :, i] = ds_out[varlist[i]].values
+
         for i in range(len(tarlon)):
-            londiff = np.abs(ds.lon.values - tarlon[i])
-            latdiff = np.abs(ds.lat.values - tarlat[i])
-            if np.min(latdiff) < latstep *2 and np.min(londiff) < lonstep * 2: # * 2 to allow a minimum extrapolation
-                ind1 = np.argmin(latdiff)
-                ind2 = np.argmin(londiff)
-                for j in range(len(varlist)):
-                    datamatch[:, i, j] = ds[varlist[j]].values[:, ind1, ind2]
+            if np.all(np.isnan(datamatch[:, i, 0])):
+                londiff = np.abs(ds.lon.values - tarlon[i])
+                latdiff = np.abs(ds.lat.values - tarlat[i])
+                if np.min(latdiff) < latstep * 2 and np.min(londiff) < lonstep * 2: # * 2 to allow a minimum extrapolation
+                    ind1 = np.argmin(latdiff)
+                    ind2 = np.argmin(londiff)
+                    for j in range(len(varlist)):
+                        datamatch[:, i, j] = ds[varlist[j]].values[:, ind1, ind2]
+
+        for i in range(len(varlist)):
+            ds_out[varlist[i]].values = datamatch[:, :, i]
 
         ds_out = xr.Dataset()
         ds_out.coords['time'] = ds['time'].values
@@ -733,6 +765,9 @@ def main_regression(config, target):
     dynamic_predictor_name = config['dynamic_predictor_name']
     dynamic_predictor_filelist = config['dynamic_predictor_filelist']
     dynamic_predictor_check = config['dynamic_predictor_check']
+    dynamic_predictor_operation = config['dynamic_predictor_operation']
+
+    transform_settings = config['transform']
 
     num_processes = config['num_processes']
 
@@ -794,9 +829,25 @@ def main_regression(config, target):
         df_mapping = map_filelist_timestep(dynamic_predictor_filelist, timeaxis)
         ds_dynamic = read_period_input_data(df_mapping, allvars)
 
-        ds_dynamic_stn = regrid_xarray(ds_dynamic, ds_stn.lon.values, ds_stn.lat.values, '1D')
+        # transformation dynamic variables if necessary
+        dyn_operation_trans = {}
+        dyn_operation_interp = {}
+        for op in dynamic_predictor_operation:
+            info = op.split(':')
+            for i in range(1, len(info)):
+                if info[i].split('=')[0] == 'transform':
+                    dyn_operation_trans[info[0]] = info[i].split('=')[1]
+                elif info[i].split('=')[0] == 'interp':
+                    dyn_operation_interp[info[0]] = info[i].split('=')[1]
+
+        for v in ds_dynamic.data_vars:
+            if v in dyn_operation_trans:
+                print('Transform dynamic predictor:', v)
+                ds_dynamic[v].values = data_transformation(ds_dynamic[v].values, dyn_operation_trans[v], transform_settings[dyn_operation_trans[v]], 'transform')
+
+        ds_dynamic_stn = regrid_xarray(ds_dynamic, ds_stn.lon.values, ds_stn.lat.values, '1D', method=dyn_operation_interp)
         if target == 'grid':
-            ds_dynamic_tar = regrid_xarray(ds_dynamic, xaxis, yaxis, '2D')
+            ds_dynamic_tar = regrid_xarray(ds_dynamic, xaxis, yaxis, '2D', method=dyn_operation_interp)
         elif target == 'loo':
             ds_dynamic_tar = ds_dynamic_stn.copy()
 
