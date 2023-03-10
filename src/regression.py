@@ -6,6 +6,8 @@ import xarray as xr
 from multiprocessing import Pool
 from tqdm.contrib import itertools
 from data_processing import data_transformation
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LogisticRegression
 import sys, os, math
 
 ########################################################################################################################
@@ -261,19 +263,23 @@ def weight_linear_regression(nearinfo, weightnear, datanear, tarinfo):
 
 def weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
 
-    w_pcp_red = np.diag(np.squeeze(weightnear))
+    try:
+        w_pcp_red = np.diag(np.squeeze(weightnear))
 
-    # if len(np.unique(datanear)) == 1:
-    #     pop = datanear[0] # all 0 (no rain) or all 1 (rain everywhere)
-    # else:
-    tx_red = np.transpose(nearinfo)
-    twx_red = np.matmul(tx_red, w_pcp_red)
-    b = logistic_regression(nearinfo, twx_red, datanear)
-    if np.all(b == 0) or np.any(np.isnan(b)):
-        pop = np.dot(weightnear, datanear)
-    else:
-        zb = - np.dot(tarinfo, b)
-        pop = 1 / (1 + np.exp(zb))
+        # if len(np.unique(datanear)) == 1:
+        #     pop = datanear[0] # all 0 (no rain) or all 1 (rain everywhere)
+        # else:
+        tx_red = np.transpose(nearinfo)
+        twx_red = np.matmul(tx_red, w_pcp_red)
+        b = logistic_regression(nearinfo, twx_red, datanear)
+        if np.all(b == 0) or np.any(np.isnan(b)):
+            pop = np.dot(weightnear, datanear)
+        else:
+            zb = - np.dot(tarinfo, b)
+            pop = 1 / (1 + np.exp(zb))
+
+    except:
+        pop = sklearn_weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo)
 
     return pop
 
@@ -293,13 +299,13 @@ def check_predictor_matrix_behavior(nearinfo, weightnear):
 
 ###########################
 # regression using Python sklearn package: easier to use, but slower and a bit different from the above functions
-from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import LogisticRegression
 def sklearn_weight_linear_regression(nearinfo, weightnear, datanear, tarinfo):
     model = LinearRegression()
     model = model.fit(nearinfo, datanear, sample_weight=weightnear)
     datatar = model.predict(tarinfo[np.newaxis, :])
     return datatar
+
+
 def sklearn_weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
 
     model = LogisticRegression(solver='liblinear')
@@ -371,7 +377,7 @@ def map_filelist_timestep(dynamic_predictor_filelist, timeseries):
     # for each time step, find the closest
     df_mapping = pd.DataFrame()
     for t in timeseries:
-        if t >= df['intime'].iloc[0] and t <= df['intime'].iloc[-1]: # don't extrapolate 
+        if t >= df['intime'].iloc[0] and t <= df['intime'].iloc[-1]: # don't extrapolate
             indi = np.argmin(np.abs(df['intime'] - t)) # nearest neighbor
             df_mapping = pd.concat((df_mapping, df.iloc[[indi]]))
         else:
@@ -521,6 +527,96 @@ def flatten_list(lst):
     return flat_list
 
 ########################################################################################################################
+# machine learning regression
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+
+def train_and_return_test(Xtrain, ytrain, Xtest, method, settings = {}):
+    indexvalid = ~np.isnan( np.sum(Xtrain, axis=1) + ytrain)
+    indexnan_test = np.isnan(np.sum(Xtest, axis=1))
+    Xtest = Xtest.copy()
+    Xtest[indexnan_test, :] = 0
+    if method == 'RandomForestRegressor':
+        rf = RandomForestRegressor(**settings)
+        rf.fit(Xtrain[indexvalid, :], ytrain[indexvalid])
+        ytest = rf.predict(Xtest)
+    elif method == 'RandomForestClassifier':
+        rf = RandomForestClassifier(**settings)
+        rf.fit(Xtrain[indexvalid, :], ytrain[indexvalid])
+        ytest = rf.predict_proba(Xtest)[:, 1]
+    else:
+        sys.exit(f'{method} is not supported!')
+    ytest[indexnan_test] = np.nan
+    return ytest
+
+def ML_regression_leaveoneout(stn_data, stn_predictor, ml_model, ml_settings={}, dynamic_predictors={}, n_splits=10):
+
+    if len(dynamic_predictors) == 0:
+        dynamic_predictors['flag'] = False
+
+    # remove missing stations
+    nstn0, ntime = np.shape(stn_data)
+    estimates0 = np.nan * np.zeros([nstn0, ntime], dtype=np.float32)
+
+    nannum = np.sum(np.isnan(stn_data), axis=1)
+    indexmissing = nannum == stn_data.shape[1]
+    stn_data = stn_data[~indexmissing, :]
+    stn_predictor = stn_predictor[~indexmissing, :]
+
+    # cross-validation index
+    kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)
+    kf.get_n_splits(stn_data)
+
+    nstn, ntime = np.shape(stn_data)
+    estimates = np.nan * np.zeros([nstn, ntime], dtype=np.float32)
+
+    for i, (train_index, test_index) in enumerate(kf.split(stn_predictor)):
+        for t in range(ntime):
+            stn_predictor_t = stn_predictor.copy()
+            if dynamic_predictors['flag'] == True:
+                xdata_add = dynamic_predictors['stn_predictor_dynamic'][:, t, :].T
+                stn_predictor_t = np.hstack((stn_predictor_t, xdata_add[~indexmissing, :]))
+            ytest = train_and_return_test(stn_predictor_t[train_index, :], stn_data[train_index, t], stn_predictor_t[test_index, :], ml_model, ml_settings)
+            estimates[test_index, t] = ytest
+
+    estimates0[~indexmissing, :] = estimates
+
+    return np.squeeze(estimates0)
+
+
+def ML_regression_grid(stn_data, stn_predictor, tar_predictor, ml_model, ml_settings={}, dynamic_predictors={}):
+
+    if len(dynamic_predictors) == 0:
+        dynamic_predictors['flag'] = False
+
+    # remove missing stations
+    nstn, ntime = np.shape(stn_data)
+    nrow, ncol, npred = np.shape(tar_predictor)
+    estimates = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
+
+    tar_predictor_resh = np.reshape(tar_predictor, [nrow*ncol, npred])
+
+    for t in range(ntime):
+        stn_predictor_t = stn_predictor.copy()
+        tar_predictor_t = tar_predictor_resh.copy()
+
+        if dynamic_predictors['flag'] == True:
+            xdata_add1 = dynamic_predictors['stn_predictor_dynamic'][:, t, :].T
+            stn_predictor_t = np.hstack((stn_predictor_t, xdata_add1))
+
+            xdata_add2 = dynamic_predictors['tar_predictor_dynamic'][:, t, :, :]
+            ndyn = xdata_add2.shape[0]
+            xdata_add2 = np.reshape(xdata_add2, [ndyn, nrow*ncol]).T
+            tar_predictor_t = np.hstack((tar_predictor_t, xdata_add2))
+
+        ytest = train_and_return_test(stn_predictor_t, stn_data[:, t], tar_predictor_t, ml_model, ml_settings)
+        ytest = np.reshape(ytest, [nrow, ncol])
+        estimates[:, :, t] = ytest
+
+    return np.squeeze(estimates)
+
+########################################################################################################################
 # wrapped up regression functions
 
 # loop_regression_2Dor3D is good, but multiprocessing version is not. check and combine them to one
@@ -582,25 +678,29 @@ def loop_regression_2Dor3D(stn_data, stn_predictor, tar_nearIndex, tar_nearWeigh
                             # unique value check
                             uniquenum = np.zeros(xdata_near_add.shape[1])
                             for i in range(xdata_near_add.shape[1]):
-                                uniquenum[i] = len(np.unique(xdata_near_add[i]))
+                                uniquenum[i] = len(np.unique(xdata_near_add[:, i]))
 
                             xdata_near_add = xdata_near_add[:, uniquenum > 1]
                             xdata_g_add = xdata_g_add[uniquenum > 1]
 
                             if xdata_near_add.size > 0:
-                                xdata_near = np.hstack((xdata_near, xdata_near_add))
-                                xdata_g = np.hstack((xdata_g, xdata_g_add))
+                                xdata_near_try = np.hstack((xdata_near, xdata_near_add))
+                                xdata_g_try = np.hstack((xdata_g, xdata_g_add))
 
-                            # # check if dynamic predictors are good for regression. not necessary after unique value check
-                            # if check_predictor_matrix_behavior(xdata_near_try, sample_weight) == True:
-                            #     xdata_near = xdata_near_try
-                            #     xdata_g = xdata_g_try
-                            # else:
-                            #     xdata_near_try = np.hstack((xdata_near, xdata_near_add[:, ~dynamic_predictors['predictor_checkflag']]))
-                            #     xdata_g_try = np.hstack((xdata_g, xdata_g_add[~dynamic_predictors['predictor_checkflag']]))
-                            #     if check_predictor_matrix_behavior(xdata_near_try, sample_weight) == True:
-                            #         xdata_near = xdata_near_try
-                            #         xdata_g = xdata_g_try
+                                # The below codes using check_predictor_matrix_behavior are not necessary
+                                xdata_near = xdata_near_try
+                                xdata_g = xdata_g_try
+
+                                # # check if dynamic predictors are good for regression. not necessary after unique value check
+                                # if check_predictor_matrix_behavior(xdata_near_try, sample_weight) == True:
+                                #     xdata_near = xdata_near_try
+                                #     xdata_g = xdata_g_try
+                                # else:
+                                #     xdata_near_try = np.hstack((xdata_near, xdata_near_add[:, ~dynamic_predictors['predictor_checkflag']]))
+                                #     xdata_g_try = np.hstack((xdata_g, xdata_g_add[~dynamic_predictors['predictor_checkflag']]))
+                                #     if check_predictor_matrix_behavior(xdata_near_try, sample_weight) == True:
+                                #         xdata_near = xdata_near_try
+                                #         xdata_g = xdata_g_try
 
                     # regression
                     if method == 'linear':
@@ -673,19 +773,33 @@ def regression_for_blocks(r1, r2, c1, c2):
                             xdata_near_add = dynamic_predictors['stn_predictor_dynamic'][:, d, sample_nearIndex].T
                             xdata_g_add = dynamic_predictors['tar_predictor_dynamic'][:, d, r, c]
                             if np.all(~np.isnan(xdata_near_add)) and np.all(~np.isnan(xdata_g_add)):
-                                xdata_near_try = np.hstack((xdata_near, xdata_near_add))
-                                xdata_g_try = np.hstack((xdata_g, xdata_g_add))
-                                # check if dynamic predictors are good for regression
-                                if check_predictor_matrix_behavior(xdata_near_try, sample_weight) == True:
+
+                                # unique value check
+                                uniquenum = np.zeros(xdata_near_add.shape[1])
+                                for i in range(xdata_near_add.shape[1]):
+                                    uniquenum[i] = len(np.unique(xdata_near_add[:, i]))
+
+                                xdata_near_add = xdata_near_add[:, uniquenum > 1]
+                                xdata_g_add = xdata_g_add[uniquenum > 1]
+
+                                if xdata_near_add.size > 0:
+                                    xdata_near_try = np.hstack((xdata_near, xdata_near_add))
+                                    xdata_g_try = np.hstack((xdata_g, xdata_g_add))
+
+                                    # The below codes using check_predictor_matrix_behavior are not necessary
                                     xdata_near = xdata_near_try
                                     xdata_g = xdata_g_try
-                                else:
-                                    xdata_near_try = np.hstack(
-                                        (xdata_near, xdata_near_add[:, ~dynamic_predictors['predictor_checkflag']]))
-                                    xdata_g_try = np.hstack((xdata_g, xdata_g_add[~dynamic_predictors['predictor_checkflag']]))
-                                    if check_predictor_matrix_behavior(xdata_near_try, sample_weight) == True:
-                                        xdata_near = xdata_near_try
-                                        xdata_g = xdata_g_try
+
+                                    # # check if dynamic predictors are good for regression. not necessary after unique value check
+                                    # if check_predictor_matrix_behavior(xdata_near_try, sample_weight) == True:
+                                    #     xdata_near = xdata_near_try
+                                    #     xdata_g = xdata_g_try
+                                    # else:
+                                    #     xdata_near_try = np.hstack((xdata_near, xdata_near_add[:, ~dynamic_predictors['predictor_checkflag']]))
+                                    #     xdata_g_try = np.hstack((xdata_g, xdata_g_add[~dynamic_predictors['predictor_checkflag']]))
+                                    #     if check_predictor_matrix_behavior(xdata_near_try, sample_weight) == True:
+                                    #         xdata_near = xdata_near_try
+                                    #         xdata_g = xdata_g_try
 
                         # regression
                         if method == 'linear':
@@ -727,18 +841,20 @@ def main_regression(config, target):
     t1 = time.time()
 
     # parse and change configurations
+    case_name = config['case_name']
+
     outpath_parent = config['outpath_parent']
     path_regression = f'{outpath_parent}/regression_outputs'
     os.makedirs(path_regression, exist_ok=True)
 
     datestamp = f"{config['date_start'].replace('-', '')}-{config['date_end'].replace('-', '')}"
     if target == 'grid':
-        outfile = f'{path_regression}/Grid_Regression_{datestamp}.nc'  # leave one out regression
+        outfile = f'{path_regression}/{case_name}_Grid_Regression_{datestamp}.nc'  # leave one out regression
         config['file_grid_reg'] = outfile
         overwrite_flag = config['overwrite_grid_reg']
         predictor_name_static_target = config['predictor_name_static_grid']
     elif target == 'loo':
-        outfile = f'{path_regression}/Leave_one_out_Regression_{datestamp}.nc'  # leave one out regression
+        outfile = f'{path_regression}/{case_name}_CrossValidation_Regression_{datestamp}.nc'  # leave one out regression
         config['file_loo_reg'] = outfile
         overwrite_flag = config['overwrite_loo_reg']
         predictor_name_static_target = config['predictor_name_static_stn']
@@ -746,6 +862,7 @@ def main_regression(config, target):
         sys.exit('Unknown target!')
 
     # in/out information to this function
+
     file_allstn = config['file_allstn']
     file_stn_nearinfo = config['file_stn_nearinfo']
     file_stn_weight = config['file_stn_weight']
@@ -767,11 +884,24 @@ def main_regression(config, target):
     dynamic_predictor_check = config['dynamic_predictor_check']
     dynamic_predictor_operation = config['dynamic_predictor_operation']
 
-    transform_settings = config['transform']
-
     num_processes = config['num_processes']
-
+    master_seed = config['master_seed']
     overwrite_flag = overwrite_flag
+
+    gridcore_classification = config['gridcore_classification']
+    gridcore_continuous = config['gridcore_continuous']
+    n_splits = config['n_splits']
+
+    if 'machine_learning' in config:
+        machine_learning_config = config['machine_learning']
+    else:
+        machine_learning_config = {}
+
+    for g in [gridcore_classification, gridcore_continuous]:
+        if g != 'LWLR':
+            if not g in machine_learning_config:
+                machine_learning_config[g] = {}
+            machine_learning_config[g]['n_jobs'] = num_processes
 
     if target == 'loo':
         # keyword for near information (default setting in this script)
@@ -799,6 +929,11 @@ def main_regression(config, target):
             return config
 
     dynamic_flag = initial_check_dynamic_predictor(dynamic_predictor_name, dynamic_predictor_filelist, target_vars)
+
+
+    if master_seed <0:
+        master_seed = np.random.randint(1e10)
+    np.random.seed(master_seed)
 
     ########################################################################################################################
     # initialize outputs
@@ -950,8 +1085,14 @@ def main_regression(config, target):
 
         ########################################################################################################################
         # get estimates at station points
-        estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic)
-        # estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic, num_processes)
+        if gridcore_continuous == 'LWLR':
+            # estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic)
+            estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic, num_processes)
+        else:
+            if target == 'loo':
+                estimates = ML_regression_leaveoneout(stn_value, stn_predictor, gridcore_continuous, machine_learning_config[gridcore_continuous], predictor_dynamic, n_splits)
+            else:
+                estimates = ML_regression_grid(stn_value, stn_predictor, tar_predictor, gridcore_continuous, machine_learning_config[gridcore_continuous], predictor_dynamic)
 
         # constrain variables
         estimates = np.squeeze(estimates)
@@ -983,8 +1124,16 @@ def main_regression(config, target):
                 stn_value = ds_stn[var_name].values
                 print('Number of negative values', np.sum(stn_value<0))
             stn_value[stn_value > 0] = 1
-            estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic)
-            # estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic, num_processes)
+
+            if gridcore_classification == 'LWLR':
+                # estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic)
+                estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic, num_processes)
+            else:
+                if target == 'loo':
+                    estimates = ML_regression_leaveoneout(stn_value, stn_predictor, gridcore_classification, machine_learning_config[gridcore_classification], predictor_dynamic, n_splits)
+                else:
+                    estimates = ML_regression_grid(stn_value, stn_predictor, tar_predictor, gridcore_classification, machine_learning_config[gridcore_classification], predictor_dynamic)
+
             if estimates.ndim == 3:
                 ds_out['pop'] = xr.DataArray(estimates, dims=('y', 'x', 'time'))
             elif estimates.ndim == 2:

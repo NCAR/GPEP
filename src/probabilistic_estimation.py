@@ -436,11 +436,13 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
     t1 = time.time()
 
     # parse and change configurations
+    case_name = config['case_name']
+
     outpath_parent = config['outpath_parent']
     path_ensemble = f'{outpath_parent}/ensemble_outputs'
     os.makedirs(path_ensemble, exist_ok=True)
     config['path_ensemble'] = path_ensemble
-    file_ens_prefix = f'{path_ensemble}/Ensemble_estimate_'
+    file_ens_prefix = f'{path_ensemble}/{case_name}_Ensemble_'
     config['file_ens_prefix'] = file_ens_prefix
 
 
@@ -526,6 +528,7 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
 
     # regression estimates
     with xr.open_dataset(file_grid_reg) as ds_grid_reg:
+        pop = []
         for vn in range(len(target_vars)):
             var_name = target_vars[vn]
             if len(transform_vars[vn]) > 0:
@@ -534,6 +537,7 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
                 allvar_reg_estimate[var_name] = ds_grid_reg[var_name].values
             if var_name == 'prcp':
                 pop = ds_grid_reg['pop'].values
+
         lat = ds_grid_reg.y.values
         lon = ds_grid_reg.x.values
         tartime = ds_grid_reg.time.values

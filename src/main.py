@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
     config_file = "../test_cases/testcase.config.FortranGMET.toml"
     # config_file = "../test_cases/prcp.config.toml"
-    # config_file = "../test_cases/tmean.config.toml"
+    # config_file = "../test_cases/testcase.config.tmean.toml"
     # config_file = sys.argv[1]
 
     ########################################################################################################################
@@ -37,14 +37,14 @@ if __name__ == '__main__':
 
     ########################################################################################################################
     # regression:
-    # leave-one-out station regression (i.e., at station points)
+    # cross validation station regression (i.e., at station points)
     config = regression.main_regression(config, 'loo')
 
     # grid regression
     config = regression.main_regression(config, 'grid')
 
     ########################################################################################################################
-    # get uncertainty estimation based on difference between leave-one-out station regression estimates and station observations
+    # get uncertainty estimation based on difference between cross validation station regression estimates and station observations
     # interpolation from points to grids
     config = probabilistic_auxiliary.extrapolate_auxiliary_info((config))
 

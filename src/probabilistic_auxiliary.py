@@ -99,12 +99,13 @@ def extrapolate_auxiliary_info(config):
     t1 = time.time()
 
     # parse and change configurations
+    case_name = config['case_name']
     outpath_parent = config['outpath_parent']
     path_regression = f'{outpath_parent}/regression_outputs'
     os.makedirs(path_regression, exist_ok=True)
 
     datestamp = f"{config['date_start'].replace('-', '')}-{config['date_end'].replace('-', '')}"
-    file_grid_auxiliary = f'{path_regression}/Auxiliary_{datestamp}.nc'  # leave one out regression
+    file_grid_auxiliary = f'{path_regression}/{case_name}_Auxiliary_{datestamp}.nc'  # leave one out regression
     config['file_grid_auxiliary'] = file_grid_auxiliary
 
 

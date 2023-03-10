@@ -2,6 +2,9 @@
 # settings in this configuration file is used to reproduce Fortan GMET test case outputs
 # there could be some small differences between Pyhon and Fortran version
 
+# case name. will be used in ensemble outputs generations
+case_name = 'LWLRdynamic'
+
 # worker number (cpu cores) for parallelization. Better to be <= ensemble number
 num_processes = 5
 
@@ -85,9 +88,16 @@ dynamic_predictor_check = ['cube_root_prec_rate'] # check whether they are good 
 # transformation of the raw dynamic predictor
 #     Keyword "transform" accepts methods defined in the transformation section
 # Example "cube_root_prec_rate:interp=linear:transform=boxcox"
-dynamic_predictor_operation = ['cube_root_prec_rate:interp=nearest:transform=boxcox',
+dynamic_predictor_operation = ['cube_root_prec_rate:interp=nearest',
                                'tmp_2m:interp=nearest']
 
+# gridding methods
+# locally weighted linear regression, RandomForestRegressor, RandomForestClassifier, etc
+# parametrs of methods supported by sklearn can be defined at the bottom of this configuration file. parameter names should be exactly the same with those in sklearn
+# if no parameters are defined, default parameters will be used
+gridcore_continuous = 'LWLR'
+gridcore_classification = 'LWLR' # for probability of precipitation
+n_splits = 10 # cross validation to generate uncertainty estimates. only effective for machine learning methods
 
 # overwrite existing files
 overwrite_stninfo = false
@@ -105,3 +115,10 @@ exp = 4
 [transform.ToBeAdded]
 example_param_a = 5
 example_param_b = -2
+
+[machine_learning]
+# num_processes will be used to allow parallelization
+[machine_learning.RandomForestRegressor]
+n_estimators = 100 # a example of RandomForestRegressor parameter
+[machine_learning.RandomForestClassifier]
+# if no parameters are provided or if the section does not even exist, default parameters will be used.
