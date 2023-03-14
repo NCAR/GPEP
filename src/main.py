@@ -9,9 +9,8 @@ import probabilistic_estimation
 
 if __name__ == '__main__':
 
-    config_file = "../test_cases/testcase.config.FortranGMET.toml"
-    # config_file = "../test_cases/prcp.config.toml"
-    # config_file = "../test_cases/testcase.config.tmean.toml"
+    # config_file = "../test_cases/testcase.config.FortranGMET.toml"
+    config_file = "../test_cases/testcase.config.toml"
     # config_file = sys.argv[1]
 
     ########################################################################################################################
@@ -44,19 +43,23 @@ if __name__ == '__main__':
     config = regression.main_regression(config, 'grid')
 
     ########################################################################################################################
-    # get uncertainty estimation based on difference between cross validation station regression estimates and station observations
-    # interpolation from points to grids
-    config = probabilistic_auxiliary.extrapolate_auxiliary_info((config))
+    # probabilistic / ensemble estimation
+    if config['ensemble_flag'] == False:
+        print('ensemble_flag if false in the configuration file. No need to generate ensemble estimation.')
+    else:
+        ########################################################################################################################
+        # get uncertainty estimation based on difference between cross validation station regression estimates and station observations
+        # interpolation from points to grids
+        config = probabilistic_auxiliary.extrapolate_auxiliary_info((config))
 
-    ########################################################################################################################
-    # probabilistic estimation
+        ########################################################################################################################
+        # probabilistic estimation
 
-    # 1. get space and time correlations
-    config = data_correlation.station_space_time_correlation(config)
+        # 1. get space and time correlations
+        config = data_correlation.station_space_time_correlation(config)
 
-    # 2. probabilistic estimation
-    config = probabilistic_estimation.generate_probabilistic_estimates(config)
+        # 2. probabilistic estimation
+        config = probabilistic_estimation.generate_probabilistic_estimates(config)
 
-
-
+    print('Successfully finish the program!')
 

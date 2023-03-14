@@ -1,4 +1,4 @@
-
+import sys, os, math
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -8,7 +8,11 @@ from tqdm.contrib import itertools
 from data_processing import data_transformation
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import LogisticRegression
-import sys, os, math
+
+from sklearn.model_selection import KFold
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from sklearn.neural_network import MLPRegressor, MLPClassifier
+import sklearn
 
 ########################################################################################################################
 # ludcmp, lubksb, and linearsolver
@@ -528,29 +532,57 @@ def flatten_list(lst):
 
 ########################################################################################################################
 # machine learning regression
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import KFold
-from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 
-def train_and_return_test(Xtrain, ytrain, Xtest, method, settings = {}):
+# def train_and_return_test(Xtrain, ytrain, Xtest, method, settings = {}):
+#     indexvalid = ~np.isnan( np.sum(Xtrain, axis=1) + ytrain)
+#     indexnan_test = np.isnan(np.sum(Xtest, axis=1))
+#     Xtest = Xtest.copy()
+#     Xtest[indexnan_test, :] = 0
+#     if method == 'RandomForestRegressor':
+#         rf = RandomForestRegressor(**settings)
+#         rf.fit(Xtrain[indexvalid, :], ytrain[indexvalid])
+#         ytest = rf.predict(Xtest)
+#     elif method == 'RandomForestClassifier':
+#         rf = RandomForestClassifier(**settings)
+#         rf.fit(Xtrain[indexvalid, :], ytrain[indexvalid])
+#         ytest = rf.predict_proba(Xtest)[:, 1]
+#     elif method == 'MLPRegressor':
+#         mlp = MLPRegressor(**settings)
+#         mlp.fit(Xtrain[indexvalid, :], ytrain[indexvalid])
+#         ytest = mlp.predict(Xtest)
+#     elif method == 'MLPClassifier':
+#         mlp = MLPClassifier(**settings)
+#         mlp.fit(Xtrain[indexvalid, :], ytrain[indexvalid])
+#         ytest = mlp.predict_proba(Xtest)[:, 1]
+#     else:
+#         sys.exit(f'{method} is not supported!')
+#     ytest[indexnan_test] = np.nan
+#     return ytest
+
+def train_and_return_test(Xtrain, ytrain, Xtest, method, probflag, settings = {}):
     indexvalid = ~np.isnan( np.sum(Xtrain, axis=1) + ytrain)
     indexnan_test = np.isnan(np.sum(Xtest, axis=1))
     Xtest = Xtest.copy()
     Xtest[indexnan_test, :] = 0
-    if method == 'RandomForestRegressor':
-        rf = RandomForestRegressor(**settings)
-        rf.fit(Xtrain[indexvalid, :], ytrain[indexvalid])
-        ytest = rf.predict(Xtest)
-    elif method == 'RandomForestClassifier':
-        rf = RandomForestClassifier(**settings)
-        rf.fit(Xtrain[indexvalid, :], ytrain[indexvalid])
-        ytest = rf.predict_proba(Xtest)[:, 1]
+
+    Xtrain = Xtrain[indexvalid, :]
+    ytrain = ytrain[indexvalid]
+
+    ldict = {'settings': settings, 'method':method}
+    # exec(f"model = sklearn.{method}(**settings)", globals(), ldict)
+    exec(f"model = {method}(**settings)", globals(), ldict)
+    model = ldict['model']
+
+    model.fit(Xtrain, ytrain)
+    if probflag == False:
+        ytest = model.predict(Xtest)
     else:
-        sys.exit(f'{method} is not supported!')
+        ytest = model.predict_proba(Xtest)[:, 1]
+
     ytest[indexnan_test] = np.nan
     return ytest
 
-def ML_regression_leaveoneout(stn_data, stn_predictor, ml_model, ml_settings={}, dynamic_predictors={}, n_splits=10):
+def ML_regression_leaveoneout(stn_data, stn_predictor, ml_model, probflag, ml_settings={}, dynamic_predictors={}, n_splits=10):
 
     if len(dynamic_predictors) == 0:
         dynamic_predictors['flag'] = False
@@ -577,7 +609,7 @@ def ML_regression_leaveoneout(stn_data, stn_predictor, ml_model, ml_settings={},
             if dynamic_predictors['flag'] == True:
                 xdata_add = dynamic_predictors['stn_predictor_dynamic'][:, t, :].T
                 stn_predictor_t = np.hstack((stn_predictor_t, xdata_add[~indexmissing, :]))
-            ytest = train_and_return_test(stn_predictor_t[train_index, :], stn_data[train_index, t], stn_predictor_t[test_index, :], ml_model, ml_settings)
+            ytest = train_and_return_test(stn_predictor_t[train_index, :], stn_data[train_index, t], stn_predictor_t[test_index, :], ml_model, probflag, ml_settings)
             estimates[test_index, t] = ytest
 
     estimates0[~indexmissing, :] = estimates
@@ -585,7 +617,7 @@ def ML_regression_leaveoneout(stn_data, stn_predictor, ml_model, ml_settings={},
     return np.squeeze(estimates0)
 
 
-def ML_regression_grid(stn_data, stn_predictor, tar_predictor, ml_model, ml_settings={}, dynamic_predictors={}):
+def ML_regression_grid(stn_data, stn_predictor, tar_predictor, ml_model, probflag, ml_settings={}, dynamic_predictors={}):
 
     if len(dynamic_predictors) == 0:
         dynamic_predictors['flag'] = False
@@ -610,7 +642,7 @@ def ML_regression_grid(stn_data, stn_predictor, tar_predictor, ml_model, ml_sett
             xdata_add2 = np.reshape(xdata_add2, [ndyn, nrow*ncol]).T
             tar_predictor_t = np.hstack((tar_predictor_t, xdata_add2))
 
-        ytest = train_and_return_test(stn_predictor_t, stn_data[:, t], tar_predictor_t, ml_model, ml_settings)
+        ytest = train_and_return_test(stn_predictor_t, stn_data[:, t], tar_predictor_t, ml_model, probflag, ml_settings)
         ytest = np.reshape(ytest, [nrow, ncol])
         estimates[:, :, t] = ytest
 
@@ -897,11 +929,6 @@ def main_regression(config, target):
     else:
         machine_learning_config = {}
 
-    for g in [gridcore_classification, gridcore_continuous]:
-        if g != 'LWLR':
-            if not g in machine_learning_config:
-                machine_learning_config[g] = {}
-            machine_learning_config[g]['n_jobs'] = num_processes
 
     if target == 'loo':
         # keyword for near information (default setting in this script)
@@ -934,6 +961,27 @@ def main_regression(config, target):
     if master_seed <0:
         master_seed = np.random.randint(1e10)
     np.random.seed(master_seed)
+
+    ########################################################################################################################
+    # sklearn methods and settings
+    gnew = []
+    for g in [gridcore_classification, gridcore_continuous]:
+        if g != 'LWLR':
+            # load sklearn modules
+            if '.' in g:
+                m1 = g.split('.')[0]
+                m2 = g.split('.')[1]
+                exec(f"from sklearn.{m1} import {m2}")
+                gnew.append(m2)
+                g = m2
+            else:
+                gnew.append(g)
+
+            # model settings
+            if not g in machine_learning_config:
+                machine_learning_config[g] = {}
+
+    gridcore_classification, gridcore_continuous = gnew
 
     ########################################################################################################################
     # initialize outputs
@@ -1089,10 +1137,11 @@ def main_regression(config, target):
             # estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic)
             estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic, num_processes)
         else:
+            probflag = False # for continuous variables
             if target == 'loo':
-                estimates = ML_regression_leaveoneout(stn_value, stn_predictor, gridcore_continuous, machine_learning_config[gridcore_continuous], predictor_dynamic, n_splits)
+                estimates = ML_regression_leaveoneout(stn_value, stn_predictor, gridcore_continuous, probflag, machine_learning_config[gridcore_continuous], predictor_dynamic, n_splits)
             else:
-                estimates = ML_regression_grid(stn_value, stn_predictor, tar_predictor, gridcore_continuous, machine_learning_config[gridcore_continuous], predictor_dynamic)
+                estimates = ML_regression_grid(stn_value, stn_predictor, tar_predictor, gridcore_continuous, probflag, machine_learning_config[gridcore_continuous], predictor_dynamic)
 
         # constrain variables
         estimates = np.squeeze(estimates)
@@ -1129,10 +1178,11 @@ def main_regression(config, target):
                 # estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic)
                 estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic, num_processes)
             else:
+                probflag = True
                 if target == 'loo':
-                    estimates = ML_regression_leaveoneout(stn_value, stn_predictor, gridcore_classification, machine_learning_config[gridcore_classification], predictor_dynamic, n_splits)
+                    estimates = ML_regression_leaveoneout(stn_value, stn_predictor, gridcore_classification, probflag, machine_learning_config[gridcore_classification], predictor_dynamic, n_splits)
                 else:
-                    estimates = ML_regression_grid(stn_value, stn_predictor, tar_predictor, gridcore_classification, machine_learning_config[gridcore_classification], predictor_dynamic)
+                    estimates = ML_regression_grid(stn_value, stn_predictor, tar_predictor, gridcore_classification, probflag, machine_learning_config[gridcore_classification], predictor_dynamic)
 
             if estimates.ndim == 3:
                 ds_out['pop'] = xr.DataArray(estimates, dims=('y', 'x', 'time'))

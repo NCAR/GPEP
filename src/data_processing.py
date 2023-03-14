@@ -125,7 +125,6 @@ def assemble_fortran_GMET_stns_to_one_file(config):
             ds_stn['tmean'] = (ds_stn['tmin'] + ds_stn['tmax']) / 2
         else:
             sys.exit('Error. tmean is in target_vars, but raw station data do not contain tmin and tmax!')
-
     if ('trange' in target_vars) and (not 'trange' in input_vars) :
         if ('tmin' in ds_stn.data_vars) and ('tmax' in ds_stn.data_vars):
             ds_stn['trange'] = np.abs(ds_stn['tmax'] - ds_stn['tmin'])

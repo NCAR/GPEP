@@ -4,6 +4,7 @@ import xarray as xr
 import numpy as np
 from scipy import special
 import os, sys, time
+import numbers
 from multiprocessing import Pool
 
 import random_field_FortranGMET as rf_FGMET
@@ -466,12 +467,14 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
     ensemble_start = config['ensemble_start']
     ensemble_end = config['ensemble_end']
     master_seed = config['master_seed']
-    clen_config = config['clen']
     overwrite_ens = config['overwrite_ens']
-    overwrite_spcorr = config['overwrite_spcorr']
     datestamp = f"{config['date_start'].replace('-', '')}-{config['date_end'].replace('-', '')}"
 
     linkvar0 = config['linkvar']
+
+    clen_config = config['clen']
+    if isinstance(clen_config, numbers.Number):
+        clen_config = [clen_config] * len(target_vars)
 
     maxrndnum = 3.99  # minimum and maximum random number following GMET scripts
     minrndnum = -3.99
