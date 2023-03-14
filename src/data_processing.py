@@ -70,6 +70,12 @@ def assemble_fortran_GMET_stns_to_one_file(config):
     maxRange_vars = config['maxRange_vars']
     transform_vars = config['transform_vars']
     transform_settings = config['transform']
+    mapping_InOut_var = config['mapping_InOut_var']
+
+    if 'overwrite_stninfo' in config:
+        overwrite_stninfo = config['overwrite_stninfo']
+    else:
+        overwrite_stninfo = False
 
     # settings and prints
     print('#' * 50)
@@ -82,7 +88,7 @@ def assemble_fortran_GMET_stns_to_one_file(config):
 
     if os.path.isfile(file_allstn):
         print('Note! Output station file exists')
-        if config['overwrite_stninfo'] == True:
+        if overwrite_stninfo == True:
             print('overwrite_stninfo is True. Continue.')
         else:
             print('overwrite_stninfo is False. Skip station assembling.')
@@ -119,17 +125,17 @@ def assemble_fortran_GMET_stns_to_one_file(config):
     for i in range(len(input_vars)):
         ds_stn[input_vars[i]] = xr.DataArray(var_values[:, :, i], dims=('stn', 'time'))
 
-    # add tmean and trange if needed
-    if ('tmean' in target_vars) and (not 'tmean' in input_vars) :
-        if ('tmin' in ds_stn.data_vars) and ('tmax' in ds_stn.data_vars):
-            ds_stn['tmean'] = (ds_stn['tmin'] + ds_stn['tmax']) / 2
-        else:
-            sys.exit('Error. tmean is in target_vars, but raw station data do not contain tmin and tmax!')
-    if ('trange' in target_vars) and (not 'trange' in input_vars) :
-        if ('tmin' in ds_stn.data_vars) and ('tmax' in ds_stn.data_vars):
-            ds_stn['trange'] = np.abs(ds_stn['tmax'] - ds_stn['tmin'])
-        else:
-            sys.exit('Error. trange is in target_vars, but raw station data do not contain tmin and tmax!')
+    # convert input vars to target vars
+    for mapping in mapping_InOut_var:
+        mapping = mapping.replace(' ', '')
+        invars = [v for v in input_vars if v in mapping]
+
+        for v in invars:
+            exec(f"{v}=ds_stn.{v}")
+
+        tarvar = mapping.split('=')[0]
+        operation = mapping.split('=')[1]
+        ds_stn[tarvar] = eval(operation)
 
     # constrain variables
     for i in range(len(target_vars)):

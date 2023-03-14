@@ -388,8 +388,11 @@ def spcorr_structure(config):
 
     target_vars = config['target_vars']
     clen_config = config['clen']
-    overwrite_spcorr = config['overwrite_spcorr']
 
+    if 'overwrite_spcorr' in config:
+        overwrite_spcorr = config['overwrite_spcorr']
+    else:
+        overwrite_spcorr = False
 
     print(f'Generating spatial correlation structure')
 
@@ -467,8 +470,12 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
     ensemble_start = config['ensemble_start']
     ensemble_end = config['ensemble_end']
     master_seed = config['master_seed']
-    overwrite_ens = config['overwrite_ens']
     datestamp = f"{config['date_start'].replace('-', '')}-{config['date_end'].replace('-', '')}"
+
+    if 'overwrite_ens' in config:
+        overwrite_ens = config['overwrite_ens']
+    else:
+        overwrite_ens = False
 
     linkvar0 = config['linkvar']
 

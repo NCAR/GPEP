@@ -53,7 +53,12 @@ def calculate_weight_using_nearstn_info(config):
     file_stn_weight = config['file_stn_weight']
     initial_distance = config['initial_distance']
 
-    # default settings
+    if 'overwrite_weight' in config:
+        overwrite_weight = config['overwrite_weight']
+    else:
+        overwrite_weight = False
+
+    # default settings: to parameters
     weight_exp = 3
     keyword = 'nearDistance' # defined in near station search
     keywords_drop = ['nearDistance', 'nearIndex']
@@ -67,7 +72,7 @@ def calculate_weight_using_nearstn_info(config):
 
     if os.path.isfile(file_stn_weight):
         print('Note! Weight file exists')
-        if config['overwrite_weight'] == True:
+        if overwrite_weight == True:
             print('overwrite_weight is True. Continue.')
         else:
             print('overwrite_weight is False. Skip weight calculation.')

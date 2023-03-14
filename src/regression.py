@@ -883,12 +883,18 @@ def main_regression(config, target):
     if target == 'grid':
         outfile = f'{path_regression}/{case_name}_Grid_Regression_{datestamp}.nc'  # leave one out regression
         config['file_grid_reg'] = outfile
-        overwrite_flag = config['overwrite_grid_reg']
+        if 'overwrite_grid_reg' in config:
+            overwrite_flag = config['overwrite_grid_reg']
+        else:
+            overwrite_flag = False
         predictor_name_static_target = config['predictor_name_static_grid']
     elif target == 'loo':
         outfile = f'{path_regression}/{case_name}_CrossValidation_Regression_{datestamp}.nc'  # leave one out regression
         config['file_loo_reg'] = outfile
-        overwrite_flag = config['overwrite_loo_reg']
+        if 'overwrite_loo_reg' in config:
+            overwrite_flag = config['overwrite_loo_reg']
+        else:
+            overwrite_flag = False
         predictor_name_static_target = config['predictor_name_static_stn']
     else:
         sys.exit('Unknown target!')

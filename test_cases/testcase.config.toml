@@ -43,11 +43,12 @@ date_end = "2017-02-15"
 
 # input/output variables (currently, only prcp, tmean, trange)
 input_vars = ['prcp', 'tmin', 'tmax'] # variables in the raw station files
-
-#!!!!!!!!!!!!!!! Add this to the script. Input variables may need some operations to get out target variables. Using Python syntax.
-mapping_input_output = ['prcp=prcp', 'tmean=(tmin+tmax)/2', 'trange=tmax-tmin']
-
 target_vars = ['prcp', 'tmean', 'trange'] # target output variables. tmean and trange are supported. meanwhile, any var from input_vars (e.g., tmin tmax) is accepted
+
+# input variables may need some conversion to get target variables. if input_var and target_var have the same variable name, no need to add mapping relation
+mapping_InOut_var = ['tmean=(tmin+tmax)/2', 'trange=abs(tmax-tmin)']
+
+
 minRange_vars = [0, -100, 1] # >=. Daily limits slightly beyond global records from google search. 1 for Trange is arbitrary. this is not used in probabilistic estimation
 maxRange_vars = [2000, 60, 60] # <=. Daily limits slightly beyond global records from google search. this is not used in probabilistic estimation
 transform_vars = ['boxcox', '', ''] # There is a section at the end of the config file defining various transformation
@@ -131,7 +132,7 @@ auto_corr_method = 'direct'
 # only effective for auto_corr_method=anomaly. rolling mean window size, which is used for variable lag auto correlation calculation
 rolling_window = 31 # 31-monthly rolling mean to remove monthly cycle
 
-# overwrite existing files: make it optional and set the default as false
+# overwrite existing files
 overwrite_stninfo = false
 overwrite_station_cc = false
 overwrite_weight = false

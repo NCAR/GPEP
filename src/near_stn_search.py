@@ -190,6 +190,11 @@ def get_near_station_info(config):
 
     num_processes = config['num_processes']
 
+    if 'overwrite_stninfo' in config:
+        overwrite_stninfo = config['overwrite_stninfo']
+    else:
+        overwrite_stninfo = False
+
     # default settings
     stn_lat_name = 'lat'
     stn_lon_name = 'lon'
@@ -212,7 +217,7 @@ def get_near_station_info(config):
 
     if os.path.isfile(file_stn_nearinfo):
         print('Note! Near station info file exists')
-        if config['overwrite_stninfo'] == True:
+        if overwrite_stninfo == True:
             print('overwrite_stninfo is True. Continue.')
         else:
             print('overwrite_stninfo is False. Skip finding near stations.')

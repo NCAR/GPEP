@@ -118,7 +118,11 @@ def extrapolate_auxiliary_info(config):
 
     target_vars = config['target_vars']
     transform_vars = config['transform_vars']
-    overwrite_loo_reg = config['overwrite_loo_reg']
+    if 'overwrite_loo_reg' in config:
+        # because error is calculated from loo
+        overwrite_loo_reg = config['overwrite_loo_reg']
+    else:
+        overwrite_loo_reg = False
 
     print('#' * 50)
     print(f'Station error interpolation')

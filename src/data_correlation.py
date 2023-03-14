@@ -146,10 +146,6 @@ def hist_xy(x, y):
     return np.array(x2), np.array(y2)
 
 
-
-
-
-
 def station_space_time_correlation(config):
     t1 = time.time()
 
@@ -162,10 +158,14 @@ def station_space_time_correlation(config):
     file_allstn = config['file_allstn']
     target_vars = config['target_vars']
     file_stn_cc = config['file_stn_cc']
-    overwrite_station_cc = config['overwrite_station_cc']
     num_processes = config['num_processes']
     auto_corr_method = config['auto_corr_method']
     rolling_window = config['rolling_window']
+
+    if 'overwrite_station_cc' in config:
+        overwrite_station_cc = config['overwrite_station_cc']
+    else:
+        overwrite_station_cc = False
 
     linkvar0 = config['linkvar']
     linkvar = {}
