@@ -5,11 +5,16 @@ import numpy as np
 
 def distanceweight(dist, maxdist = 100, exp = 3):
     weight = (1 - (dist / maxdist) ** exp) ** exp
-    weight[dist > maxdist] = 0
+    weight[weight < 0] = 0
+    return weight
+
+def distanceweight_userdefined(dist, maxdist, weight_formula):
+    weight = eval(weight_formula)
+    weight[weight < 0] = 0
     return weight
 
 
-def calculate_weights_from_distance(nearDistance, initial_distance=100, exp=3):
+def calculate_weights_from_distance(nearDistance, initial_distance=100, exp=3, formula=''):
     # calculate weights
 
     if nearDistance.ndim == 2:
@@ -20,7 +25,10 @@ def calculate_weights_from_distance(nearDistance, initial_distance=100, exp=3):
             if disti[0] >= 0:
                 disti = disti[disti>=0]
                 max_dist = np.max([initial_distance, np.max(disti) + 1])
-                nearWeight[i, 0:len(disti)] = distanceweight(disti, max_dist, exp)
+                if len(formula) == 0:
+                    nearWeight[i, 0:len(disti)] = distanceweight(disti, max_dist, exp)
+                else:
+                    nearWeight[i, 0:len(disti)] = distanceweight_userdefined(disti, max_dist, formula)
 
     elif nearDistance.ndim == 3:
         nrow = nearDistance.shape[0]
@@ -32,7 +40,10 @@ def calculate_weights_from_distance(nearDistance, initial_distance=100, exp=3):
                 if distij[0] >= 0:
                     distij = distij[distij>=0]
                     max_dist = np.max([initial_distance, np.max(distij) + 1])
-                    nearWeight[i, j, 0:len(distij)] = distanceweight(distij, max_dist, exp)
+                    if len(formula) == 0:
+                        nearWeight[i, j, 0:len(distij)] = distanceweight(distij, max_dist, exp)
+                    else:
+                        nearWeight[i, j, 0:len(distij)] = distanceweight_userdefined(distij, max_dist, formula)
 
     else:
         sys.exit('Error! nearDistance must have ndim 2 or 3.')
@@ -53,16 +64,20 @@ def calculate_weight_using_nearstn_info(config):
     file_stn_weight = config['file_stn_weight']
     initial_distance = config['initial_distance']
 
+    if 'weight_formula' in config:
+        weight_formula = config['weight_formula']
+    else:
+        weight_formula = ''
+
     if 'overwrite_weight' in config:
         overwrite_weight = config['overwrite_weight']
     else:
         overwrite_weight = False
 
-    # default settings: to parameters
-    weight_exp = 3
+    # default settings
     keyword = 'nearDistance' # defined in near station search
     keywords_drop = ['nearDistance', 'nearIndex']
-    truncation_dist = 1000 # stations beyond this distance have zero weights
+    truncation_dist = np.inf # stations beyond this distance have zero weights. this is not activated for now
 
     print('#' * 50)
     print('Calculate weights for near stations')
@@ -87,7 +102,7 @@ def calculate_weight_using_nearstn_info(config):
             print('Processing:', var)
             nearDistance = ds_inout[var].values
 
-            nearWeight = calculate_weights_from_distance(nearDistance, initial_distance, weight_exp)
+            nearWeight = calculate_weights_from_distance(nearDistance, initial_distance, 3, weight_formula)
 
             nearWeight[nearDistance > truncation_dist] = 0
 

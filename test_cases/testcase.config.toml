@@ -22,8 +22,14 @@ master_seed = 20230104
 
 ############################## input/output files
 # station input data (Fortran GMET input format station)
+# two methods. 1: one station has one file, and 2: all stations are in one file. Method-2 has priority
+
+# Method-1: please give the input station file list (with attributes) and input station path
 input_stn_list = "../test_cases/cali2017/inputs/CALI.screened_stn_list_slope.v3.csv"
 input_stn_path = "../test_cases/cali2017/stndata"
+
+# Method-2: please give the file name contains all stations. input_stn_list is optional if the file does not contain station attributes
+input_stn_all = "../test_cases/cali2017/inputs/all_stn.nc"
 
 # domain gridded attributes (e.g., dem, lon, lat, slope)
 infile_grid_domain = "../test_cases/cali2017/inputs/CALI.gridinfo.0625_v3.nc"
@@ -49,9 +55,12 @@ target_vars = ['prcp', 'tmean', 'trange'] # target output variables. tmean and t
 mapping_InOut_var = ['tmean=(tmin+tmax)/2', 'trange=abs(tmax-tmin)']
 
 
+# the below three settings are optional. if not provided, there will be no min/max limit or transformation
+# if minRange_vars is just a number, will use it for all variables
 minRange_vars = [0, -100, 1] # >=. Daily limits slightly beyond global records from google search. 1 for Trange is arbitrary. this is not used in probabilistic estimation
 maxRange_vars = [2000, 60, 60] # <=. Daily limits slightly beyond global records from google search. this is not used in probabilistic estimation
 transform_vars = ['boxcox', '', ''] # There is a section at the end of the config file defining various transformation
+
 #target_vars = ['prcp', 'tmean', 'trange', 'tmin', 'tmax'] # target output variables. tmean and trange are supported. meanwhile, any var from input_vars is accepted
 #minRange_vars = [0, -100, 1, -100, -100] # >=. Daily limits slightly beyond global records from google search. 1 for Trange is arbitrary.
 #maxRange_vars = [2000, 60, 60, 60, 60] # <=. Daily limits slightly beyond global records from google search.
@@ -109,12 +118,16 @@ clen = [150, 800, 800]
 # they are as useful as the above settings but using their default values does not affect model run for any case
 ########################################################################################################################
 
-# gridding methods
-# Valid values: LWLR, RandomForestRegressor, RandomForestClassifier
-# Machine learning methods are supported by sklearn. Parametrs of methods supported by sklearn can be defined at the bottom of this configuration file (optional)
-# Examples: ensemble.RandomForestRegressor, ensemble.RandomForestClassifier, neural_network.MLPRegressor, neural_network.MLPClassifier, ensemble.GradientBoostingClassifier, ensemble.GradientBoostingRegressor
-gridcore_continuous = 'LWLR'
-gridcore_classification = 'LWLR' # for probability of precipitation
+# gridding methods: locally weighted regression and meachine learning methods.
+# Sklearn module is used to support most functions: https://scikit-learn.org/stable/supervised_learning.html
+# Locally weighted regression.
+#   Two original methods are LWR:Linear and LWR:Logistic.
+#   Sklearn-based methods such as LWR:linear_model.LinearRegression, LWR:linear_model.LogisticRegression, LWR:linear_model.Ridge, LWR:linear_model.RidgeClassifier, LWR:linear_model:BayesianRidge, etc
+# Global regression using machine learnig methods:
+#   Machine learning methods are supported by sklearn. Parametrs of methods supported by sklearn can be defined at the bottom of this configuration file (optional)
+#   Examples: ensemble.RandomForestRegressor, ensemble.RandomForestClassifier, neural_network.MLPRegressor, neural_network.MLPClassifier, ensemble.GradientBoostingClassifier, ensemble.GradientBoostingRegressor
+gridcore_continuous = 'LWR:Linear'
+gridcore_classification = 'LWR:Logistic' # for probability of precipitation
 n_splits = 10 # only useful for machine learning methods. cross validation to generate uncertainty estimates.
 
 # Number of stations to consider for each target point. nearstn_min<=nearstn_max.
@@ -126,6 +139,9 @@ try_radius = 10000
 
 # Initial Search Distance in km (expanded if need be)
 initial_distance = 100
+
+# weight calculation
+weight_exp = 3
 
 # direct: using raw time series to calculate autocorrelation; anomaly: using the anomaly of time series to calculate autocorrelation
 auto_corr_method = 'direct'
@@ -152,12 +168,12 @@ overwrite_spcorr = false
 [transform.boxcox]
 exp = 4
 
-[machine_learning]
+[sklearn]
 # if no parameters are provided or if the section does not even exist, default parameters will be used.
 # just provide the method name, no need to include the submodule name
-[machine_learning.RandomForestRegressor]
+[sklearn.RandomForestRegressor]
 n_estimators = 500 # a example of RandomForestRegressor parameter
 n_jobs = 5
-[machine_learning.RandomForestClassifier]
+[sklearn.RandomForestClassifier]
 n_estimators = 500 # a example of RandomForestRegressor parameter
 n_jobs = 5

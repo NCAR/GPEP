@@ -61,14 +61,42 @@ def assemble_fortran_GMET_stns_to_one_file(config):
     config['file_allstn'] = file_allstn
 
     # in/out information to this function
-    input_stn_list = config['input_stn_list']
-    input_stn_path = config['input_stn_path']
+    if 'input_stn_list' in config:
+        input_stn_list = config['input_stn_list']
+    else:
+        input_stn_list = ''
+    if 'input_stn_path' in config:
+        input_stn_path = config['input_stn_path']
+    else:
+        input_stn_path = ''
+    if 'input_stn_all' in config:
+        input_stn_all = config['input_stn_all']
+    else:
+        input_stn_all = ''
+
     file_allstn = config['file_allstn']
     input_vars = config['input_vars']
     target_vars = config['target_vars']
-    minRange_vars = config['minRange_vars']
-    maxRange_vars = config['maxRange_vars']
-    transform_vars = config['transform_vars']
+
+    if 'minRange_vars' in config:
+        minRange_vars = config['minRange_vars']
+        if isinstance(minRange_vars, (int, float)):
+            minRange_vars = [minRange_vars] * len(target_vars)
+    else:
+        minRange_vars = [-np.inf] * len(target_vars)
+
+    if 'maxRange_vars' in config:
+        maxRange_vars = config['maxRange_vars']
+        if isinstance(maxRange_vars, (int, float)):
+            maxRange_vars = [maxRange_vars] * len(target_vars)
+    else:
+        minRange_vars = [np.inf] * len(target_vars)
+
+    if 'transform_vars' in config:
+        transform_vars = config['transform_vars']
+    else:
+        transform_vars = [''] * len(target_vars)
+
     transform_settings = config['transform']
     mapping_InOut_var = config['mapping_InOut_var']
 
@@ -95,47 +123,69 @@ def assemble_fortran_GMET_stns_to_one_file(config):
             return config
 
     # load station data
-    df_stn = pd.read_csv(input_stn_list)
-    nstn = len(df_stn)
+    if os.path.isfile(input_stn_all):
+        print('input_stn_all exists:', input_stn_all)
+        print('reading station information from input_stn_all instead of individual files')
 
-    infile0 = f'{input_stn_path}/{df_stn.stnid.values[0]}.nc'
-    with xr.open_dataset(infile0) as ds:
-        time_coord = ds.time
-        ntime = len(ds.time)
+        ds_stn = xr.load_dataset(input_stn_all)
 
-    var_values = np.nan * np.zeros([nstn, ntime, len(input_vars)], dtype=np.float32)
-    print(f'Station number: {nstn}')
-    print(f'Time steps: {ntime}')
-    print('Start assembling ... ')
+        if os.path.isfile(input_stn_list):
+            df_stn = pd.read_csv(input_stn_list)
+            for col in df_stn.columns:
+                ds_stn[col] = xr.DataArray(df_stn[col].values, dims=('stn'))
 
-    for i in range(nstn):
-        infilei = f'{input_stn_path}/{df_stn.stnid.values[i]}.nc'
-        dsi = xr.load_dataset(infilei)
-        for j in range(len(input_vars)):
-            if input_vars[j] in dsi.data_vars:
-                var_values[i, :, j] = np.squeeze(dsi[input_vars[j]].values)
+    else:
+        print('input_stn_all does not exist:', input_stn_all)
+        print('reading station information from individual files')
 
-    ds_stn = xr.Dataset()
-    ds_stn.coords['time'] = time_coord
-    ds_stn.coords['stn'] = np.arange(nstn)
+        df_stn = pd.read_csv(input_stn_list)
+        nstn = len(df_stn)
 
-    for col in df_stn.columns:
-        ds_stn[col] = xr.DataArray(df_stn[col].values, dims=('stn'))
+        infile0 = f'{input_stn_path}/{df_stn.stnid.values[0]}.nc'
+        with xr.open_dataset(infile0) as ds:
+            time_coord = ds.time
+            ntime = len(ds.time)
 
-    for i in range(len(input_vars)):
-        ds_stn[input_vars[i]] = xr.DataArray(var_values[:, :, i], dims=('stn', 'time'))
+        var_values = np.nan * np.zeros([nstn, ntime, len(input_vars)], dtype=np.float32)
+        print(f'Station number: {nstn}')
+        print(f'Time steps: {ntime}')
+        print('Start assembling ... ')
+
+        for i in range(nstn):
+            infilei = f'{input_stn_path}/{df_stn.stnid.values[i]}.nc'
+            dsi = xr.load_dataset(infilei)
+            for j in range(len(input_vars)):
+                if input_vars[j] in dsi.data_vars:
+                    var_values[i, :, j] = np.squeeze(dsi[input_vars[j]].values)
+
+        ds_stn = xr.Dataset()
+        ds_stn.coords['time'] = time_coord
+        ds_stn.coords['stn'] = np.arange(nstn)
+
+        for col in df_stn.columns:
+            ds_stn[col] = xr.DataArray(df_stn[col].values, dims=('stn'))
+
+        for i in range(len(input_vars)):
+            ds_stn[input_vars[i]] = xr.DataArray(var_values[:, :, i], dims=('stn', 'time'))
+
+        del var_values
 
     # convert input vars to target vars
     for mapping in mapping_InOut_var:
         mapping = mapping.replace(' ', '')
-        invars = [v for v in input_vars if v in mapping]
-
-        for v in invars:
-            exec(f"{v}=ds_stn.{v}")
-
         tarvar = mapping.split('=')[0]
-        operation = mapping.split('=')[1]
-        ds_stn[tarvar] = eval(operation)
+
+        if tarvar in target_vars:
+
+            if tarvar in ds_stn:
+                print(f'{tarvar} is already in ds_stn. no need to perfor {mapping}')
+            else:
+                invars = [v for v in input_vars if v in mapping]
+                for v in invars:
+                    exec(f"{v}=ds_stn.{v}")
+
+                operation = mapping.split('=')[1]
+                ds_stn[tarvar] = eval(operation)
 
     # constrain variables
     for i in range(len(target_vars)):
@@ -156,6 +206,9 @@ def assemble_fortran_GMET_stns_to_one_file(config):
         if len(transform_vars[i])>0:
             tvar = target_vars[i] + '_' + transform_vars[i]
             print(f'Perform {transform_vars[i]} transformation for {target_vars[i]}. Add a new variable {tvar} to output station file.')
+            if tvar in ds_stn:
+                print(f'{tvar} exists in ds_stn. no need to perform transformation')
+                continue
             ds_stn[tvar] = ds_stn[vari].copy()
             ds_stn[tvar].values = data_transformation(ds_stn[target_vars[i]].values, transform_vars[i], transform_settings[transform_vars[i]], 'transform')
         else:

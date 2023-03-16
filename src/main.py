@@ -1,4 +1,4 @@
-import toml, json, sys
+import read_config
 import data_processing
 import near_stn_search
 import weight_calculation
@@ -7,20 +7,18 @@ import probabilistic_auxiliary
 import data_correlation
 import probabilistic_estimation
 
+import warnings
+warnings.filterwarnings('ignore')
+
 if __name__ == '__main__':
 
-    # config_file = "../test_cases/testcase.config.FortranGMET.toml"
-    config_file = "../test_cases/testcase.config.toml"
+    config_file = "../test_cases/testcase.config_short.toml"
     # config_file = sys.argv[1]
 
     ########################################################################################################################
     # load configuration file
 
-    config = toml.load(config_file)
-    print('#'*50)
-    print('Configuration file:', config_file)
-    print(json.dumps(config, sort_keys=True, indent=4))
-    print('#'*50, '\n'*2)
+    config = read_config.read_config(config_file)
 
     ########################################################################################################################
     # assemble individual stations and station attributes (e.g., lat, lon) to one netcdf file
