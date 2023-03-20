@@ -68,33 +68,7 @@ def find_nearstn_for_one_target(lat_tar, lon_tar, lat_stn, lon_stn, try_radius, 
 
     return near_index, near_dist
 
-
-# def find_nearstn_for_Grids(lat_stn, lon_stn, lat_grid, lon_grid, mask_grid, try_radius, nearstn_min, nearstn_max, initial_distance):
-#     if lat_grid.ndim != 2:
-#         sys.exit('Error! Wrong dim of lat_grid!')
-#
-#     # lon_stn/lat_stn can contain nan
-#
-#     # simple distance threshold
-#     try_radius = try_radius / 100  # try within this degree (assume 1 degree ~= 100 km). if failed, expanding to all stations.
-#
-#     # initialization
-#     nrows, ncols = np.shape(lat_grid)
-#     nearIndex = -99999 * np.ones([nrows, ncols, nearstn_max], dtype=int)
-#     nearDistance = np.nan * np.ones([nrows, ncols, nearstn_max], dtype=np.float32)
-#
-#     for rr in range(nrows):
-#         # t1 = time.time()
-#         # print(f'Find near station for grids. Grid row {rr} in {nrows}')
-#         for cc in range(ncols):
-#             if mask_grid[rr, cc] == 1:
-#                 nearIndex[rr, cc, :], nearDistance[rr, cc, :] = find_nearstn_for_one_target(lat_grid[rr, cc], lon_grid[rr, cc], lat_stn, lon_stn, try_radius, initial_distance, nearstn_min, nearstn_max)
-#         # t2 = time.time()
-#         # print('Time cost (seconds):', t2-t1)
-#
-#     return nearIndex, nearDistance
-
-# parallel version. does not seem necessary for small calculation
+# parallel version
 def find_nearstn_for_Grids(lat_stn, lon_stn, lat_grid, lon_grid, mask_grid, try_radius, nearstn_min, nearstn_max, initial_distance, num_processes=4):
     if lat_grid.ndim != 2:
         sys.exit('Error! Wrong dim of lat_grid!')

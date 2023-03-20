@@ -44,8 +44,8 @@ dynamic_predictor_operation = []
 #   Machine learning methods are supported by sklearn. Parametrs of methods supported by sklearn can be defined at the bottom of this configuration file (optional)
 #   Examples: ensemble.RandomForestRegressor, ensemble.RandomForestClassifier, neural_network.MLPRegressor, neural_network.MLPClassifier, ensemble.GradientBoostingClassifier, ensemble.GradientBoostingRegressor
 # The parameters of sklearn methods can be defined in the [sklearn] section
-gridcore_continuous = 'LWR:linear_model.BayesianRidge'
-gridcore_classification = 'LWR:linear_model.LogisticRegression' # for probability of precipitation
+gridcore_continuous = 'LWR:Linear'
+gridcore_classification = 'LWR:Logistic' # for probability of precipitation
 n_splits = 10 # only useful for machine learning methods. cross validation to generate uncertainty estimates.
 
 # Number of stations to consider for each target point. nearstn_min<=nearstn_max.

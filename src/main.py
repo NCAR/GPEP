@@ -12,7 +12,7 @@ warnings.filterwarnings('ignore')
 
 if __name__ == '__main__':
 
-    config_file = "../test_cases/testcase.config_short.toml"
+    config_file = "../test_cases/testcase.config.toml"
     # config_file = sys.argv[1]
 
     ########################################################################################################################

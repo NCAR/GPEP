@@ -2,7 +2,7 @@
 
 import numpy as np
 import xarray as xr
-from tqdm.contrib import itertools
+# from tqdm.contrib import itertools
 import sys, os, time
 
 from weight_calculation import distanceweight
@@ -23,18 +23,20 @@ def nearby_station_statistics(stn_data, tar_nearIndex, method):
     nrow, ncol, nearmax = np.shape(tar_nearIndex)
     estimates = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
 
-    for r, c in itertools.product(range(nrow), range(ncol)):
-        sample_nearIndex = tar_nearIndex[r, c, :]
-        index_valid = sample_nearIndex >= 0
-        if np.sum(index_valid) > 0:
-            sample_nearIndex = sample_nearIndex[index_valid]
-            ydata_near = stn_data[sample_nearIndex, :]
-            if method == 'max':
-                estimates[r, c, :] = np.nanmax(ydata_near, axis=0)
-            elif method == 'min':
-                estimates[r, c, :] = np.nanmin(ydata_near, axis=0)
-            else:
-                sys.exit('Unknown method!')
+    # for r, c in itertools.product(range(nrow), range(ncol)):
+    for r in range(nrow):
+        for c in range(ncol):
+            sample_nearIndex = tar_nearIndex[r, c, :]
+            index_valid = sample_nearIndex >= 0
+            if np.sum(index_valid) > 0:
+                sample_nearIndex = sample_nearIndex[index_valid]
+                ydata_near = stn_data[sample_nearIndex, :]
+                if method == 'max':
+                    estimates[r, c, :] = np.nanmax(ydata_near, axis=0)
+                elif method == 'min':
+                    estimates[r, c, :] = np.nanmin(ydata_near, axis=0)
+                else:
+                    sys.exit('Unknown method!')
 
     return np.squeeze(estimates)
 
@@ -118,6 +120,12 @@ def extrapolate_auxiliary_info(config):
 
     target_vars = config['target_vars']
     transform_vars = config['transform_vars']
+
+    if 'target_vars_max_constrain' in config:
+        target_vars_max_constrain = config['target_vars_max_constrain']
+    else:
+        target_vars_max_constrain = []
+
     if 'overwrite_loo_reg' in config:
         # because error is calculated from loo
         overwrite_loo_reg = config['overwrite_loo_reg']
@@ -214,10 +222,9 @@ def extrapolate_auxiliary_info(config):
         ds_out[var_name_save] = xr.DataArray(error, dims=('y', 'x', 'time'))
 
         ########################################################################################################################
-        # if the variable is prcp, find the maximum precipitation from nearby stations
-        # currently, not within the config file
-        if var_name == 'prcp':
-            print('Add max nearby precipitation')
+        # find the maximum precipitation from nearby stations
+        if var_name in target_vars_max_constrain:
+            print(f'Add min/max nearby values for {var_name} because it is in target_vars_max_constrain {target_vars_max_constrain}')
             estimates = nearby_station_statistics(stn_value, nearIndex, 'max')
             if len(var_name_trans) > 0:
                 var_name_save = f'nearmax_{var_name_trans}'

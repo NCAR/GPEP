@@ -2,9 +2,7 @@ import sys, os, math
 import numpy as np
 import pandas as pd
 import xarray as xr
-# import multiprocessing
 from multiprocessing import Pool
-from tqdm.contrib import itertools
 from data_processing import data_transformation
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import LogisticRegression
@@ -122,32 +120,6 @@ def linearsolver(a, n, b):
     # print("x=", x)
     return x
 
-# if __name__ == "__main__":
-#     # using ludcmp and lubksb
-#     t1 = time.time()
-#     for i in range(10000):
-#         a = [[1, 3, 3, -5], [2, -4, 7, -1], [7, 0.5, 3, -6], [9, -2, 3, 8]]
-#         n = 4
-#         b = [0, 2, 3, -10]
-#         x2 = linearsolver(a, n, b)
-#     print(x2)
-#     t2 = time.time()
-#     print(t2-t1)
-#
-#     # just using numpy
-#     from numpy.linalg import inv
-#     import numpy as np
-#     t1 = time.time()
-#     for i in range(10000):
-#         a = np.array([[1, 3, 3, -5], [2, -4, 7, -1], [7, 0.5, 3, -6], [9, -2, 3, 8]])
-#         b = np.array([0, 2, 3, -10])
-#         ainv = inv(a)
-#         x2 = np.matmul(ainv, b)
-#     print(x2)
-#     t2 = time.time()
-#     print(t2-t1)
-
-
 ########################################################################################################################
 # basic regression utility functions
 
@@ -193,7 +165,7 @@ def logistic_regression(x, tx, yp):
     nstn, nvars = np.shape(x)
 
     b = np.zeros(nvars)  # regression coefficients (beta)
-    p = np.zeros(nstn)  # estimated pop (probability of precipitation)
+    p = np.zeros(nstn)  # estimated probability of occurrence
     f = 0  # flag: continue or stop loops
     it = 0  # iteration times
 
@@ -214,7 +186,7 @@ def logistic_regression(x, tx, yp):
             for i in range(nstn):
                 v[i, i] = p[i] * (1 - p[i])
             xv = np.matmul(v, x)
-            yn = yp - p  # difference between station occurrence (0/1) and estimated pop: Bnew -Bold in Martyn and Slater 2006
+            yn = yp - p  # difference between station occurrence (0/1) and estimated probability: Bnew -Bold in Martyn and Slater 2006
             bn = least_squares_ludcmp(xv, yn, tx)
 
             # check: converging
@@ -271,21 +243,21 @@ def weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
         w_pcp_red = np.diag(np.squeeze(weightnear))
 
         # if len(np.unique(datanear)) == 1:
-        #     pop = datanear[0] # all 0 (no rain) or all 1 (rain everywhere)
+        #     poo = datanear[0] # all 0 (no rain) or all 1 (rain everywhere)
         # else:
         tx_red = np.transpose(nearinfo)
         twx_red = np.matmul(tx_red, w_pcp_red)
         b = logistic_regression(nearinfo, twx_red, datanear)
         if np.all(b == 0) or np.any(np.isnan(b)):
-            pop = np.dot(weightnear, datanear)
+            poo = np.dot(weightnear, datanear)
         else:
             zb = - np.dot(tarinfo, b)
-            pop = 1 / (1 + np.exp(zb))
+            poo = 1 / (1 + np.exp(zb))
 
     except:
-        pop = sklearn_weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo)
+        poo = sklearn_weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo)
 
-    return pop
+    return poo
 
 def check_predictor_matrix_behavior(nearinfo, weightnear):
     # check to see if the station predictor matrix will be well behaved
@@ -314,8 +286,8 @@ def sklearn_weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
 
     model = LogisticRegression(solver='liblinear')
     model = model.fit(nearinfo, datanear, sample_weight=weightnear)
-    pop = model.predict_proba(tarinfo[np.newaxis,:])[0, 1]
-    return pop
+    poo = model.predict_proba(tarinfo[np.newaxis,:])[0, 1]
+    return poo
 
 
 ########################################################################################################################
@@ -391,15 +363,6 @@ def map_filelist_timestep(dynamic_predictor_filelist, timeseries):
     df_mapping.index = np.arange(len(df_mapping))
 
     return df_mapping
-
-# def read_timestep_input_data(df_mapping, tarindex, varnames):
-#     # not finished
-#     df = df_mapping.iloc[tarindex]
-#     with xr.open_dataset(df['file']) as ds:
-#         ds = ds.isel(time=tarindex)
-#         ds = ds[varnames]
-#         ds = ds.load()
-#     return ds
 
 
 def read_period_input_data(df_mapping, varnames):
@@ -634,105 +597,6 @@ def ML_regression_grid(stn_data, stn_predictor, tar_predictor, ml_model, probfla
     return np.squeeze(estimates)
 
 ########################################################################################################################
-# wrapped up regression functions
-
-# loop_regression_2Dor3D is good, but multiprocessing version is not. check and combine them to one
-# remove the near station search dependence between trange and tmean
-
-# def loop_regression_2Dor3D(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, dynamic_predictors={}):
-#     # regression for 2D (vector) or 3D (array) inputs
-#     # 2D:
-#     # stn_data: [input station, time steps]
-#     # stn_predictor: [input station, number of predictors]
-#     # nearIndex/nearWeight: [target point, number of nearby stations]
-#     # tar_predictor: [target point, number of predictors]
-#     # 3D:
-#     # stn_data: [input station, time steps]
-#     # stn_predictor: [input station, number of predictors]
-#     # nearIndex/nearWeight: [row, col, number of nearby stations]
-#     # tar_predictor: [row, col, number of predictors]
-#
-#
-#     if len(dynamic_predictors) == 0:
-#         dynamic_predictors['flag'] = False
-#
-#     nstn, ntime = np.shape(stn_data)
-#     nrow, ncol, nearmax = np.shape(tar_nearIndex)
-#     estimates = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
-#
-#     for r, c in itertools.product(range(nrow), range(ncol)):
-#
-#         # prepare xdata and sample weight for training and weights of neighboring stations
-#         sample_nearIndex = tar_nearIndex[r, c, :]
-#         index_valid = sample_nearIndex >= 0
-#
-#         if np.sum(index_valid) > 0:
-#             sample_nearIndex = sample_nearIndex[index_valid]
-#
-#             sample_weight = tar_nearWeight[r, c, :][index_valid]
-#
-#             xdata_near0 = stn_predictor[sample_nearIndex, :]
-#             xdata_g0 = tar_predictor[r, c, :]
-#
-#             # interpolation for every time step
-#             for d in range(ntime):
-#
-#                 ydata_near = np.squeeze(stn_data[sample_nearIndex, d])
-#                 if len(np.unique(ydata_near)) == 1:  # e.g., for prcp, all zero
-#                     ydata_tar = ydata_near[0]
-#                 else:
-#
-#                     # add dynamic predictors if flag is true and predictors are good
-#                     xdata_near = xdata_near0
-#                     xdata_g = xdata_g0
-#                     if dynamic_predictors['flag'] == True:
-#
-#                         xdata_near_add = dynamic_predictors['stn_predictor_dynamic'][:, d, sample_nearIndex].T
-#                         xdata_g_add = dynamic_predictors['tar_predictor_dynamic'][:, d, r, c]
-#
-#                         if np.all(~np.isnan(xdata_near_add)) and np.all(~np.isnan(xdata_g_add)):
-#
-#                             # unique value check
-#                             uniquenum = np.zeros(xdata_near_add.shape[1])
-#                             for i in range(xdata_near_add.shape[1]):
-#                                 uniquenum[i] = len(np.unique(xdata_near_add[:, i]))
-#
-#                             xdata_near_add = xdata_near_add[:, uniquenum > 1]
-#                             xdata_g_add = xdata_g_add[uniquenum > 1]
-#
-#                             if xdata_near_add.size > 0:
-#                                 xdata_near_try = np.hstack((xdata_near, xdata_near_add))
-#                                 xdata_g_try = np.hstack((xdata_g, xdata_g_add))
-#
-#                                 # The below codes using check_predictor_matrix_behavior are not necessary
-#                                 xdata_near = xdata_near_try
-#                                 xdata_g = xdata_g_try
-#
-#                                 # # check if dynamic predictors are good for regression. not necessary after unique value check
-#                                 # if check_predictor_matrix_behavior(xdata_near_try, sample_weight) == True:
-#                                 #     xdata_near = xdata_near_try
-#                                 #     xdata_g = xdata_g_try
-#                                 # else:
-#                                 #     xdata_near_try = np.hstack((xdata_near, xdata_near_add[:, ~dynamic_predictors['predictor_checkflag']]))
-#                                 #     xdata_g_try = np.hstack((xdata_g, xdata_g_add[~dynamic_predictors['predictor_checkflag']]))
-#                                 #     if check_predictor_matrix_behavior(xdata_near_try, sample_weight) == True:
-#                                 #         xdata_near = xdata_near_try
-#                                 #         xdata_g = xdata_g_try
-#
-#                     # regression
-#                     if method == 'linear':
-#                         ydata_tar = weight_linear_regression(xdata_near, sample_weight, ydata_near, xdata_g)
-#                     elif method == 'logistic':
-#                         ydata_tar = weight_logistic_regression(xdata_near, sample_weight, ydata_near, xdata_g)
-#                     else:
-#                         sys.exit(f'Unknonwn regression method: {method}')
-#
-#                 estimates[r, c, d] = ydata_tar
-#
-#     return np.squeeze(estimates)
-
-
-########################################################################################################################
 # parallel version of loop regression: independent processes and large memory use if there are many cpus
 
 def init_worker(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag, settings, dynamic_predictors, importmodules):
@@ -909,6 +773,8 @@ def main_regression(config, target):
     outfile = outfile # just to make sure all in/out settings are in this section
 
     target_vars = config['target_vars']
+    target_vars_WithOccurrence = config['target_vars_WithOccurrence']
+
     date_start = config['date_start']
     date_end = config['date_end']
     predictor_name_static_stn = config['predictor_name_static_stn']
@@ -1179,10 +1045,9 @@ def main_regression(config, target):
             ds_out[var_name_save] = xr.DataArray(estimates, dims=('stn', 'time'))
 
         ########################################################################################################################
-        # !!!!!!!!! Change is needed. no a-priori assumption of variable name!
-        # if the variable is prcp, do logistic regression too
-        if var_name == 'prcp':
-            print('Add pop logistic regression')
+        # if the variable has occurrence features, do logistic regression too
+        if var_name in target_vars_WithOccurrence:
+            print(f'Add probability of occurrence for {var_name} because it is in target_vars_WithOccurrence {target_vars_WithOccurrence}')
             if len(var_name_trans) > 0: # this means previous step uses transformed precipitation, while for logistic regression, we use raw precipitation
                 stn_value = ds_stn[var_name].values
                 print('Number of negative values', np.sum(stn_value<0))
@@ -1198,10 +1063,11 @@ def main_regression(config, target):
                 else:
                     estimates = ML_regression_grid(stn_value, stn_predictor, tar_predictor, gridcore_classification, probflag, sklearn_config[gridcore_classification], predictor_dynamic)
 
+            var_poo = var_name + '_poo'
             if estimates.ndim == 3:
-                ds_out['pop'] = xr.DataArray(estimates, dims=('y', 'x', 'time'))
+                ds_out[var_poo] = xr.DataArray(estimates, dims=('y', 'x', 'time'))
             elif estimates.ndim == 2:
-                ds_out['pop'] = xr.DataArray(estimates, dims=('stn', 'time'))
+                ds_out[var_poo] = xr.DataArray(estimates, dims=('stn', 'time'))
 
     # save output file
     encoding = {}

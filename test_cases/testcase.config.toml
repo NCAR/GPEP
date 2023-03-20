@@ -7,14 +7,12 @@
 ########################################################################################################################
 
 # case name. will be used in ensemble outputs generations
-case_name = 'Sklearntest'
+case_name = 'LWLR'
 
 # worker number (cpu cores) for parallelization. Better to be <= ensemble number
 num_processes = 5
 
-# master seed: control all probabilistic process (e.g., probabilistic estimation, machine learning methods)
-# a negative value means random generation without reproducibility
-master_seed = 20230104
+modelsettings_file = "model.settings.toml" # must be in the same folder
 
 ########################################################################################################################
 # settings for gridded estimation using regression or machine learning methods
@@ -35,7 +33,7 @@ input_stn_all = "../test_cases/cali2017/inputs/all_stn.nc"
 infile_grid_domain = "../test_cases/cali2017/inputs/CALI.gridinfo.0625_v3.nc"
 
 # parent output path
-outpath_parent = "../test_cases/cali2017/PyGMET_output"
+outpath_parent = "../test_cases/cali2017/PyGMET_output2"
 
 # file list containing dynamic predictor inputs
 # this is optional. give it a nonsense string (e.g., "NA") can turn off dynamic predictors
@@ -54,22 +52,15 @@ target_vars = ['prcp', 'tmean', 'trange'] # target output variables. tmean and t
 # input variables may need some conversion to get target variables. if input_var and target_var have the same variable name, no need to add mapping relation
 mapping_InOut_var = ['tmean=(tmin+tmax)/2', 'trange=abs(tmax-tmin)']
 
+# variables (e.g., precipitation, snowfall, hail) needing occurrence estimation (i.e., a probability between 0-1)
+# should be a subset of target_vars
+target_vars_WithOccurrence = ['prcp']
 
 # the below three settings are optional. if not provided, there will be no min/max limit or transformation
 # if minRange_vars is just a number, will use it for all variables
 minRange_vars = [0, -100, 1] # >=. Daily limits slightly beyond global records from google search. 1 for Trange is arbitrary. this is not used in probabilistic estimation
 maxRange_vars = [2000, 60, 60] # <=. Daily limits slightly beyond global records from google search. this is not used in probabilistic estimation
 transform_vars = ['boxcox', '', ''] # There is a section at the end of the config file defining various transformation
-
-#target_vars = ['prcp', 'tmean', 'trange', 'tmin', 'tmax'] # target output variables. tmean and trange are supported. meanwhile, any var from input_vars is accepted
-#minRange_vars = [0, -100, 1, -100, -100] # >=. Daily limits slightly beyond global records from google search. 1 for Trange is arbitrary.
-#maxRange_vars = [2000, 60, 60, 60, 60] # <=. Daily limits slightly beyond global records from google search.
-#transform_vars = ['boxcoxnono', 'anything cannot be found in [transform] section will activate non transformation', '', '', ''] # There is a section at the end of the config file defining various transformation
-
-############################## static predictors for regression
-# predictors used in regression. Station and grid variable names should be unified in the future.
-predictor_name_static_stn = ['lat', 'lon', 'elev', 'slp_n', 'slp_e'] # variable names in station attribute file
-predictor_name_static_grid = ['latitude', 'longitude', 'elev', 'gradient_n_s', 'gradient_w_e'] # variable names in station attribute file
 
 ############################## dynamic predictors for regression
 # if don't want to use dynamic factors, just give invalid dynamic_predictor_name or dynamic_predictor_filelist
@@ -78,17 +69,6 @@ dynamic_predictor_name = [['cube_root_prec_rate', 'tmp_2m'],
                           ['cube_root_prec_rate', 'tmp_2m'],
                           ['cube_root_prec_rate', 'tmp_2m'],
                           ]
-# dynamic_predictor_check can be deleted now
-dynamic_predictor_check = ['cube_root_prec_rate'] # check whether they are good in regression. For example, precipitation may have many zero values.
-
-# dynamic predictors needs some processing, such as
-# interpolation from dynamic grids to target grids and station points
-#     Keyword "interp" accepts {"linear", "nearest", "zero", "slinear", "quadratic", "cubic", "polynomial"} enabled by xarray.interp.
-# transformation of the raw dynamic predictor
-#     Keyword "transform" accepts methods defined in the transformation section
-# Example "cube_root_prec_rate:interp=linear:transform=boxcox"
-dynamic_predictor_operation = ['cube_root_prec_rate:interp=nearest',
-                               'tmp_2m:interp=nearest']
 
 ########################################################################################################################
 # settings for probabilistic estimation
@@ -107,73 +87,12 @@ ensemble_end = 5
 # link variables
 linkvar = [ ['prcp', 'trange'], ]  # random number generation dependence, e.g., ['prcp', 'trange'] means prcp depends on trange
 
-# variable space and temporal correlation length. the list corresponds to target_vars. negative values mean calculation based available station data
+# variable space and temporal correlation length. the list corresponds to target_vars. negative values or not provding this variable mean calculation based available station data
 # if integer instead of list is used, this value will be applied to all variables
+# note correlation calculation is based on all input station data, not just the target period
 clen = [150, 800, 800]
-#clen = [-999, -999, -999]
 
-
-########################################################################################################################
-# default settings
-# they are as useful as the above settings but using their default values does not affect model run for any case
-########################################################################################################################
-
-# gridding methods: locally weighted regression and meachine learning methods.
-# Sklearn module is used to support most functions: https://scikit-learn.org/stable/supervised_learning.html
-# Locally weighted regression.
-#   Two original methods are LWR:Linear and LWR:Logistic.
-#   Sklearn-based methods such as LWR:linear_model.LinearRegression, LWR:linear_model.LogisticRegression, LWR:linear_model.Ridge, LWR:linear_model.RidgeClassifier, LWR:linear_model:BayesianRidge, etc
-# Global regression using machine learnig methods:
-#   Machine learning methods are supported by sklearn. Parametrs of methods supported by sklearn can be defined at the bottom of this configuration file (optional)
-#   Examples: ensemble.RandomForestRegressor, ensemble.RandomForestClassifier, neural_network.MLPRegressor, neural_network.MLPClassifier, ensemble.GradientBoostingClassifier, ensemble.GradientBoostingRegressor
-gridcore_continuous = 'LWR:Linear'
-gridcore_classification = 'LWR:Logistic' # for probability of precipitation
-n_splits = 10 # only useful for machine learning methods. cross validation to generate uncertainty estimates.
-
-# Number of stations to consider for each target point. nearstn_min<=nearstn_max.
-nearstn_min = 35  # nearby stations: minimum number
-nearstn_max = 35  # nearby stations: maximum number
-
-# first try this radius (km). if not enough, expand. Could be useful to reduce computation time for large domain search.
-try_radius = 10000
-
-# Initial Search Distance in km (expanded if need be)
-initial_distance = 100
-
-# weight calculation
-weight_exp = 3
-
-# direct: using raw time series to calculate autocorrelation; anomaly: using the anomaly of time series to calculate autocorrelation
-auto_corr_method = 'direct'
-# only effective for auto_corr_method=anomaly. rolling mean window size, which is used for variable lag auto correlation calculation
-rolling_window = 31 # 31-monthly rolling mean to remove monthly cycle
-
-# overwrite existing files
-overwrite_stninfo = false
-overwrite_station_cc = false
-overwrite_weight = false
-overwrite_loo_reg = false
-overwrite_grid_reg = false
-overwrite_ens = false
-overwrite_spcorr = false
-
-
-########################################################################################################################
-# method-related settings
-# default values can be directly used
-########################################################################################################################
-
-[transform]
-# note: the name must be consistent with transform_vars
-[transform.boxcox]
-exp = 4
-
-[sklearn]
-# if no parameters are provided or if the section does not even exist, default parameters will be used.
-# just provide the method name, no need to include the submodule name
-[sklearn.RandomForestRegressor]
-n_estimators = 500 # a example of RandomForestRegressor parameter
-n_jobs = 5
-[sklearn.RandomForestClassifier]
-n_estimators = 500 # a example of RandomForestRegressor parameter
-n_jobs = 5
+# nearby max constraint
+# for some variables (e.g., precipitation), the min/max values (with scale factors) from nearby stations can be used to contrain probabilistic estimates
+# be cautious because this is not always plausible
+target_vars_max_constrain = ['prcp']

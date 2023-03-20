@@ -1,6 +1,5 @@
 # calculate temporal auto correlation or spatial correlation length
-import sys
-import time
+import sys, time
 
 import numpy as np
 import xarray as xr
@@ -162,6 +161,13 @@ def station_space_time_correlation(config):
     auto_corr_method = config['auto_corr_method']
     rolling_window = config['rolling_window']
 
+    if 'clen' in config:
+        clen_config = config['clen']
+        if not isinstance(clen_config, list):
+            clen_config = [clen_config] * len(target_vars)
+    else:
+        clen_config = [-9999] * len(target_vars)
+
     if 'overwrite_station_cc' in config:
         overwrite_station_cc = config['overwrite_station_cc']
     else:
@@ -172,9 +178,7 @@ def station_space_time_correlation(config):
     for v in linkvar0:
         linkvar[v[0]] = v[1]
 
-
     lag = 1 # lag-1 cc
-
 
     print('#' * 50)
     print(f'Calculate station space and time correlation')
@@ -233,18 +237,19 @@ def station_space_time_correlation(config):
         ds_out[var_name + '_cc_lag1_mean'] = xr.DataArray([np.nanmean(cc)], dims=('z'))
 
         # calculate space correlation
-        # print('Spatial correlation calculation for:', var_name)
-        # cc_pair, dist_pair, index_pair = station_spatial_correlation(lat, lon, stn_value, num_processes)
-        #
-        # index = ~np.isnan(dist_pair + cc_pair)
-        # # popt, pcov = curve_fit(func_clen_exp2p, dist_pair[index], cc_pair[index])
-        # popt, pcov = curve_fit(func_clen_exp1p, dist_pair[index], cc_pair[index])
-        #
-        # # ds_out[f'{var_name}_space_pair_cc'] = xr.DataArray(cc_pair, dims=('pair'))
-        # # ds_out[f'{var_name}_space_pair_dist'] = xr.DataArray(dist_pair, dims=('pair'))
-        # # ds_out[f'{var_name}_space_pair_index'] = xr.DataArray(index_pair, dims=('pair', 'pind'))
-        # ds_out[f'{var_name}_space_Clen'] = xr.DataArray([popt[0]], dims=('z'))
-        # # ds_out[f'{var_name}_space_param2'] = xr.DataArray([popt[1]], dims=('z'))
+        if not clen_config[vn] > 0:
+            print('Spatial correlation calculation for:', var_name)
+            cc_pair, dist_pair, index_pair = station_spatial_correlation(lat, lon, stn_value, num_processes)
+
+            index = ~np.isnan(dist_pair + cc_pair)
+            # popt, pcov = curve_fit(func_clen_exp2p, dist_pair[index], cc_pair[index])
+            popt, pcov = curve_fit(func_clen_exp1p, dist_pair[index], cc_pair[index])
+
+            ds_out[f'{var_name}_space_pair_cc'] = xr.DataArray(cc_pair, dims=('pair'))
+            ds_out[f'{var_name}_space_pair_dist'] = xr.DataArray(dist_pair, dims=('pair'))
+            ds_out[f'{var_name}_space_pair_index'] = xr.DataArray(index_pair, dims=('pair', 'pind'))
+            ds_out[f'{var_name}_space_Clen'] = xr.DataArray([popt[0]], dims=('z'))
+            # ds_out[f'{var_name}_space_param2'] = xr.DataArray([popt[1]], dims=('z'))
 
     ########################################################################################################################
     # calculate cross correlation

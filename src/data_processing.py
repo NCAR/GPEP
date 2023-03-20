@@ -1,8 +1,6 @@
 # all data processing related functions
 
-import os, time
-import sys
-
+import os, time, sys
 import pandas as pd
 import numpy as np
 import xarray as xr
