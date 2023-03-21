@@ -60,6 +60,9 @@ auto_corr_method = 'direct'
 # only effective for auto_corr_method=anomaly. rolling mean window size, which is used for variable lag auto correlation calculation
 rolling_window = 31 # 31-monthly rolling mean to remove monthly cycle
 
+# output random fields
+output_randomfield = false
+
 # overwrite existing files
 overwrite_stninfo = false
 overwrite_station_cc = false

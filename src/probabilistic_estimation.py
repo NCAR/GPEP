@@ -92,7 +92,6 @@ def probabilistic_estimate_for_one_var(var_name, reg_estimate, reg_error, nearby
 
     # # add to output ds
     ds_out[var_name] = xr.DataArray(ens_estimate, dims=('lat', 'lon', 'time'))
-    ds_out[var_name + '_rnd'] = xr.DataArray(random_field, dims=('lat', 'lon', 'time'))
 
     return ds_out
 
@@ -224,6 +223,11 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
         target_vars_max_constrain = config['target_vars_max_constrain']
     else:
         target_vars_max_constrain = []
+
+    if 'output_randomfield' in config:
+        output_randomfield = config['output_randomfield']
+    else:
+        output_randomfield = False
 
     if 'overwrite_ens' in config:
         overwrite_ens = config['overwrite_ens']
@@ -423,6 +427,9 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
             ds_out = probabilistic_estimate_for_one_var(var_name, allvar_reg_estimate[var_name], allvar_reg_error[var_name], nearby_stn_max[var_name],
                                                         allvar_poo[var_name], random_field, minrndnum, maxrndnum, transform_vars[var_name], transform_settings[transform_vars[var_name]], ds_out)
 
+            if output_randomfield == True:
+                ds_out[var_name + '_rnd'] = xr.DataArray(random_field, dims=('lat', 'lon', 'time'))
+
             # is any linked variable
             for d in range(len(target_vars_dependent)):
                 var_name_dep = target_vars_dependent[d]
@@ -442,6 +449,8 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
                     ds_out = probabilistic_estimate_for_one_var(var_name_dep, allvar_reg_estimate[var_name_dep], allvar_reg_error[var_name_dep], nearby_stn_max[var_name],
                                                                 allvar_poo[var_name_dep], random_field_dep, minrndnum, maxrndnum, transform_vars[var_name_dep], transform_settings[transform_vars[var_name_dep]], ds_out)
 
+                    if output_randomfield == True:
+                        ds_out[var_name + '_rnd'] = xr.DataArray(random_field_dep, dims=('lat', 'lon', 'time'))
 
         # save output file
         ds_out = ds_out.transpose('time', 'lat', 'lon', 'z')

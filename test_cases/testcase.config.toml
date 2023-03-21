@@ -7,7 +7,7 @@
 ########################################################################################################################
 
 # case name. will be used in ensemble outputs generations
-case_name = 'LWLR'
+case_name = 'LWLRstatic'
 
 # worker number (cpu cores) for parallelization. Better to be <= ensemble number
 num_processes = 5
@@ -26,18 +26,20 @@ modelsettings_file = "model.settings.toml" # must be in the same folder
 input_stn_list = "../test_cases/cali2017/inputs/CALI.screened_stn_list_slope.v3.csv"
 input_stn_path = "../test_cases/cali2017/stndata"
 
-# Method-2: please give the file name contains all stations. input_stn_list is optional if the file does not contain station attributes
-input_stn_all = "../test_cases/cali2017/inputs/all_stn.nc"
+# Method-2: please give the file name contains all stations.
+# input_stn_list is optional if the file does not contain station attributes
+# this is optional. if not provided, will read from input_stn_list
+#input_stn_all = "../test_cases/cali2017/inputs/all_stn.nc"
 
 # domain gridded attributes (e.g., dem, lon, lat, slope)
 infile_grid_domain = "../test_cases/cali2017/inputs/CALI.gridinfo.0625_v3.nc"
 
 # parent output path
-outpath_parent = "../test_cases/cali2017/PyGMET_output2"
+outpath_parent = "../test_cases/cali2017/PyGMET_output"
 
 # file list containing dynamic predictor inputs
 # this is optional. give it a nonsense string (e.g., "NA") can turn off dynamic predictors
-# dynamic_predictor_filelist = "../test_cases/cali2017/griddata_standard/grid_file_list.txt"
+#dynamic_predictor_filelist = "../test_cases/cali2017/griddata_standard/grid_file_list.txt"
 dynamic_predictor_filelist = "NA"
 
 ############################## target variables and periods
