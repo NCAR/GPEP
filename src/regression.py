@@ -797,6 +797,9 @@ def main_regression(config, target):
     gridcore_continuous = config['gridcore_continuous']
     n_splits = config['n_splits']
 
+    ensemble_flag = config['ensemble_flag']
+    backtransform = not ensemble_flag # for example, if ensemble_flag=False, no need to create enmseble outputs, the regression outputs should be backtransformed in this step
+
     if 'sklearn' in config:
         sklearn_config = config['sklearn']
     else:
@@ -1035,7 +1038,11 @@ def main_regression(config, target):
         ########################################################################################################################
         # add to output ds
         if len(var_name_trans) > 0:
-            var_name_save = var_name_trans
+            if backtransform == False:
+                var_name_save = var_name_trans
+            else:
+                var_name_save = var_name
+                estimates = data_transformation(estimates, transform_vars[vn], transform_settings[transform_vars[vn]], 'retransform')
         else:
             var_name_save = var_name
 
