@@ -7,13 +7,14 @@ import probabilistic_auxiliary
 import data_correlation
 import probabilistic_estimation
 
+import sys
 import warnings
 warnings.filterwarnings('ignore')
 
 if __name__ == '__main__':
 
-    config_file = "../test_cases/testcase.config.toml"
-    # config_file = sys.argv[1]
+    # config_file = "../test_cases/testcase.config.toml"
+    config_file = sys.argv[1]
 
     ########################################################################################################################
     # load configuration file

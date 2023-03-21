@@ -7,5 +7,4 @@ dependencies:
   - scikit-learn
   - scipy
   - toml
-  - tqdm
   - xarray
