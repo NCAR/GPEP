@@ -6,6 +6,7 @@ from multiprocessing import Pool
 from data_processing import data_transformation
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import LogisticRegression
+from evaluate import evaluate_allpoint
 
 from sklearn.model_selection import KFold
 # from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
@@ -754,7 +755,7 @@ def main_regression(config, target):
         else:
             overwrite_flag = False
         predictor_name_static_target = config['predictor_name_static_grid']
-    elif target == 'loo':
+    elif target == 'cval':
         outfile = f'{path_regression}/{case_name}_CrossValidation_Regression_{datestamp}.nc'  # leave one out regression
         config['file_loo_reg'] = outfile
         if 'overwrite_loo_reg' in config:
@@ -806,7 +807,7 @@ def main_regression(config, target):
         sklearn_config = {}
 
 
-    if target == 'loo':
+    if target == 'cval':
         # keyword for near information (default setting in this script)
         near_keyword = 'InStn' # input stations
     else:
@@ -881,7 +882,7 @@ def main_regression(config, target):
     if target == 'grid':
         ds_out.coords['x'] = xaxis
         ds_out.coords['y'] = yaxis
-    elif target == 'loo':
+    elif target == 'cval':
         ds_out.coords['stn'] = ds_stn.stn.values
 
     ########################################################################################################################
@@ -914,7 +915,7 @@ def main_regression(config, target):
         ds_dynamic_stn = regrid_xarray(ds_dynamic, ds_stn.lon.values, ds_stn.lat.values, '1D', method=dyn_operation_interp)
         if target == 'grid':
             ds_dynamic_tar = regrid_xarray(ds_dynamic, xaxis, yaxis, '2D', method=dyn_operation_interp)
-        elif target == 'loo':
+        elif target == 'cval':
             ds_dynamic_tar = ds_dynamic_stn.copy()
 
 
@@ -964,7 +965,7 @@ def main_regression(config, target):
             else:
                 sys.exit(f'Cannot find nearIndex_{near_keyword}_{var_name} in {file_stn_nearinfo}')
 
-            if target == 'loo':
+            if target == 'cval':
                 nearIndex = nearIndex[np.newaxis, :, :]
 
         # predictor information
@@ -987,7 +988,7 @@ def main_regression(config, target):
             else:
                 sys.exit(f'Cannot find nearIndex_{near_keyword}_{var_name} in {file_stn_weight}')
 
-            if target == 'loo':
+            if target == 'cval':
                 nearWeight = nearWeight[np.newaxis, :, :]
 
 
@@ -1009,7 +1010,7 @@ def main_regression(config, target):
             predictor_dynamic['stn_predictor_dynamic'] = np.stack([ds_dynamic_stn[v].values for v in dynamic_predictor_name[vn]], axis=0)
             predictor_dynamic['tar_predictor_dynamic'] = np.stack([ds_dynamic_tar[v].values for v in dynamic_predictor_name[vn]], axis=0)
 
-            if target == 'loo':
+            if target == 'cval':
                 # change raw dim: [n_feature, n_time, n_station] to [n_feature, n_time, 1, n_station]
                 predictor_dynamic['tar_predictor_dynamic'] = predictor_dynamic['tar_predictor_dynamic'][:, :, np.newaxis, :]
 
@@ -1020,7 +1021,7 @@ def main_regression(config, target):
             # estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic)
             estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, gridcore_continuous[4:], probflag, sklearn_config[gridcore_continuous[4:]], predictor_dynamic, num_processes, importmodules)
         else:
-            if target == 'loo':
+            if target == 'cval':
                 estimates = ML_regression_leaveoneout(stn_value, stn_predictor, gridcore_continuous, probflag, sklearn_config[gridcore_continuous], predictor_dynamic, n_splits)
             else:
                 estimates = ML_regression_grid(stn_value, stn_predictor, tar_predictor, gridcore_continuous, probflag, sklearn_config[gridcore_continuous], predictor_dynamic)
@@ -1051,12 +1052,23 @@ def main_regression(config, target):
         elif estimates.ndim == 2:
             ds_out[var_name_save] = xr.DataArray(estimates, dims=('stn', 'time'))
 
+            # evalution
+            dtmp1 = ds_stn[var_name].values
+            if len(var_name_trans) > 0:
+                dtmp2 = data_transformation(estimates, transform_vars[vn], transform_settings[transform_vars[vn]], 'retransform')
+            else:
+                dtmp2 = estimates
+            metvalue, metname = evaluate_allpoint(dtmp1, dtmp2, np.nan)
+            ds_out.coords['met'] = metname
+            ds_out[var_name_save + '_metric'] = xr.DataArray(metvalue, dims=('stn', 'met'))
+            del dtmp1, dtmp2
+
         ########################################################################################################################
         # if the variable has occurrence features, do logistic regression too
         if var_name in target_vars_WithOccurrence:
             print(f'Add probability of occurrence for {var_name} because it is in target_vars_WithOccurrence {target_vars_WithOccurrence}')
             if len(var_name_trans) > 0: # this means previous step uses transformed precipitation, while for logistic regression, we use raw precipitation
-                stn_value = ds_stn[var_name].values
+                stn_value = ds_stn[var_name].values.copy()
                 print('Number of negative values', np.sum(stn_value<0))
             stn_value[stn_value > 0] = 1
 
@@ -1065,7 +1077,7 @@ def main_regression(config, target):
                 # estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic)
                 estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, gridcore_classification[4:], probflag, sklearn_config[gridcore_continuous[4:]], predictor_dynamic, num_processes, importmodules)
             else:
-                if target == 'loo':
+                if target == 'cval':
                     estimates = ML_regression_leaveoneout(stn_value, stn_predictor, gridcore_classification, probflag, sklearn_config[gridcore_classification], predictor_dynamic, n_splits)
                 else:
                     estimates = ML_regression_grid(stn_value, stn_predictor, tar_predictor, gridcore_classification, probflag, sklearn_config[gridcore_classification], predictor_dynamic)
@@ -1075,6 +1087,14 @@ def main_regression(config, target):
                 ds_out[var_poo] = xr.DataArray(estimates, dims=('y', 'x', 'time'))
             elif estimates.ndim == 2:
                 ds_out[var_poo] = xr.DataArray(estimates, dims=('stn', 'time'))
+
+                # evalution
+                dtmp1 = stn_value
+                dtmp2 = estimates
+                metvalue, metname = evaluate_allpoint(dtmp1, dtmp2, 0.1)
+                ds_out.coords['met'] = metname
+                ds_out[var_poo + '_metric'] = xr.DataArray(metvalue, dims=('stn', 'met'))
+                del dtmp1, dtmp2
 
     # save output file
     encoding = {}

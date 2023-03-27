@@ -7,13 +7,14 @@ import probabilistic_auxiliary
 import data_correlation
 import probabilistic_estimation
 
-import sys
+import sys, time
 import warnings
 warnings.filterwarnings('ignore')
 
 if __name__ == '__main__':
+    t1 = time.time()
 
-    # config_file = "../test_cases/testcase.config.toml"
+    # config_file = "../test_cases/testcase.config.static.toml"
     config_file = sys.argv[1]
 
     ########################################################################################################################
@@ -36,7 +37,7 @@ if __name__ == '__main__':
     ########################################################################################################################
     # regression:
     # cross validation station regression (i.e., at station points)
-    config = regression.main_regression(config, 'loo')
+    config = regression.main_regression(config, 'cval')
 
     # grid regression
     config = regression.main_regression(config, 'grid')
@@ -60,5 +61,7 @@ if __name__ == '__main__':
         # 2. probabilistic estimation
         config = probabilistic_estimation.generate_probabilistic_estimates(config)
 
+    t2 = time.time()
+    print('Total time cost (sec):', t2-t1)
     print('Successfully finish the program!')
 
