@@ -211,7 +211,7 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
     file_spcorr_prefix = file_spcorr_prefix
 
     target_vars = config['target_vars']
-    target_vars_WithOccurrence = config['target_vars_WithOccurrence']
+    target_vars_WithProbability = config['target_vars_WithProbability']
     transform_vars = config['transform_vars']
     transform_settings = config['transform']
     ensemble_start = config['ensemble_start']
@@ -243,13 +243,29 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
     else:
         clen_config = [-9999] * len(target_vars)
 
+    if 'lag1_auto_cc' in config:
+        lag1_auto_cc = config['lag1_auto_cc']
+        if not isinstance(lag1_auto_cc, list):
+            lag1_auto_cc = [lag1_auto_cc] * len(target_vars)
+    else:
+        lag1_auto_cc = [-9999] * len(target_vars)
+
+    if 'cross_cc' in config:
+        cross_cc = config['cross_cc']
+        if not isinstance(cross_cc, list):
+            cross_cc = [cross_cc] * len(linkvar0)
+    else:
+        cross_cc = [-9999] * len(linkvar0)
+
     maxrndnum = 3.99  # minimum and maximum random number following GMET scripts
     minrndnum = -3.99
 
     # linkvar = {'prcp': 'trange'}  # random number generation dependence
     linkvar = {}
-    for v in linkvar0:
+    for i in range(len(linkvar0)):
+        v = linkvar0[i]
         linkvar[v[0]] = v[1]
+        linkvar[f"{v[0]}_crosscc"] = cross_cc[i]
 
     ensemble_number = ensemble_end - ensemble_start + 1
     if len(member_range) == 0:
@@ -284,14 +300,19 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
     allvar_clen = {}
     allvar_reg_estimate = {}
     allvar_reg_error = {}
-    allvar_poo = {}
+    allvar_poe = {}
     nearby_stn_max = {}
 
     # auto correlation
     with xr.open_dataset(file_stn_cc) as ds_stn_cc:
         for i in range(len(target_vars)):
             var_name = target_vars[i]
-            allvar_auto_lag1_cc[var_name] = ds_stn_cc[var_name + '_cc_lag1_mean'].values
+
+            if lag1_auto_cc[i] >= -1:
+                allvar_auto_lag1_cc[var_name] = lag1_auto_cc[i]
+            else:
+                allvar_auto_lag1_cc[var_name] = ds_stn_cc[var_name + '_cc_lag1_mean'].values
+
             if clen_config[i] > 0:
                 allvar_clen[var_name] = clen_config[i]
             else:
@@ -305,11 +326,11 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
                 allvar_reg_estimate[var_name] = ds_grid_reg[var_name + '_' + transform_vars[vn]].values
             else:
                 allvar_reg_estimate[var_name] = ds_grid_reg[var_name].values
-            if var_name in target_vars_WithOccurrence:
-                var_poo = var_name + '_poo'
-                allvar_poo[var_name] = ds_grid_reg[var_poo].values
+            if var_name in target_vars_WithProbability:
+                var_poe = var_name + '_poe'
+                allvar_poe[var_name] = ds_grid_reg[var_poe].values
             else:
-                allvar_poo[var_name] = np.array([])
+                allvar_poe[var_name] = np.array([])
 
         lat = ds_grid_reg.y.values
         lon = ds_grid_reg.x.values
@@ -346,14 +367,18 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
         else:
             target_vars_dependent.append(v)
 
-            cross_cc_varname1 = f'{v}_{linkvar[v]}_cc_cross_mean'
-            cross_cc_varname2 = f'{linkvar[v]}_{v}_cc_cross_mean'
-            if cross_cc_varname1 in ds_stn_cc:
-                crosscc = ds_stn_cc[cross_cc_varname1].values[0]
-            elif cross_cc_varname2 in ds_stn_cc:
-                crosscc = ds_stn_cc[cross_cc_varname1].values[0]
+            if linkvar[f'{v}_crosscc'] >= -1:
+                crosscc = linkvar[f'{v}_crosscc']
             else:
-                sys.exit(f'Cannot find {cross_cc_varname1} or {cross_cc_varname1} in {file_stn_cc}')
+                cross_cc_varname1 = f'{v}_{linkvar[v]}_cc_cross_mean'
+                cross_cc_varname2 = f'{linkvar[v]}_{v}_cc_cross_mean'
+                if cross_cc_varname1 in ds_stn_cc:
+                    crosscc = ds_stn_cc[cross_cc_varname1].values[0]
+                elif cross_cc_varname2 in ds_stn_cc:
+                    crosscc = ds_stn_cc[cross_cc_varname1].values[0]
+                else:
+                    sys.exit(f'Cannot find {cross_cc_varname1} or {cross_cc_varname1} in {file_stn_cc}')
+
             target_vars_dependent_cross_cc.append(crosscc)
 
     # convert transform_vars to dict
@@ -425,7 +450,7 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
             random_field[np.isnan(allvar_reg_estimate[var_name])] = np.nan
             # probabilistic estimation
             ds_out = probabilistic_estimate_for_one_var(var_name, allvar_reg_estimate[var_name], allvar_reg_error[var_name], nearby_stn_max[var_name],
-                                                        allvar_poo[var_name], random_field, minrndnum, maxrndnum, transform_vars[var_name], transform_settings[transform_vars[var_name]], ds_out)
+                                                        allvar_poe[var_name], random_field, minrndnum, maxrndnum, transform_vars[var_name], transform_settings[transform_vars[var_name]], ds_out)
 
             if output_randomfield == True:
                 ds_out[var_name + '_rnd'] = xr.DataArray(random_field, dims=('lat', 'lon', 'time'))
@@ -447,7 +472,7 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
 
                     # probabilistic estimation
                     ds_out = probabilistic_estimate_for_one_var(var_name_dep, allvar_reg_estimate[var_name_dep], allvar_reg_error[var_name_dep], nearby_stn_max[var_name],
-                                                                allvar_poo[var_name_dep], random_field_dep, minrndnum, maxrndnum, transform_vars[var_name_dep], transform_settings[transform_vars[var_name_dep]], ds_out)
+                                                                allvar_poe[var_name_dep], random_field_dep, minrndnum, maxrndnum, transform_vars[var_name_dep], transform_settings[transform_vars[var_name_dep]], ds_out)
 
                     if output_randomfield == True:
                         ds_out[var_name + '_rnd'] = xr.DataArray(random_field_dep, dims=('lat', 'lon', 'time'))

@@ -774,15 +774,23 @@ def main_regression(config, target):
     outfile = outfile # just to make sure all in/out settings are in this section
 
     target_vars = config['target_vars']
-    target_vars_WithOccurrence = config['target_vars_WithOccurrence']
+    target_vars_WithProbability = config['target_vars_WithProbability']
 
     date_start = config['date_start']
     date_end = config['date_end']
     predictor_name_static_stn = config['predictor_name_static_stn']
     predictor_name_static_target = predictor_name_static_target
 
-    minRange_vars = config['minRange_vars'].copy()
-    maxRange_vars = config['maxRange_vars'].copy()
+    if 'minRange_vars' in config:
+        minRange_vars = config['minRange_vars'].copy()
+    else:
+        minRange_vars = [-np.inf] * len(target_vars)
+
+    if 'maxRange_vars' in config:
+        maxRange_vars = config['maxRange_vars'].copy()
+    else:
+        minRange_vars = [-np.inf] * len(target_vars)
+
     transform_vars = config['transform_vars']
     transform_settings = config['transform']
 
@@ -1065,8 +1073,8 @@ def main_regression(config, target):
 
         ########################################################################################################################
         # if the variable has occurrence features, do logistic regression too
-        if var_name in target_vars_WithOccurrence:
-            print(f'Add probability of occurrence for {var_name} because it is in target_vars_WithOccurrence {target_vars_WithOccurrence}')
+        if var_name in target_vars_WithProbability:
+            print(f'Add probability of occurrence for {var_name} because it is in target_vars_WithProbability {target_vars_WithProbability}')
             if len(var_name_trans) > 0: # this means previous step uses transformed precipitation, while for logistic regression, we use raw precipitation
                 stn_value = ds_stn[var_name].values.copy()
                 print('Number of negative values', np.sum(stn_value<0))
@@ -1082,18 +1090,18 @@ def main_regression(config, target):
                 else:
                     estimates = ML_regression_grid(stn_value, stn_predictor, tar_predictor, gridcore_classification, probflag, sklearn_config[gridcore_classification], predictor_dynamic)
 
-            var_poo = var_name + '_poo'
+            var_poe = var_name + '_poe'
             if estimates.ndim == 3:
-                ds_out[var_poo] = xr.DataArray(estimates, dims=('y', 'x', 'time'))
+                ds_out[var_poe] = xr.DataArray(estimates, dims=('y', 'x', 'time'))
             elif estimates.ndim == 2:
-                ds_out[var_poo] = xr.DataArray(estimates, dims=('stn', 'time'))
+                ds_out[var_poe] = xr.DataArray(estimates, dims=('stn', 'time'))
 
                 # evalution
                 dtmp1 = stn_value
                 dtmp2 = estimates
                 metvalue, metname = evaluate_allpoint(dtmp1, dtmp2, 0.1)
                 ds_out.coords['met'] = metname
-                ds_out[var_poo + '_metric'] = xr.DataArray(metvalue, dims=('stn', 'met'))
+                ds_out[var_poe + '_metric'] = xr.DataArray(metvalue, dims=('stn', 'met'))
                 del dtmp1, dtmp2
 
     # save output file

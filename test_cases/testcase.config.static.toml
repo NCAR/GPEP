@@ -47,7 +47,7 @@ dynamic_predictor_filelist = "NA"
 date_start = "2017-02-01"
 date_end = "2017-02-15"
 
-# input/output variables (currently, only prcp, tmean, trange)
+# input/output variables
 input_vars = ['prcp', 'tmin', 'tmax'] # variables in the raw station files
 target_vars = ['prcp', 'tmean', 'trange'] # target output variables. tmean and trange are supported. meanwhile, any var from input_vars (e.g., tmin tmax) is accepted
 
@@ -56,7 +56,7 @@ mapping_InOut_var = ['tmean=(tmin+tmax)/2', 'trange=abs(tmax-tmin)']
 
 # variables (e.g., precipitation, snowfall, hail) needing occurrence estimation (i.e., a probability between 0-1)
 # should be a subset of target_vars
-target_vars_WithOccurrence = ['prcp']
+target_vars_WithProbability = ['prcp']
 
 # the below three settings are optional. if not provided, there will be no min/max limit or transformation
 # if minRange_vars is just a number, will use it for all variables
@@ -93,6 +93,8 @@ linkvar = [ ['prcp', 'trange'], ]  # random number generation dependence, e.g., 
 # if integer instead of list is used, this value will be applied to all variables
 # note correlation calculation is based on all input station data, not just the target period
 clen = [150, 800, 800]
+lag1_auto_cc = [-9999, -9999, -9999] # corresponding to target_vars
+cross_cc = [-9999] # corresponding to linkvar
 
 # nearby max constraint
 # for some variables (e.g., precipitation), the min/max values (with scale factors) from nearby stations can be used to contrain probabilistic estimates
