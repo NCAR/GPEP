@@ -57,7 +57,7 @@ target_vars_WithProbability = []
 # the below three settings are optional. if not provided, there will be no min/max limit or transformation
 minRange_vars = -inf
 maxRange_vars = +inf
-transform_vars = 'boxcox'
+transform_vars = ''
 
 ############################## dynamic predictors for regression
 # only useful when dynamic_predictor_filelist is valid
