@@ -1,56 +1,72 @@
 # PyGMET
-PyGMET is the Python version of the Gridded Meteorological Ensemble Tool (GMET: https://github.com/NCAR/GMET). Although the Fortran version of GMET is used as the template, PyGMET has many technical differences and a flexible structure. Instead of focusing on precipitation and temperature, PyGMET can address any variable.  
 
-# What does PyGMET do  
-- Deterministic estimates of any input variable (defined in the configure file)
-- Probabilistic estimates of any number of ensemble members
-- Intermediate outputs: spatiotemporally correlated random fields, spatial correlation, temporal auto correlation (lag 1), nearby station index/weights, etc ...  
+PyGMET is the Python version of the Gridded Meteorological Ensemble Tool ([GMET](https://github.com/NCAR/GMET)), a tool for generating gridded estimates for any meteorological variable using diverse methods. PyGMET comes with many methodological and technical differences and improvements compared to GMET.
 
-All outputs are provided as netcdf4 files. 
+<p align="center">
+  <img src="https://github.com/guoqiang-tang/public_pictures/blob/main/prcp_california2017_ensemble.gif" alt="ensemble precipitation" />
+</p>
 
-# How to install PyGEMT
-PyGMET does not have harsh requirement on Python environment. It can be run as long as the packages listed in environment.yml or requirements.txt are installed. You can also create virtual environments following below instructions. 
-- pip    
-<code>cd /your/path/of/PyGMET  
+## Functionality
+
+PyGMET can perform the following tasks and output all results as netcdf4 files: 
+
+-   Generate deterministic estimates of any input variable defined in the configuration file using various regression methods, including machine learning methods supported by scikit-learn.
+-   Generate cross-validation outputs with evaluation results at station points.
+-   Generate probabilistic estimates of any number of ensemble members.
+-   Provide intermediate outputs, such as spatiotemporally correlated random fields, spatial correlation, temporal autocorrelation (lag 1), nearby station index/weights, and more.
+
+## Installation
+
+PyGMET is built on common Python packages such as SciPy, scikit-learn, and xarray. It can be run as long as the packages listed in environment.yml or requirements.txt are installed. You can create virtual environments using the following instructions: 
+- Pip
+```  
+cd /your/path/of/PyGMET  
 virtualenv PyGMET-env  
 source PyGMET-env/bin/activate  
-pip install -r requirements.txt</code>
-- conda    
-<code>conda env create -f environment.yml
-conda activate PyGMET-env</code>
+pip install -r requirements.txt  
+```  
+- Conda
+```  
+conda env create -f environment.yml  
+conda activate PyGMET-env  
+```
 
-# How to run PyGMET  
-1. Prepare the configuration file  
-Use testcase.config.toml in ./src as the template to set up new cases. The configuration file can be put anywhere.
+## Usage
 
-2. Run the PyGMET  
-python main.py config.toml  
+To run PyGMET, follow these steps:
 
-# Test case for PyGMET  
-The test case for raw GMET is directly used here. The below codes show how to get the test case and how to run the test case.  
-<code>
-cd ./test_cases  
-python get_testcase.py  
-cd ../src
-python main.py ../test_cases/testcase.config.toml
-</code>  
+1.  Prepare the configuration file.  
+Use configuration files in the `./test_cases` folder as templates. Refer to `How_to_create_config_files.md` for more details.
+2.  Run PyGMET  
+`python main.py /your/path/config_filename.toml`.
+3. Batch run / operational run  
+When producing a dataset in a target domain or testing different method choices, PyGMET can be run in many batches (e.g., month by month). We recommend users run PyGMET in two steps to improve efficiency:
+    -   **Test run**: Run PyGMET on a test period or the first batch. Basic outputs (e.g., nearby station information, weights, and spatial correlation structures) will be generated and saved, which can be used by following batch runs.
+    -   **Batch run**: Run PyGMET without changing `outpath_parent` so that PyGMET can find the outputs generated in the test run.
 
-After running the test_cases, Jupyter Notebooks in the ./docs folder can be used to visualize PyGMET outputs.  
+## Test Case
 
-# Notes
-This code is a work in progress and is provided without guarantee of fitness for any particular application.  
-The PyGMET_SHARP branch is the most recent. Branch structure may be changed during the development.  
+The test case for raw GMET is directly used here. To get the test case and run it, use the following commands:
+```  
+cd ../src  
+python main.py ../test_cases/testcase.config.static.toml  
+```
+Jupyter Notebooks in the `./docs` folder can be used to visualize PyGMET test case outputs.
 
-# Existing PyGMET Datasets
-EMDNA: Ensemble Meteorological Dataset for North America, https://doi.org/10.20383/101.0275  
-EM-Earth: The Ensemble Meteorological Dataset for Planet Earth, https://doi.org/10.20383/102.0547
+## Existing Public PyGMET Datasets
 
-# References:
-## PyGMET
-Tang, G., Clark, M. P., & Papalexiou, S. M. (2022). EM-Earth: The Ensemble Meteorological Dataset for Planet Earth. Bulletin of the American Meteorological Society, 103(4), E996–E1018. https://doi.org/10.1175/BAMS-D-21-0106.1  
-Tang, G., Clark, M. P., Papalexiou, S. M., Newman, A. J., Wood, A. W., Brunet, D., & Whitfield, P. H. (2021). EMDNA: an Ensemble Meteorological Dataset for North America. Earth System Science Data, 13(7), 3337–3362. https://doi.org/10.5194/essd-13-3337-2021
-## Original GMET
-Newman, A. J. et al. (2020) ‘Probabilistic Spatial Meteorological Estimates for Alaska and the Yukon’, Journal of Geophysical Research: Atmospheres, 125(22), pp. 1–21. doi: 10.1029/2020JD032696.   
-Newman, A. J. et al. (2019) ‘Use of daily station observations to produce high-resolution gridded probabilistic precipitation and temperature time series for the Hawaiian Islands’, Journal of Hydrometeorology, 20(3), pp. 509–529. doi: 10.1175/JHM-D-18-0113.1.    
-Newman, AJ, MP Clark, J Craig, B Nijssen, AW Wood, E Gutmann, N Mizukami, L Brekke, and JR Arnold, 2015, Gridded Ensemble Precipitation and Temperature Estimates for the Contiguous United States, J. Hydromet., doi: http://dx.doi.org/10.1175/JHM-D-15-0026.1  
-Clark, M. P. and Slater, A. G. (2006) ‘Probabilistic Quantitative Precipitation Estimation in Complex Terrain’, Hydrometeorology, Journal O F, (2000), pp. 3–22.
+PyGMET has produced two publicly available datasets:
+
+-   EMDNA: Ensemble Meteorological Dataset for North America, [https://doi.org/10.20383/101.0275](https://doi.org/10.20383/101.0275)
+-   EM-Earth: The Ensemble Meteorological Dataset for Planet Earth, [https://doi.org/10.20383/102.0547](https://doi.org/10.20383/102.0547)  
+
+## References:  
+- PyGMET  
+Tang, G., Clark, M. P., & Papalexiou, S. M. (2022). EM-Earth: The ensemble meteorological dataset for planet Earth. _Bulletin of the American Meteorological Society_, _103_(4), E996-E1018.  
+Tang, G., Clark, M. P., Papalexiou, S. M., Newman, A. J., Wood, A. W., Brunet, D., & Whitfield, P. H. (2021). EMDNA: An ensemble meteorological dataset for North America. _Earth System Science Data_, _13_(7), 3337-3362.
+
+- Original GMET  
+Newman, A. J., Clark, M. P., Wood, A. W., & Arnold, J. R. (2020). Probabilistic spatial meteorological estimates for Alaska and the Yukon. _Journal of Geophysical Research: Atmospheres_, _125_(22), e2020JD032696.   
+Newman, A. J., Clark, M. P., Longman, R. J., Gilleland, E., Giambelluca, T. W., & Arnold, J. R. (2019). Use of daily station observations to produce high-resolution gridded probabilistic precipitation and temperature time series for the Hawaiian Islands. _Journal of Hydrometeorology_, _20_(3), 509-529.  
+Newman, A. J., Clark, M. P., Craig, J., Nijssen, B., Wood, A., Gutmann, E., ... & Arnold, J. R. (2015). Gridded ensemble precipitation and temperature estimates for the contiguous United States. _Journal of Hydrometeorology_, _16_(6), 2481-2500.     
+Clark, M. P., & Slater, A. G. (2006). Probabilistic quantitative precipitation estimation in complex terrain. _Journal of Hydrometeorology_, _7_(1), 3-22.  

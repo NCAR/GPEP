@@ -7,7 +7,7 @@ from data_processing import data_transformation
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import LogisticRegression
 from evaluate import evaluate_allpoint
-
+from scipy.interpolate import griddata, RegularGridInterpolator
 from sklearn.model_selection import KFold
 # from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 # from sklearn.neural_network import MLPRegressor, MLPClassifier
@@ -387,8 +387,6 @@ def read_period_input_data(df_mapping, varnames):
         ds = xr.Dataset()
     else:
         ds = xr.open_mfdataset(files)
-        if np.any([not d in ds.dims for d in ['time', 'lat','lon']]):
-            sys.exit(f'Dynamic input files must have lat, lon, and time dimensions!')
         # select ...
         ds = ds[varnames]
         ds = ds.sel(time=slice(tartime[0], tartime[-1]))
@@ -410,25 +408,69 @@ def regrid_xarray(ds, tarlon, tarlat, target, method):
     # regridding: space and time
     if target == '2D':
 
-        if ds.lat.values[0] > ds.lat.values[1]:
-            ds = ds.sel(lat=slice(tarlat[-1], tarlat[0]))
-        else:
-            ds = ds.sel(lat=slice(tarlat[0], tarlat[-1]))
-        if ds.lon.values[0] > ds.lon.values[1]:
-            ds = ds.sel(lon=slice(tarlon[-1], tarlon[0]))
-        else:
-            ds = ds.sel(lon=slice(tarlon[0], tarlon[-1]))
+        if tarlat.ndim == 2:
+            # check whether this is regular grids
+            if np.all(tarlat[:, 0] == tarlat[:, 1]):
+                tarlat = tarlat[:, 0]
+            elif np.all(tarlat[0, :] == tarlat[1, :]):
+                tarlat = tarlat[0, :]
 
-        if isinstance(method, str):
-            ds_out = ds.interp(lat=tarlat, lon=tarlon, method=method, kwargs={"fill_value": "extrapolate"})
-        else:
+            if np.all(tarlon[:, 0] == tarlon[:, 1]):
+                tarlon = tarlon[:, 0]
+            elif np.all(tarlon[0, :] == tarlon[1, :]):
+                tarlon = tarlon[0, :]
+
+
+        if tarlat.ndim == 1:
+
+            if ds.lat.values[0] > ds.lat.values[1]:
+                ds = ds.sel(lat=slice(tarlat[-1], tarlat[0]))
+            else:
+                ds = ds.sel(lat=slice(tarlat[0], tarlat[-1]))
+            if ds.lon.values[0] > ds.lon.values[1]:
+                ds = ds.sel(lon=slice(tarlon[-1], tarlon[0]))
+            else:
+                ds = ds.sel(lon=slice(tarlon[0], tarlon[-1]))
+
+            if isinstance(method, str):
+                ds_out = ds.interp(lat=tarlat, lon=tarlon, method=method, kwargs={"fill_value": "extrapolate"})
+            else:
+                ds_out = xr.Dataset()
+                for v in ds.data_vars:
+                    if v in method:
+                        methodv = method[v]
+                    else:
+                        methodv = default_method
+                    ds_out[v] = ds[v].interp(lat=tarlat, lon=tarlon, method=methodv, kwargs={"fill_value": "extrapolate"})
+
+        elif tarlat.ndim == 2:
             ds_out = xr.Dataset()
+            ds_out.coords['lat'] = np.arange(tarlat.shape[0])
+            ds_out.coords['lon'] = np.arange(tarlat.shape[1])
+            ds_out.coords['time'] = ds.time.values
+            ds_out['latitude'] = xr.DataArray(tarlat, dims=('lat', 'lon'))
+            ds_out['longitude'] = xr.DataArray(tarlon, dims=('lat', 'lon'))
+
+            points = np.column_stack((tarlat.flatten(), tarlon.flatten()))
+
             for v in ds.data_vars:
                 if v in method:
                     methodv = method[v]
                 else:
                     methodv = default_method
-                ds_out[v] = ds[v].interp(lat=tarlat, lon=tarlon, method=methodv, kwargs={"fill_value": "extrapolate"})
+
+                # Create the interpolator function
+                dv0 = ds[v].values
+                dv = np.nan * np.zeros([dv0.shape[0], tarlat.shape[0], tarlon.shape[1]])
+                for i in range(dv0.shape[0]):
+                    interpolator = RegularGridInterpolator((ds.lat.values, ds.lon.values), dv0[i, :, :], bounds_error=False, method=methodv)
+                    zz_new = interpolator(points)
+                    zz_new = np.reshape(zz_new, tarlat.shape)
+                    dv[i, :, :] = zz_new
+
+                ds_out[v] = xr.DataArray(dv, dims=('time', 'lat', 'lon'))
+
+        ds_out = ds_out.transpose('time', 'lat', 'lon')
 
     elif target == '1D':
 
@@ -758,8 +800,8 @@ def main_regression(config, target):
     elif target == 'cval':
         outfile = f'{path_regression}/{case_name}_CrossValidation_Regression_{datestamp}.nc'  # leave one out regression
         config['file_loo_reg'] = outfile
-        if 'overwrite_loo_reg' in config:
-            overwrite_flag = config['overwrite_loo_reg']
+        if 'overwrite_cv_reg' in config:
+            overwrite_flag = config['overwrite_cv_reg']
         else:
             overwrite_flag = False
         predictor_name_static_target = config['predictor_name_static_stn']
@@ -782,17 +824,32 @@ def main_regression(config, target):
     predictor_name_static_target = predictor_name_static_target
 
     if 'minRange_vars' in config:
-        minRange_vars = config['minRange_vars'].copy()
+        minRange_vars = config['minRange_vars']
+        if not isinstance(minRange_vars, list):
+            minRange_vars = [minRange_vars] * len(target_vars)
+        minRange_vars = minRange_vars.copy()
     else:
         minRange_vars = [-np.inf] * len(target_vars)
 
     if 'maxRange_vars' in config:
-        maxRange_vars = config['maxRange_vars'].copy()
+        maxRange_vars = config['maxRange_vars']
+        if not isinstance(maxRange_vars, list):
+            maxRange_vars = [maxRange_vars] * len(target_vars)
+        maxRange_vars = maxRange_vars.copy()
     else:
-        minRange_vars = [-np.inf] * len(target_vars)
+        maxRange_vars = [np.inf] * len(target_vars)
 
-    transform_vars = config['transform_vars']
-    transform_settings = config['transform']
+    if 'transform_vars' in config:
+        transform_vars = config['transform_vars']
+        if not isinstance(transform_vars, list):
+            transform_vars = [transform_vars] * len(target_vars)
+    else:
+        transform_vars = [''] * len(target_vars)
+
+    if 'transform' in config:
+        transform_settings = config['transform']
+    else:
+        transform_settings = {}
 
     dynamic_predictor_name = config['dynamic_predictor_name']
     dynamic_predictor_filelist = config['dynamic_predictor_filelist']
@@ -814,12 +871,20 @@ def main_regression(config, target):
     else:
         sklearn_config = {}
 
-
     if target == 'cval':
         # keyword for near information (default setting in this script)
         near_keyword = 'InStn' # input stations
     else:
         near_keyword = 'Grid'
+
+    stn_lat_name = config['stn_lat_name']
+    stn_lon_name = config['stn_lon_name']
+
+    grid_lat_name = config['grid_lat_name']
+    grid_lon_name = config['grid_lon_name']
+
+    dynamic_grid_lat_name = config['dynamic_grid_lat_name']
+    dynamic_grid_lon_name = config['dynamic_grid_lon_name']
 
     print('#' * 50)
     print(f'{target} regression')
@@ -881,17 +946,22 @@ def main_regression(config, target):
         ds_stn = ds_stn.sel(time=slice(date_start, date_end))
         timeaxis = ds_stn.time.values
 
-    with xr.open_dataset(file_stn_nearinfo) as ds_nearinfo:
-        xaxis = ds_nearinfo.x
-        yaxis = ds_nearinfo.y
-
     ds_out = xr.Dataset()
     ds_out.coords['time'] = timeaxis
     if target == 'grid':
-        ds_out.coords['x'] = xaxis
-        ds_out.coords['y'] = yaxis
+        with xr.open_dataset(file_stn_nearinfo) as ds_nearinfo:
+            xaxis = ds_nearinfo[grid_lon_name].isel(y=0).values
+            yaxis = ds_nearinfo[grid_lat_name].isel(x=0).values
+            ds_out.coords['x'] = ds_nearinfo.coords['x']
+            ds_out.coords['y'] = ds_nearinfo.coords['y']
+            ds_out[grid_lat_name] = ds_nearinfo[grid_lat_name]
+            ds_out[grid_lon_name] = ds_nearinfo[grid_lon_name]
+
     elif target == 'cval':
         ds_out.coords['stn'] = ds_stn.stn.values
+
+    else:
+        sys.exit(f'Unknown target: {target}')
 
     ########################################################################################################################
     # load dynamic factors if dynamic_flag == True
@@ -903,6 +973,7 @@ def main_regression(config, target):
 
         df_mapping = map_filelist_timestep(dynamic_predictor_filelist, timeaxis)
         ds_dynamic = read_period_input_data(df_mapping, allvars)
+        ds_dynamic = ds_dynamic.rename({dynamic_grid_lat_name:'lat', dynamic_grid_lon_name:'lon'})
 
         # transformation dynamic variables if necessary
         dyn_operation_trans = {}
@@ -920,9 +991,11 @@ def main_regression(config, target):
                 print('Transform dynamic predictor:', v)
                 ds_dynamic[v].values = data_transformation(ds_dynamic[v].values, dyn_operation_trans[v], transform_settings[dyn_operation_trans[v]], 'transform')
 
-        ds_dynamic_stn = regrid_xarray(ds_dynamic, ds_stn.lon.values, ds_stn.lat.values, '1D', method=dyn_operation_interp)
+        ds_dynamic_stn = regrid_xarray(ds_dynamic, ds_stn[stn_lon_name].values, ds_stn[stn_lat_name].values, '1D', method=dyn_operation_interp)
         if target == 'grid':
-            ds_dynamic_tar = regrid_xarray(ds_dynamic, xaxis, yaxis, '2D', method=dyn_operation_interp)
+            # ds_dynamic_tar2 = regrid_xarray(ds_dynamic, xaxis, yaxis, '2D', method=dyn_operation_interp)
+            ds_dynamic_tar = regrid_xarray(ds_dynamic, ds_nearinfo[grid_lon_name].values, ds_nearinfo[grid_lat_name].values, '2D', method=dyn_operation_interp)
+
         elif target == 'cval':
             ds_dynamic_tar = ds_dynamic_stn.copy()
 
@@ -1062,10 +1135,11 @@ def main_regression(config, target):
 
             # evalution
             dtmp1 = ds_stn[var_name].values
-            if len(var_name_trans) > 0:
+            if (len(var_name_trans) > 0) and (backtransform == False):
                 dtmp2 = data_transformation(estimates, transform_vars[vn], transform_settings[transform_vars[vn]], 'retransform')
             else:
                 dtmp2 = estimates
+
             metvalue, metname = evaluate_allpoint(dtmp1, dtmp2, np.nan)
             ds_out.coords['met'] = metname
             ds_out[var_name_save + '_metric'] = xr.DataArray(metvalue, dims=('stn', 'met'))

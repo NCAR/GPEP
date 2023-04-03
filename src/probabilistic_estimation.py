@@ -91,7 +91,7 @@ def probabilistic_estimate_for_one_var(var_name, reg_estimate, reg_error, nearby
         ens_estimate[mask] = nearby_stn_max[mask]
 
     # # add to output ds
-    ds_out[var_name] = xr.DataArray(ens_estimate, dims=('lat', 'lon', 'time'))
+    ds_out[var_name] = xr.DataArray(ens_estimate, dims=('y', 'x', 'time'))
 
     return ds_out
 
@@ -128,6 +128,9 @@ def spcorr_structure(config):
 
     target_vars = config['target_vars']
 
+    grid_lat_name = config['grid_lat_name']
+    grid_lon_name = config['grid_lon_name']
+
     if 'clen' in config:
         clen_config = config['clen']
         if not isinstance(clen_config, list):
@@ -154,12 +157,8 @@ def spcorr_structure(config):
 
     # regression estimates
     with xr.open_dataset(file_grid_reg) as ds_grid_reg:
-        lat = ds_grid_reg.y.values
-        lon = ds_grid_reg.x.values
-
-
-    grid_lat = np.tile(lat[:, np.newaxis], [1, len(lon)])
-    grid_lon = np.tile(lon[np.newaxis, :], [len(lat), 1])
+        grid_lat = ds_grid_reg[grid_lat_name].values
+        grid_lon = ds_grid_reg[grid_lon_name].values
 
     for var_name in target_vars:
         file_spcor = f'{file_spcorr_prefix}{var_name}.npz'
@@ -212,12 +211,23 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
 
     target_vars = config['target_vars']
     target_vars_WithProbability = config['target_vars_WithProbability']
-    transform_vars = config['transform_vars']
-    transform_settings = config['transform']
     ensemble_start = config['ensemble_start']
     ensemble_end = config['ensemble_end']
     master_seed = config['master_seed']
     datestamp = f"{config['date_start'].replace('-', '')}-{config['date_end'].replace('-', '')}"
+
+    grid_lat_name = config['grid_lat_name']
+    grid_lon_name = config['grid_lon_name']
+
+    if 'transform_vars' in config:
+        transform_vars = config['transform_vars']
+    else:
+        transform_vars = [''] * len(target_vars)
+
+    if 'transform' in config:
+        transform_settings = config['transform']
+    else:
+        transform_settings = {}
 
     if 'target_vars_max_constrain' in config:
         target_vars_max_constrain = config['target_vars_max_constrain']
@@ -260,7 +270,6 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
     maxrndnum = 3.99  # minimum and maximum random number following GMET scripts
     minrndnum = -3.99
 
-    # linkvar = {'prcp': 'trange'}  # random number generation dependence
     linkvar = {}
     for i in range(len(linkvar0)):
         v = linkvar0[i]
@@ -332,8 +341,6 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
             else:
                 allvar_poe[var_name] = np.array([])
 
-        lat = ds_grid_reg.y.values
-        lon = ds_grid_reg.x.values
         tartime = ds_grid_reg.time.values
 
     # auxiliary info: estimate error and nearby_stn_max
@@ -427,9 +434,10 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
         # initialize outputs
         ds_out = xr.Dataset()
         ds_out.coords['time'] = tartime
-        ds_out.coords['lon'] = lon
-        ds_out.coords['lat'] = lat
-        ds_out.coords['z'] = [0]
+        ds_out.coords['x'] = ds_grid_reg.coords['x']
+        ds_out.coords['y'] = ds_grid_reg.coords['y']
+        ds_out[grid_lat_name] = ds_grid_reg[grid_lat_name]
+        ds_out[grid_lon_name] = ds_grid_reg[grid_lon_name]
 
         # loop variables
 
@@ -453,7 +461,7 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
                                                         allvar_poe[var_name], random_field, minrndnum, maxrndnum, transform_vars[var_name], transform_settings[transform_vars[var_name]], ds_out)
 
             if output_randomfield == True:
-                ds_out[var_name + '_rnd'] = xr.DataArray(random_field, dims=('lat', 'lon', 'time'))
+                ds_out[var_name + '_rnd'] = xr.DataArray(random_field, dims=('y', 'x', 'time'))
 
             # is any linked variable
             for d in range(len(target_vars_dependent)):
@@ -475,10 +483,10 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
                                                                 allvar_poe[var_name_dep], random_field_dep, minrndnum, maxrndnum, transform_vars[var_name_dep], transform_settings[transform_vars[var_name_dep]], ds_out)
 
                     if output_randomfield == True:
-                        ds_out[var_name + '_rnd'] = xr.DataArray(random_field_dep, dims=('lat', 'lon', 'time'))
+                        ds_out[var_name + '_rnd'] = xr.DataArray(random_field_dep, dims=('y', 'x', 'time'))
 
         # save output file
-        ds_out = ds_out.transpose('time', 'lat', 'lon', 'z')
+        ds_out = ds_out.transpose('time', 'y', 'x')
         ds_out = ds_out.fillna(-9999.0)
         encoding = {}
         for var in ds_out.data_vars:

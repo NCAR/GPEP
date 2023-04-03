@@ -1,6 +1,5 @@
-# configuration file used to run GMET ensemble estimation
-# settings in this configuration file is used to reproduce Fortan GMET test case outputs
-# there could be some small differences between Pyhon and Fortran version
+# configuration file used to run PyGMET
+# check ./doc/How_to_create_config_files for detailed guidance
 
 ########################################################################################################################
 # general settings
@@ -9,26 +8,24 @@
 # case name. will be used in ensemble outputs generations
 case_name = 'LWLRstatic'
 
-# worker number (cpu cores) for parallelization. Better to be <= ensemble number
+# worker number (cpu cores)
 num_processes = 5
 
-modelsettings_file = "model.settings.toml" # must be in the same folder
+# model setting file
+modelsettings_file = "model.settings.toml"
 
 ########################################################################################################################
 # settings for gridded estimation using regression or machine learning methods
 ########################################################################################################################
 
 ############################## input/output files
-# station input data (Fortran GMET input format station)
-# two methods. 1: one station has one file, and 2: all stations are in one file. Method-2 has priority
+# station input data: method 1 or 2
 
 # Method-1: please give the input station file list (with attributes) and input station path
 input_stn_list = "../test_cases/cali2017/inputs/CALI.screened_stn_list_slope.v3.csv"
 input_stn_path = "../test_cases/cali2017/stndata"
 
 # Method-2: please give the file name contains all stations.
-# input_stn_list is optional if the file does not contain station attributes
-# this is optional. if not provided, will read from input_stn_list
 #input_stn_all = "../test_cases/cali2017/inputs/all_stn.nc"
 
 # domain gridded attributes (e.g., dem, lon, lat, slope)
@@ -37,9 +34,7 @@ infile_grid_domain = "../test_cases/cali2017/inputs/CALI.gridinfo.0625_v3.nc"
 # parent output path
 outpath_parent = "../test_cases/cali2017/PyGMET_output"
 
-# file list containing dynamic predictor inputs
-# this is optional. give it a nonsense string (e.g., "NA") can turn off dynamic predictors
-#dynamic_predictor_filelist = "../test_cases/cali2017/griddata_standard/grid_file_list.txt"
+# file list containing dynamic predictor inputs (optional). Give it a nonsense string (e.g., "NA") can turn off dynamic predictors
 dynamic_predictor_filelist = "NA"
 
 ############################## target variables and periods
@@ -49,54 +44,63 @@ date_end = "2017-02-15"
 
 # input/output variables
 input_vars = ['prcp', 'tmin', 'tmax'] # variables in the raw station files
-target_vars = ['prcp', 'tmean', 'trange'] # target output variables. tmean and trange are supported. meanwhile, any var from input_vars (e.g., tmin tmax) is accepted
+target_vars = ['prcp', 'tmean', 'trange'] # target output variables
 
 # input variables may need some conversion to get target variables. if input_var and target_var have the same variable name, no need to add mapping relation
 mapping_InOut_var = ['tmean=(tmin+tmax)/2', 'trange=abs(tmax-tmin)']
 
-# variables (e.g., precipitation, snowfall, hail) needing occurrence estimation (i.e., a probability between 0-1)
-# should be a subset of target_vars
+# some target variables (e.g., precipitation, snowfall, hail) need occurrence probability estimation (i.e., a probability between 0-1)
 target_vars_WithProbability = ['prcp']
 
 # the below three settings are optional. if not provided, there will be no min/max limit or transformation
-# if minRange_vars is just a number, will use it for all variables
-minRange_vars = [0, -100, 1] # >=. Daily limits slightly beyond global records from google search. 1 for Trange is arbitrary. this is not used in probabilistic estimation
-maxRange_vars = [2000, 60, 60] # <=. Daily limits slightly beyond global records from google search. this is not used in probabilistic estimation
-transform_vars = ['boxcox', '', ''] # There is a section at the end of the config file defining various transformation
+minRange_vars = [0, -100, 1]
+maxRange_vars = [2000, 60, 60]
+transform_vars = ['boxcox', '', '']
 
 ############################## dynamic predictors for regression
-# if don't want to use dynamic factors, just give invalid dynamic_predictor_name or dynamic_predictor_filelist
-# dynamic_predictor_name = [] # don't use dynamic predictors
+# only useful when dynamic_predictor_filelist is valid
+
+# dynamic predictors for each target_vars. Empty list means no dynamic predictors
 dynamic_predictor_name = [['cube_root_prec_rate', 'tmp_2m'],
                           ['cube_root_prec_rate', 'tmp_2m'],
                           ['cube_root_prec_rate', 'tmp_2m'],
                           ]
 
+# dynamic predictors may needs some processing. two keywords: "interp" an "transform"
+# Example "cube_root_prec_rate:interp=linear:transform=boxcox"
+dynamic_predictor_operation = []
+
+############################## static/dynamic predictors used in regression
+# static predictors in input_stn_list or input_stn_all
+predictor_name_static_stn = ['lat', 'lon', 'elev', 'slp_n', 'slp_e']
+
+# dynamic predictors in infile_grid_domain
+predictor_name_static_grid = ['latitude', 'longitude', 'elev', 'gradient_n_s', 'gradient_w_e']
+
 ########################################################################################################################
 # settings for probabilistic estimation
-# can be put in another config file
 ########################################################################################################################
 
 # run ensemble or not: true or false
 ensemble_flag = true
 
 # ensemble settings
-# note: ensemble_start starts from 1, not 0
-# note: if don't want to generate ensemble estimates, just set ensemble_start or ensemble_end to negative values
 ensemble_start = 1
 ensemble_end = 5
 
-# link variables
-linkvar = [ ['prcp', 'trange'], ]  # random number generation dependence, e.g., ['prcp', 'trange'] means prcp depends on trange
+# link variables for random number generation dependence
+linkvar = [ ['prcp', 'trange'], ]
 
-# variable space and temporal correlation length. the list corresponds to target_vars. negative values or not provding this variable mean calculation based available station data
-# if integer instead of list is used, this value will be applied to all variables
-# note correlation calculation is based on all input station data, not just the target period
-clen = [150, 800, 800]
+# variable correlations. They are all optional
+clen = [150, 800, 800] # corresponding to target_vars
 lag1_auto_cc = [-9999, -9999, -9999] # corresponding to target_vars
 cross_cc = [-9999] # corresponding to linkvar
 
+# direct: using raw time series to calculate autocorrelation; anomaly: using the anomaly of time series to calculate autocorrelation
+auto_corr_method = ['direct', 'anomaly', 'anomaly'] # corresponding to target_vars
+
+# only effective for auto_corr_method=anomaly. rolling mean window size, which is used for variable lag auto correlation calculation
+rolling_window = 31 # 31-monthly rolling mean to remove monthly cycle
+
 # nearby max constraint
-# for some variables (e.g., precipitation), the min/max values (with scale factors) from nearby stations can be used to contrain probabilistic estimates
-# be cautious because this is not always plausible
 target_vars_max_constrain = ['prcp']

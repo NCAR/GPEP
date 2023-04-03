@@ -14,7 +14,6 @@ warnings.filterwarnings('ignore')
 if __name__ == '__main__':
     t1 = time.time()
 
-    # config_file = "../test_cases/testcase.config.static.toml"
     config_file = sys.argv[1]
 
     ########################################################################################################################

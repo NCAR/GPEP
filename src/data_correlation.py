@@ -158,8 +158,14 @@ def station_space_time_correlation(config):
     target_vars = config['target_vars']
     file_stn_cc = config['file_stn_cc']
     num_processes = config['num_processes']
-    auto_corr_method = config['auto_corr_method']
     rolling_window = config['rolling_window']
+
+    if 'auto_corr_method' in config:
+        auto_corr_method = config['auto_corr_method']
+    else:
+        auto_corr_method = ['direct'] * len(target_vars)
+        if not isinstance(auto_corr_method, list):
+            auto_corr_method = [auto_corr_method] * len(target_vars)
 
     if 'clen' in config:
         clen_config = config['clen']
@@ -213,15 +219,20 @@ def station_space_time_correlation(config):
     for vn in range(len(target_vars)):
 
         var_name = target_vars[vn]
+        auto_corr_method_vn = auto_corr_method[vn]
 
         # calculate auto correlation
         print('Auto correlation calculation for:', var_name)
         with xr.open_dataset(file_allstn) as ds_stn:
 
+            if (len(ds_stn.time) < 12 * rolling_window) and (auto_corr_method_vn == 'anomaly'):
+                auto_corr_method_vn = 'direct'
+                print(f'Station data length is too short. Change auto_corr_method from anomaly to direct.')
+
             # calculate var - moving_averaging(var) to remove monthly cycle
-            if auto_corr_method == 'direct':
+            if auto_corr_method_vn == 'direct':
                 stn_value = ds_stn[var_name].values
-            elif auto_corr_method == 'anomaly':
+            elif auto_corr_method_vn == 'anomaly':
                 stn_value_raw = ds_stn[var_name].values
                 stn_value_mv = ds_stn[var_name].rolling(time=rolling_window, center=True).mean().values
                 stn_value = stn_value_raw - stn_value_mv
@@ -261,10 +272,10 @@ def station_space_time_correlation(config):
         with xr.open_dataset(file_allstn) as ds_stn:
             # data1 = ds_stn['prcp'].values
 
-            if auto_corr_method == 'direct':
+            if auto_corr_method_vn == 'direct':
                 data1 = ds_stn[var1].values
                 data2 = ds_stn[var2].values
-            elif auto_corr_method == 'anomaly':
+            elif auto_corr_method_vn == 'anomaly':
                 stn_value_raw = ds_stn[var1].values
                 stn_value_mv = ds_stn[var1].rolling(time=rolling_window, center=True).mean().values
                 data1 = stn_value_raw - stn_value_mv

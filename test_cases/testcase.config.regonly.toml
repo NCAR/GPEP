@@ -1,12 +1,14 @@
 # configuration file used to run PyGMET
 # check ./doc/How_to_create_config_files for detailed guidance
 
+# this config file uses default settings or simple settings whenever possible to simplify to settings. only precipitation regression is performed
+
 ########################################################################################################################
 # general settings
 ########################################################################################################################
 
 # case name. will be used in ensemble outputs generations
-case_name = 'LWLRdynamic'
+case_name = 'LWLRreg'
 
 # worker number (cpu cores)
 num_processes = 5
@@ -22,17 +24,17 @@ modelsettings_file = "model.settings.toml"
 # station input data: method 1 or 2
 
 # Method-1: please give the input station file list (with attributes) and input station path
-input_stn_list = "../test_cases/cali2017/inputs/CALI.screened_stn_list_slope.v3.csv"
-input_stn_path = "../test_cases/cali2017/stndata"
+#input_stn_list = "../test_cases/cali2017/inputs/CALI.screened_stn_list_slope.v3.csv"
+#input_stn_path = "../test_cases/cali2017/stndata"
 
 # Method-2: please give the file name contains all stations.
-#input_stn_all = "../test_cases/cali2017/inputs/all_stn.nc"
+input_stn_all = "../test_cases/cali2017/inputs/all_stn.nc"
 
 # domain gridded attributes (e.g., dem, lon, lat, slope)
 infile_grid_domain = "../test_cases/cali2017/inputs/CALI.gridinfo.0625_v3.nc"
 
 # parent output path
-outpath_parent = "../test_cases/cali2017/PyGMET_output"
+outpath_parent = "../test_cases/cali2017/PyGMET_output_regonly"
 
 # file list containing dynamic predictor inputs (optional). Give it a nonsense string (e.g., "NA") can turn off dynamic predictors
 dynamic_predictor_filelist = "../test_cases/cali2017/griddata_standard/grid_file_list.txt"
@@ -44,26 +46,24 @@ date_end = "2017-02-15"
 
 # input/output variables
 input_vars = ['prcp', 'tmin', 'tmax'] # variables in the raw station files
-target_vars = ['prcp', 'tmean', 'trange'] # target output variables
+target_vars = ['prcp'] # target output variables
 
-# input variables may need some conversion to get target variables. if input_var and target_var have the same variable name, no need to add mapping relation
-mapping_InOut_var = ['tmean=(tmin+tmax)/2', 'trange=abs(tmax-tmin)']
+# input variables may need some conversion to get target variables
+mapping_InOut_var = []
 
 # some target variables (e.g., precipitation, snowfall, hail) need occurrence probability estimation (i.e., a probability between 0-1)
-target_vars_WithProbability = ['prcp']
+target_vars_WithProbability = []
 
 # the below three settings are optional. if not provided, there will be no min/max limit or transformation
-minRange_vars = [0, -100, 1]
-maxRange_vars = [2000, 60, 60]
-transform_vars = ['boxcox', '', '']
+minRange_vars = -inf
+maxRange_vars = +inf
+transform_vars = 'boxcox'
 
 ############################## dynamic predictors for regression
 # only useful when dynamic_predictor_filelist is valid
 
 # dynamic predictors for each target_vars. Empty list means no dynamic predictors
 dynamic_predictor_name = [['cube_root_prec_rate', 'tmp_2m'],
-                          ['cube_root_prec_rate', 'tmp_2m'],
-                          ['cube_root_prec_rate', 'tmp_2m'],
                           ]
 
 # dynamic predictors may needs some processing. two keywords: "interp" an "transform"
@@ -82,25 +82,25 @@ predictor_name_static_grid = ['latitude', 'longitude', 'elev', 'gradient_n_s', '
 ########################################################################################################################
 
 # run ensemble or not: true or false
-ensemble_flag = true
+ensemble_flag = false
 
 # ensemble settings
 ensemble_start = 1
 ensemble_end = 5
 
 # link variables for random number generation dependence
-linkvar = [ ['prcp', 'trange'], ]
+linkvar = []
 
 # variable correlations. They are all optional
-clen = [150, 800, 800] # corresponding to target_vars
-lag1_auto_cc = [-9999, -9999, -9999] # corresponding to target_vars
-cross_cc = [-9999] # corresponding to linkvar
+clen = -9999 # corresponding to target_vars
+lag1_auto_cc = -9999 # corresponding to target_vars
+cross_cc = -9999 # corresponding to linkvar
 
 # direct: using raw time series to calculate autocorrelation; anomaly: using the anomaly of time series to calculate autocorrelation
-auto_corr_method = ['direct', 'anomaly', 'anomaly'] # corresponding to target_vars
+auto_corr_method = 'direct' # corresponding to target_vars
 
 # only effective for auto_corr_method=anomaly. rolling mean window size, which is used for variable lag auto correlation calculation
 rolling_window = 31 # 31-monthly rolling mean to remove monthly cycle
 
 # nearby max constraint
-target_vars_max_constrain = ['prcp']
+target_vars_max_constrain = []
