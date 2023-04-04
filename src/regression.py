@@ -762,7 +762,10 @@ def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearInde
 
     # parallel regression
     # items = [(r, r + 1, c, c + 1) for r in range(nrow) for c in range(ncol)] # range(r, r+1), range(c, c+1)
-    items = [(r, r + 1, 0, ncol) for r in range(nrow)]
+    if nrow > ncol:
+        items = [(r, r + 1, 0, ncol) for r in range(nrow)]
+    else:
+        items = [(0, nrow, c, c + 1) for c in range(ncol)]
 
     with Pool(processes=num_processes, initializer=init_worker, initargs=(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag, settings, dynamic_predictors, importmodules)) as pool:
         result = pool.starmap(regression_for_blocks, items)
