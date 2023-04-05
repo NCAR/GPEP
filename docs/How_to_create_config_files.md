@@ -206,7 +206,7 @@ A list of variables (e.g., precipitation, snowfall, hail) requiring occurrence e
 
 ## minRange_vars
 
-_Optional._ A list corresponding to `target_vars` that defines the minimum values of the corresponding variable in spatial regression. If not provided, no constraint will be applied. Setting the value to `-inf` can also turn off the constraint. For example, `minRange_vars = [0, -100, 1]`.
+_Optional._ A list corresponding to `target_vars` that defines the minimum values of the corresponding variable in spatial regression. For variables with minimum values such as 0 for precipitation, this parameter is useful because regression models could get negative values. If not provided, no constraint will be applied. Setting the value to `-inf` can also turn off the constraint. For example, `minRange_vars = [0, -100, 1]`.
 
 ## maxRange_vars
 

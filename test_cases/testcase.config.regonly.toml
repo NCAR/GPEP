@@ -34,7 +34,7 @@ input_stn_all = "../test_cases/cali2017/inputs/all_stn.nc"
 infile_grid_domain = "../test_cases/cali2017/inputs/CALI.gridinfo.0625_v3.nc"
 
 # parent output path
-outpath_parent = "../test_cases/cali2017/PyGMET_output_regonly"
+outpath_parent = "../test_cases/cali2017/PyGMET_output"
 
 # file list containing dynamic predictor inputs (optional). Give it a nonsense string (e.g., "NA") can turn off dynamic predictors
 dynamic_predictor_filelist = "../test_cases/cali2017/griddata_standard/grid_file_list.txt"
@@ -55,7 +55,7 @@ mapping_InOut_var = []
 target_vars_WithProbability = []
 
 # the below three settings are optional. if not provided, there will be no min/max limit or transformation
-minRange_vars = -inf
+minRange_vars = 0
 maxRange_vars = +inf
 transform_vars = ''
 
