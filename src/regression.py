@@ -12,6 +12,7 @@ from sklearn.model_selection import KFold
 # from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 # from sklearn.neural_network import MLPRegressor, MLPClassifier
 import sklearn
+from sklearn import *
 
 ########################################################################################################################
 # ludcmp, lubksb, and linearsolver
@@ -553,8 +554,8 @@ def train_and_return_test(Xtrain, ytrain, Xtest, method, probflag, settings = {}
     ytrain = ytrain[indexvalid]
 
     ldict = {'settings': settings, 'method': method}
-    # exec(f"model = sklearn.{method}(**settings)", globals(), ldict)
-    exec(f"model = {method}(**settings)", globals(), ldict)
+    exec(f"model = sklearn.{method}(**settings)", globals(), ldict)
+    # exec(f"model = {method}(**settings)", globals(), ldict)
     model = ldict['model']
 
     if len(weight) == 0:
@@ -573,7 +574,7 @@ def train_and_return_test(Xtrain, ytrain, Xtest, method, probflag, settings = {}
     ytest[indexnan_test] = np.nan
     return ytest
 
-def ML_regression_leaveoneout(stn_data, stn_predictor, ml_model, probflag, ml_settings={}, dynamic_predictors={}, n_splits=10):
+def ML_regression_crossvalidation(stn_data, stn_predictor, ml_model, probflag, ml_settings={}, dynamic_predictors={}, n_splits=10):
 
     if len(dynamic_predictors) == 0:
         dynamic_predictors['flag'] = False
@@ -941,7 +942,7 @@ def main_regression(config, target):
         if not g in sklearn_config:
             sklearn_config[g] = {}
 
-    gridcore_classification, gridcore_continuous = gnew
+    gridcore_classification_short, gridcore_continuous_short = gnew
 
     ########################################################################################################################
     # initialize outputs
@@ -1106,9 +1107,9 @@ def main_regression(config, target):
             estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, gridcore_continuous[4:], probflag, sklearn_config[gridcore_continuous[4:]], predictor_dynamic, num_processes, importmodules)
         else:
             if target == 'cval':
-                estimates = ML_regression_leaveoneout(stn_value, stn_predictor, gridcore_continuous, probflag, sklearn_config[gridcore_continuous], predictor_dynamic, n_splits)
+                estimates = ML_regression_crossvalidation(stn_value, stn_predictor, gridcore_continuous, probflag, sklearn_config[gridcore_continuous_short], predictor_dynamic, n_splits)
             else:
-                estimates = ML_regression_grid(stn_value, stn_predictor, tar_predictor, gridcore_continuous, probflag, sklearn_config[gridcore_continuous], predictor_dynamic)
+                estimates = ML_regression_grid(stn_value, stn_predictor, tar_predictor, gridcore_continuous, probflag, sklearn_config[gridcore_continuous_short], predictor_dynamic)
 
         # constrain variables
         estimates = np.squeeze(estimates)
@@ -1163,9 +1164,9 @@ def main_regression(config, target):
                 estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, gridcore_classification[4:], probflag, sklearn_config[gridcore_continuous[4:]], predictor_dynamic, num_processes, importmodules)
             else:
                 if target == 'cval':
-                    estimates = ML_regression_leaveoneout(stn_value, stn_predictor, gridcore_classification, probflag, sklearn_config[gridcore_classification], predictor_dynamic, n_splits)
+                    estimates = ML_regression_crossvalidation(stn_value, stn_predictor, gridcore_classification, probflag, sklearn_config[gridcore_classification_short], predictor_dynamic, n_splits)
                 else:
-                    estimates = ML_regression_grid(stn_value, stn_predictor, tar_predictor, gridcore_classification, probflag, sklearn_config[gridcore_classification], predictor_dynamic)
+                    estimates = ML_regression_grid(stn_value, stn_predictor, tar_predictor, gridcore_classification, probflag, sklearn_config[gridcore_classification_short], predictor_dynamic)
 
             var_poe = var_name + '_poe'
             if estimates.ndim == 3:
