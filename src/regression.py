@@ -922,21 +922,18 @@ def main_regression(config, target):
     importmodules = []
     for g in [gridcore_classification, gridcore_continuous]:
         if g.startswith('LWR:'):
-            prefix = 'LWR:'
             g = g.replace('LWR:', '')
-        else:
-            prefix = ''
 
         # load sklearn modules
         if '.' in g:
             m1 = g.split('.')[0]
             m2 = g.split('.')[1]
-            exec(f'global {m2}')
-            exec(f"from sklearn.{m1} import {m2}")
+            # exec(f'global {m2}')
+            # exec(f"from sklearn.{m1} import {m2}")
             g = m2
             importmodules.append(f'sklearn.{m1}.{m2}')
 
-        gnew.append(prefix + g)
+        gnew.append(g)
 
         # sklearn settings
         if not g in sklearn_config:
@@ -1104,7 +1101,7 @@ def main_regression(config, target):
         probflag = False  # for continuous variables
         if gridcore_continuous.startswith('LWR:'):
             # estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'linear', predictor_dynamic)
-            estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, gridcore_continuous[4:], probflag, sklearn_config[gridcore_continuous[4:]], predictor_dynamic, num_processes, importmodules)
+            estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, gridcore_continuous[4:], probflag, sklearn_config[gridcore_continuous_short], predictor_dynamic, num_processes, importmodules)
         else:
             if target == 'cval':
                 estimates = ML_regression_crossvalidation(stn_value, stn_predictor, gridcore_continuous, probflag, sklearn_config[gridcore_continuous_short], predictor_dynamic, n_splits)
@@ -1161,7 +1158,7 @@ def main_regression(config, target):
             probflag = True
             if gridcore_classification.startswith('LWR:'):
                 # estimates = loop_regression_2Dor3D(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, 'logistic', predictor_dynamic)
-                estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, gridcore_classification[4:], probflag, sklearn_config[gridcore_continuous[4:]], predictor_dynamic, num_processes, importmodules)
+                estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, gridcore_classification[4:], probflag, sklearn_config[gridcore_continuous_short], predictor_dynamic, num_processes, importmodules)
             else:
                 if target == 'cval':
                     estimates = ML_regression_crossvalidation(stn_value, stn_predictor, gridcore_classification, probflag, sklearn_config[gridcore_classification_short], predictor_dynamic, n_splits)
