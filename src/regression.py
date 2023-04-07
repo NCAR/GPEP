@@ -611,7 +611,7 @@ def ML_regression_crossvalidation(stn_data, stn_predictor, ml_model, probflag, m
     print('Regression time cost (sec):', t2-t1)
     return np.squeeze(estimates0)
 
-def init_worker_sklearn(stn_data, stn_predictor, tar_predictor, ml_model, probflag, ml_settings, dynamic_predictors, train_index, test_index, indexmissing):
+def init_worker_sklearn(stn_data, stn_predictor, tar_predictor, ml_model, probflag, ml_settings, dynamic_predictors, train_index, test_index, indexmissing, randseed=123456789):
     # Using a dictionary is not strictly necessary. You can also
     # use global variables.
     global mppool_ini_dict_sk
@@ -626,6 +626,7 @@ def init_worker_sklearn(stn_data, stn_predictor, tar_predictor, ml_model, probfl
     mppool_ini_dict_sk['test_index'] = test_index
     mppool_ini_dict_sk['dynamic_predictors'] = dynamic_predictors
     mppool_ini_dict_sk['indexmissing'] = indexmissing
+    mppool_ini_dict_sk['randseed'] = randseed
 
 def train_and_return_test_cv_timestep(t):
     stn_data = mppool_ini_dict_sk['stn_data']
@@ -637,6 +638,9 @@ def train_and_return_test_cv_timestep(t):
     test_indexall = mppool_ini_dict_sk['test_index']
     dynamic_predictors = mppool_ini_dict_sk['dynamic_predictors']
     indexmissing = mppool_ini_dict_sk['indexmissing']
+    randseed = mppool_ini_dict_sk['randseed']
+
+    np.random.seed(randseed + t)
 
     nstn, ntime = np.shape(stn_data)
     estimates = np.nan * np.zeros(nstn, dtype=np.float32)
@@ -651,7 +655,7 @@ def train_and_return_test_cv_timestep(t):
 
     return estimates
 
-def ML_regression_crossvalidation_multiprocessing(stn_data, stn_predictor, ml_model, probflag, ml_settings={}, dynamic_predictors={}, n_splits=10, num_processes=1):
+def ML_regression_crossvalidation_multiprocessing(stn_data, stn_predictor, ml_model, probflag, ml_settings={}, dynamic_predictors={}, n_splits=10, num_processes=1, master_seed=123456789):
     t1 = time.time()
 
     if len(dynamic_predictors) == 0:
@@ -677,7 +681,7 @@ def ML_regression_crossvalidation_multiprocessing(stn_data, stn_predictor, ml_mo
 
     # parallel regression
     items = [(t,) for t in range(ntime)]
-    with Pool(processes=num_processes, initializer=init_worker_sklearn, initargs=(stn_data, stn_predictor, [], ml_model, probflag, ml_settings, dynamic_predictors, train_index, test_index, indexmissing)) as pool:
+    with Pool(processes=num_processes, initializer=init_worker_sklearn, initargs=(stn_data, stn_predictor, [], ml_model, probflag, ml_settings, dynamic_predictors, train_index, test_index, indexmissing, master_seed)) as pool:
         result = pool.starmap(train_and_return_test_cv_timestep, items)
 
     # fill estimates to matrix
@@ -735,6 +739,9 @@ def train_and_return_test_grid_timestep(t):
     probflag = mppool_ini_dict_sk['probflag']
     dynamic_predictors = mppool_ini_dict_sk['dynamic_predictors']
     tar_predictor = mppool_ini_dict_sk['tar_predictor']
+    randseed = mppool_ini_dict_sk['randseed']
+
+    np.random.seed(randseed + t)
 
     nstn, ntime = np.shape(stn_data)
     nrow, ncol, npred = np.shape(tar_predictor)
@@ -757,7 +764,7 @@ def train_and_return_test_grid_timestep(t):
 
     return ytest
 
-def ML_regression_grid_multiprocessing(stn_data, stn_predictor, tar_predictor, ml_model, probflag, ml_settings={}, dynamic_predictors={}, num_processes=1):
+def ML_regression_grid_multiprocessing(stn_data, stn_predictor, tar_predictor, ml_model, probflag, ml_settings={}, dynamic_predictors={}, num_processes=1, master_seed=123456789):
     t1 = time.time()
 
     if len(dynamic_predictors) == 0:
@@ -768,10 +775,9 @@ def ML_regression_grid_multiprocessing(stn_data, stn_predictor, tar_predictor, m
     nrow, ncol, npred = np.shape(tar_predictor)
     estimates = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
 
-    ml_settings = {}
     # parallel regression
     items = [(t,) for t in range(ntime)]
-    with Pool(processes=num_processes, initializer=init_worker_sklearn, initargs=(stn_data, stn_predictor, tar_predictor, ml_model, probflag, ml_settings, dynamic_predictors, [], [], [])) as pool:
+    with Pool(processes=num_processes, initializer=init_worker_sklearn, initargs=(stn_data, stn_predictor, tar_predictor, ml_model, probflag, ml_settings, dynamic_predictors, [], [], [], master_seed)) as pool:
         result = pool.starmap(train_and_return_test_grid_timestep, items)
 
     # fill estimates to matrix
@@ -1249,9 +1255,9 @@ def main_regression(config, target):
             estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, gridcore_continuous[4:], probflag, sklearn_config[gridcore_continuous_short], predictor_dynamic, num_processes, importmodules)
         else:
             if target == 'cval':
-                estimates = ML_regression_crossvalidation_multiprocessing(stn_value, stn_predictor, gridcore_continuous, probflag, sklearn_config[gridcore_continuous_short], predictor_dynamic, n_splits, num_processes)
+                estimates = ML_regression_crossvalidation_multiprocessing(stn_value, stn_predictor, gridcore_continuous, probflag, sklearn_config[gridcore_continuous_short], predictor_dynamic, n_splits, num_processes, master_seed)
             else:
-                estimates = ML_regression_grid_multiprocessing(stn_value, stn_predictor, tar_predictor, gridcore_continuous, probflag, sklearn_config[gridcore_continuous_short], predictor_dynamic, num_processes)
+                estimates = ML_regression_grid_multiprocessing(stn_value, stn_predictor, tar_predictor, gridcore_continuous, probflag, sklearn_config[gridcore_continuous_short], predictor_dynamic, num_processes, master_seed)
 
         # constrain variables
         estimates = np.squeeze(estimates)
@@ -1305,9 +1311,9 @@ def main_regression(config, target):
                 estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, gridcore_classification[4:], probflag, sklearn_config[gridcore_continuous_short], predictor_dynamic, num_processes, importmodules)
             else:
                 if target == 'cval':
-                    estimates = ML_regression_crossvalidation_multiprocessing(stn_value, stn_predictor, gridcore_classification, probflag, sklearn_config[gridcore_classification_short], predictor_dynamic, n_splits, num_processes)
+                    estimates = ML_regression_crossvalidation_multiprocessing(stn_value, stn_predictor, gridcore_classification, probflag, sklearn_config[gridcore_classification_short], predictor_dynamic, n_splits, num_processes, master_seed)
                 else:
-                    estimates = ML_regression_grid_multiprocessing(stn_value, stn_predictor, tar_predictor, gridcore_classification, probflag, sklearn_config[gridcore_classification_short], predictor_dynamic, num_processes)
+                    estimates = ML_regression_grid_multiprocessing(stn_value, stn_predictor, tar_predictor, gridcore_classification, probflag, sklearn_config[gridcore_classification_short], predictor_dynamic, num_processes, master_seed)
 
             var_poe = var_name + '_poe'
             if estimates.ndim == 3:
