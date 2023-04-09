@@ -240,7 +240,7 @@ This list corresponds to `predictor_name_static_stn` but are static predictors o
 
 Dynamic predictors may need some processing, such as interpolation from dynamic grids to target grids and station points, or transformation of the raw dynamic predictor.
 
-The keyword `interp` accepts the following methods, enabled by `xarray.interp`: {"linear", "nearest", "zero", "slinear", "quadratic", "cubic", "polynomial"}. The default interpolation method is `nearest`.
+The keyword `interp` accepts the following methods, enabled by `xarray.interp`: {"linear", "nearest", "zero", "slinear", "quadratic", "cubic", "polynomial"}. The default interpolation method is `linear`.
 
 The keyword `transform` accepts methods defined in the transformation section.
 

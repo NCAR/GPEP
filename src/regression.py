@@ -392,7 +392,7 @@ def read_period_input_data(df_mapping, varnames):
         ds = ds[varnames]
         ds = ds.sel(time=slice(tartime[0], tartime[-1]))
         ds = ds.load()
-        ds = ds.interp(time=tartime, method='nearest')
+        ds = ds.interp(time=tartime, method='linear')
     return ds
 
 
@@ -400,7 +400,7 @@ def regrid_xarray(ds, tarlon, tarlat, target, method):
     # if target='1D', tarlon and tarlat are vector of station points
     # if target='2D', tarlon and tarlat are vector defining grids
 
-    default_method = 'nearest'
+    default_method = 'linear'
     if len(method) == 0:
         method = default_method
 
