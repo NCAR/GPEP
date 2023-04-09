@@ -36,9 +36,12 @@ def spcorr_grd(grid_lat, grid_lon, clen, outfile):
     # lon = np.arange(0, 12, 0.1)
     # grid_lat = np.tile(lat[:, np.newaxis], [1, 120])
     # grid_lon = np.tile(lon[np.newaxis, :], [100, 1])
-
     nspl1, nspl2 = grid_lat.shape
 
+    grid_lat = grid_lat.astype(np.float64) # important for high resolution
+    grid_lon = grid_lon.astype(np.float64)
+    # grid_lat = grid_lat.T # to reproduce Fortran GMET
+    # grid_lon = grid_lon.T
 
     # ----------------------------------------------------------------------------------------
     # (0) CHECK THAT SPCORR IS NOT POPULATED ALREADY
@@ -93,8 +96,8 @@ def spcorr_grd(grid_lat, grid_lon, clen, outfile):
                     # ------------------------------------------------------------------------------------
                     k = 0 # initialize the number of previous points generated to zero
                     # ! loop through points in the local neighbourhood
-                    for jsp1 in range(max(0, isp1-(incr*nloc)), min(isp1+(incr*nloc), nspl1)): #doubt
-                        for jsp2 in range(max(0, isp2-(incr*nloc)), min(isp2+(incr*nloc), nspl2)): #doubt
+                    for jsp1 in range(max(0, isp1-(incr*nloc)), min(isp1+(incr*nloc)+1, nspl1)): #doubt
+                        for jsp2 in range(max(0, isp2-(incr*nloc)), min(isp2+(incr*nloc)+1, nspl2)): #doubt
                             # ! check to see if the "local" point has been generated previously
                             if gmsk[jsp1, jsp2]:
                                 ipos[k] = jsp1
@@ -157,6 +160,12 @@ def spcorr_grd(grid_lat, grid_lon, clen, outfile):
                             twgt[0: k - 1] = gvec[0: k - 1]
                             # estimate weights
                             twgt[0: k - 1] = LU_Decomposition(corr, twgt)
+                            # or
+                            # indx, d = ludcmp(corr)
+                            # twgt[0: k - 1] = lubksb(corr, indx, twgt)
+                            # or
+                            # from regression import linearsolver
+                            # twgt = linearsolver(list(corr), np.shape(corr)[0], list(twgt))
                             # save weights and variance
                             wght[0: k - 1] = twgt[0: k - 1]
                             sdev = np.sqrt(1. - np.dot(gvec[0:k - 1], twgt[0: k - 1]))
