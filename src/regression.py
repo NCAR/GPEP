@@ -1065,7 +1065,7 @@ def main_regression(config, target):
 
 
     if master_seed <0:
-        master_seed = np.random.randint(1e10)
+        master_seed = np.random.randint(1e9)
     np.random.seed(master_seed)
 
     ########################################################################################################################
