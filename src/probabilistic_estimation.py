@@ -1,25 +1,27 @@
-# generate random fields
+### routines to generate ensembles (probabilistic estimation) from regression outputs
 
+# load libraries
+import os, sys, time, numbers
 import xarray as xr
 import numpy as np
 from scipy import special
-import os, sys, time
-import numbers
 from multiprocessing import Pool
 
 import random_field_FortranGMET as rf_FGMET
 from data_processing import data_transformation
 
+# ====== subroutines/ functions ======
 
-def perturb_estimates_withoccurrence(data, uncert, poo, rndnum, minrndnum=-3.99, maxrndnum=3.99):
-    data = data.copy()
-    uncert = uncert.copy()
-    poo = poo.copy()
-    rndnum = rndnum.copy()
-
+def perturb_estimates_withoccurrence(data, uncert, poe, rndnum, minrndnum=-3.99, maxrndnum=3.99):
+    data     = data.copy()
+    uncert   = uncert.copy()
+    poe      = poe.copy()
+    rndnum   = rndnum.copy()
+    
+    # initialize output array
     data_out = np.nan * np.zeros(data.shape, dtype=np.float32)
 
-    #### calculate conditioned precipitation probability: cprob
+    #### calculate conditional precipitation probability: cprob
     acorr = rndnum / np.sqrt(2)
     aprob = special.erfc(acorr)
     cprob = (2 - aprob) / 2
@@ -27,14 +29,16 @@ def perturb_estimates_withoccurrence(data, uncert, poo, rndnum, minrndnum=-3.99,
     cprob[cprob > 0.99997] = 0.
 
     ##### positive precipitation
-    index_positive = cprob >= (1 - poo)
-    cs = (cprob - (1 - poo)) / poo
-    cs[~index_positive] = np.nan  # because poo == 0 is not excluded in the matrix
+    index_positive = cprob >= (1 - poe)
+    cs = (cprob - (1 - poe)) / poe
+    cs[~index_positive] = np.nan  # because poe == 0 is not excluded in the matrix
+    
     # assign a small precipitation value to positive grids if their values = 0
     dtemp = data[index_positive]
     dtemp[dtemp < 0.1] = 0.1
     data[index_positive] = dtemp
     del dtemp
+    
     # generate random numbers
     cs[cs > 0.99997] = 0.99997
     cs[cs < 3e-5] = 3e-5
@@ -47,7 +51,7 @@ def perturb_estimates_withoccurrence(data, uncert, poo, rndnum, minrndnum=-3.99,
     data_out[index_positive] = data[index_positive] + rn[index_positive] * uncert[index_positive]
 
     ## zero precipitation
-    index_nonpositive = cprob < (1 - poo)
+    index_nonpositive = cprob < (1 - poe)
     data_out[index_nonpositive] = np.nanmin(data_out)
     del index_nonpositive, index_positive
 
@@ -55,7 +59,7 @@ def perturb_estimates_withoccurrence(data, uncert, poo, rndnum, minrndnum=-3.99,
 
 
 def perturb_estimates_general(data, uncert, rndnum, minrndnum=-3.99, maxrndnum=3.99):
-    data = data.copy()
+    data   = data.copy()
     uncert = uncert.copy()
     rndnum = rndnum.copy()
 
@@ -66,13 +70,14 @@ def perturb_estimates_general(data, uncert, rndnum, minrndnum=-3.99, maxrndnum=3
     return data_out
 
 
-def probabilistic_estimate_for_one_var(var_name, reg_estimate, reg_error, nearby_stn_max, poo, random_field, minrndnum, maxrndnum, transform_method, transform_setting, ds_out):
+def prob_estimate_for_one_var(var_name, reg_estimate, reg_error, nearby_stn_max, poe, random_field, minrndnum, maxrndnum, 
+                              transform_method, transform_setting, ds_out):
     # generate probabilistic estimates
-    if poo.shape == reg_estimate.shape:
-        ens_estimate = perturb_estimates_withoccurrence(reg_estimate, reg_error, poo, random_field, minrndnum, maxrndnum)
+    if poe.shape == reg_estimate.shape:
+        ens_estimate = perturb_estimates_withoccurrence(reg_estimate, reg_error, poe, random_field, minrndnum, maxrndnum)
         # back transformation
         if len(transform_method) > 0:
-            ens_estimate = data_transformation(ens_estimate, transform_method, transform_setting, 'retransform')
+            ens_estimate = data_transformation(ens_estimate, transform_method, transform_setting, 'back_transform')
             # variable and unit dependent ...
             # minprcp = 0.01
             # ens_estimate[ens_estimate < minprcp] = 0
@@ -84,7 +89,7 @@ def probabilistic_estimate_for_one_var(var_name, reg_estimate, reg_error, nearby
     if np.array(nearby_stn_max).shape == reg_estimate.shape:
         if len(transform_method) > 0:
             precip_err_cap = 0.2 # hard coded ...
-            nearby_stn_max = data_transformation(nearby_stn_max+reg_error*precip_err_cap, transform_method, transform_setting, 'retransform')
+            nearby_stn_max = data_transformation(nearby_stn_max+reg_error*precip_err_cap, transform_method, transform_setting, 'back_transform')
         else:
             nearby_stn_max = nearby_stn_max + reg_error * 2
         mask = ens_estimate > nearby_stn_max
@@ -107,7 +112,7 @@ def spcorr_structure(config):
 
     # parse and change configurations
     outpath_parent = config['outpath_parent']
-    path_ensemble = f'{outpath_parent}/ensemble_outputs'
+    path_ensemble = f'{outpath_parent}/ensembles/'
     os.makedirs(path_ensemble, exist_ok=True)
     config['path_ensemble'] = path_ensemble
     file_ens_prefix = f'{path_ensemble}/Ensemble_estimate_'
@@ -180,7 +185,7 @@ def spcorr_structure(config):
     print('Successful structure generation. Time cost (sec):', t2-t1)
 
 
-def generate_probabilistic_estimates_serial(config, member_range=[]):
+def generate_prob_estimates_serial(config, member_range=[]):
     # most time cost comes from field_rand
 
     t1 = time.time()
@@ -216,7 +221,16 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
     transform_settings = config['transform']
     ensemble_start = config['ensemble_start']
     ensemble_end = config['ensemble_end']
-    master_seed = config['master_seed']
+    if 'master_seed' in config:
+        master_seed = config['master_seed']
+    else:
+        master_seed = -1
+    
+    if 'append_date_to_output' in config:
+        append_date_to_output = config['append_date_to_output']
+    else:
+        append_date_to_output = False
+        
     datestamp = f"{config['date_start'].replace('-', '')}-{config['date_end'].replace('-', '')}"
 
     if 'target_vars_max_constrain' in config:
@@ -267,10 +281,10 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
     if master_seed >= 0:
         master_seed = master_seed + date0 # ensure different input batches have different seeds
     else:
-        master_seed = np.random.randint(1e10)
+        master_seed = np.random.randint(1e9)
 
-    seeds_rf = generate_random_numbers(master_seed, len(target_vars) * ensemble_number * ntime)
-    seeds_rf = np.reshape(seeds_rf, [len(target_vars), ensemble_number, ntime])
+    seeds_rf  = generate_random_numbers(master_seed, len(target_vars) * ensemble_number * ntime)
+    seeds_rf  = np.reshape(seeds_rf, [len(target_vars), ensemble_number, ntime])
     seeds_rf2 = {}
     for i in range(len(target_vars)):
         seeds_rf2[target_vars[i]] = seeds_rf[i, :, :]
@@ -281,11 +295,11 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
     # load data for regression
 
     allvar_auto_lag1_cc = {}
-    allvar_clen = {}
+    allvar_clen         = {}
     allvar_reg_estimate = {}
-    allvar_reg_error = {}
-    allvar_poo = {}
-    nearby_stn_max = {}
+    allvar_reg_error    = {}
+    allvar_poe          = {}
+    nearby_stn_max      = {}
 
     # auto correlation
     with xr.open_dataset(file_stn_cc) as ds_stn_cc:
@@ -306,13 +320,13 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
             else:
                 allvar_reg_estimate[var_name] = ds_grid_reg[var_name].values
             if var_name in target_vars_WithOccurrence:
-                var_poo = var_name + '_poo'
-                allvar_poo[var_name] = ds_grid_reg[var_poo].values
+                var_poe = var_name + '_poe'
+                allvar_poe[var_name] = ds_grid_reg[var_poe].values
             else:
-                allvar_poo[var_name] = np.array([])
+                allvar_poe[var_name] = np.array([])
 
-        lat = ds_grid_reg.y.values
-        lon = ds_grid_reg.x.values
+        lat     = ds_grid_reg.y.values
+        lon     = ds_grid_reg.x.values
         tartime = ds_grid_reg.time.values
 
     # auxiliary info: estimate error and nearby_stn_max
@@ -373,8 +387,8 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
     spcorr_ipos = {}
     spcorr_wght = {}
     spcorr_sdev = {}
-    iorder = {}
-    jorder = {}
+    iorder      = {}
+    jorder      = {}
     for var_name in target_vars:
         file_spcor = f'{file_spcorr_prefix}{var_name}.npz'
         dtmp = np.load(file_spcor, allow_pickle=True)
@@ -382,15 +396,19 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
         spcorr_ipos[var_name] = dtmp['spcorr_ipos']
         spcorr_wght[var_name] = dtmp['spcorr_wght']
         spcorr_sdev[var_name] = dtmp['spcorr_sdev']
-        iorder[var_name] = dtmp['iorder']
-        jorder[var_name] = dtmp['jorder']
+        iorder[var_name]      = dtmp['iorder']
+        jorder[var_name]      = dtmp['jorder']
 
     ########################################################################################################################
-    # probabilistic estimates
+    # generate ensemble members (probabilistic estimates)
 
     for ens in range(member_range[0], member_range[1]):
         # define output file name
-        outfile_ens = f'{file_ens_prefix}{datestamp}_{ens + ensemble_start:03}.nc'
+        if append_date_to_output == True:
+            outfile_ens = f'{file_ens_prefix}{datestamp}_{ens + ensemble_start:03}.nc'
+        else:
+            outfile_ens = f'{file_ens_prefix}{ens + ensemble_start:03}.nc'
+            
         if os.path.isfile(outfile_ens):
             print(f'Ensemble outfile exists: {outfile_ens}')
             if overwrite_ens == True:
@@ -402,11 +420,11 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
         # initialize outputs
         ds_out = xr.Dataset()
         ds_out.coords['time'] = tartime
-        ds_out.coords['lon'] = lon
-        ds_out.coords['lat'] = lat
-        ds_out.coords['z'] = [0]
+        ds_out.coords['lon']  = lon
+        ds_out.coords['lat']  = lat
+        ds_out.coords['z']    = [0]
 
-        # loop variables
+        # loop over variables
 
         for vn in range(len(target_vars_independent)):
 
@@ -416,16 +434,19 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
             # generate random numbers
             random_field = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
             for i in range(ntime):
-                rndi = rf_FGMET.field_rand(spcorr_jpos[var_name], spcorr_ipos[var_name], spcorr_wght[var_name], spcorr_sdev[var_name], iorder[var_name], jorder[var_name], seeds_rf[var_name][ens, i])
+                rndi = rf_FGMET.field_rand(spcorr_jpos[var_name], spcorr_ipos[var_name], spcorr_wght[var_name], spcorr_sdev[var_name],
+                                           iorder[var_name], jorder[var_name], seeds_rf[var_name][ens, i])
                 if i == 0:
                     random_field[:, :, i] = rndi
                 else:
                     random_field[:, :, i] = random_field[:, :, i - 1] * allvar_auto_lag1_cc[var_name] + np.sqrt(1 - allvar_auto_lag1_cc[var_name] ** 2) * rndi
 
             random_field[np.isnan(allvar_reg_estimate[var_name])] = np.nan
-            # probabilistic estimation
-            ds_out = probabilistic_estimate_for_one_var(var_name, allvar_reg_estimate[var_name], allvar_reg_error[var_name], nearby_stn_max[var_name],
-                                                        allvar_poo[var_name], random_field, minrndnum, maxrndnum, transform_vars[var_name], transform_settings[transform_vars[var_name]], ds_out)
+            # probabilistic estimation (ensemble generation)
+            ds_out = prob_estimate_for_one_var(var_name, allvar_reg_estimate[var_name], allvar_reg_error[var_name],
+                                               nearby_stn_max[var_name], allvar_poe[var_name], random_field, 
+                                               minrndnum, maxrndnum, transform_vars[var_name],
+                                               transform_settings[transform_vars[var_name]], ds_out)
 
             if output_randomfield == True:
                 ds_out[var_name + '_rnd'] = xr.DataArray(random_field, dims=('lat', 'lon', 'time'))
@@ -439,15 +460,19 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
                     # generate random numbers
                     random_field_dep = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
                     for i in range(ntime):
-                        rndi = rf_FGMET.field_rand(spcorr_jpos[var_name_dep], spcorr_ipos[var_name_dep], spcorr_wght[var_name_dep], spcorr_sdev[var_name_dep], iorder[var_name_dep], jorder[var_name_dep], seeds_rf[var_name_dep][ens, i])
+                        rndi = rf_FGMET.field_rand(spcorr_jpos[var_name_dep], spcorr_ipos[var_name_dep], spcorr_wght[var_name_dep],
+                                                   spcorr_sdev[var_name_dep], iorder[var_name_dep], jorder[var_name_dep], 
+                                                   seeds_rf[var_name_dep][ens, i])
                         random_field_dep[:, :, i] = rndi
-                    random_field_dep = random_field * target_vars_dependent_cross_cc[d] + np.sqrt(1 - target_vars_dependent_cross_cc[d]**2)*random_field_dep
+                    random_field_dep = random_field * target_vars_dependent_cross_cc[d] + np.sqrt(1 - target_vars_dependent_cross_cc[d]**2) * random_field_dep
                     del random_field
                     random_field_dep[np.isnan(allvar_reg_estimate[var_name_dep])] = np.nan
 
                     # probabilistic estimation
-                    ds_out = probabilistic_estimate_for_one_var(var_name_dep, allvar_reg_estimate[var_name_dep], allvar_reg_error[var_name_dep], nearby_stn_max[var_name],
-                                                                allvar_poo[var_name_dep], random_field_dep, minrndnum, maxrndnum, transform_vars[var_name_dep], transform_settings[transform_vars[var_name_dep]], ds_out)
+                    ds_out = prob_estimate_for_one_var(var_name_dep, allvar_reg_estimate[var_name_dep], allvar_reg_error[var_name_dep],
+                                                       nearby_stn_max[var_name], allvar_poe[var_name_dep], random_field_dep, 
+                                                       minrndnum, maxrndnum, transform_vars[var_name_dep],
+                                                       transform_settings[transform_vars[var_name_dep]], ds_out)
 
                     if output_randomfield == True:
                         ds_out[var_name + '_rnd'] = xr.DataArray(random_field_dep, dims=('lat', 'lon', 'time'))
@@ -461,14 +486,15 @@ def generate_probabilistic_estimates_serial(config, member_range=[]):
         ds_out.to_netcdf(outfile_ens, encoding=encoding)
 
     t2 = time.time()
-    print(f'Complete probabilistic estimation of {target_vars} with linked vars {linkvar} for member range {member_range_2}. Time cost (sec): {t2-t1}')
+    print(f'Complete prob. estimation (ensemble generation) of {target_vars} with linked vars {linkvar} for member range {member_range_2}.')
+    print(f'Time cost (s): {t2-t1}')
 
-def generate_probabilistic_estimates(config):
+def generate_prob_estimates(config):
     t1 = time.time()
 
     ensemble_start = config['ensemble_start']
-    ensemble_end = config['ensemble_end']
-    num_processes = config['num_processes']
+    ensemble_end   = config['ensemble_end']
+    num_processes  = config['num_processes']
 
     print('#' * 50)
     print('Probabilistic estimation')
@@ -477,7 +503,7 @@ def generate_probabilistic_estimates(config):
     print('Number of processes:', num_processes)
 
     if ensemble_start<0 or ensemble_end<0:
-        print('Stop generating ensemble estimates because ensemble_start or ensemble_start is negative.')
+        print('Error: ensemble_start or ensemble_start is negative.')
         return
 
     spcorr_structure(config)
@@ -485,9 +511,9 @@ def generate_probabilistic_estimates(config):
     ensemble_number = ensemble_end - ensemble_start + 1
     items = [(config, [e, e+1]) for e in range(ensemble_number)]
     with Pool(num_processes) as pool:
-        pool.starmap(generate_probabilistic_estimates_serial, items)
+        pool.starmap(generate_prob_estimates_serial, items)
 
     t2 = time.time()
-    print('Time cost (seconds):', t2 - t1)
-    print('Successful probabilistic estimation!\n\n')
+    print('Time cost (s):', t2 - t1)
+    print('Probabilistic estimation (ensemble generation) completed successfully!\n\n')
 

@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     ########################################################################################################################
     # assemble individual stations and station attributes (e.g., lat, lon) to one netcdf file
-    config = data_processing.assemble_fortran_GMET_stns_to_one_file(config)
+    config = data_processing.merge_stndata_into_single_file(config)
 
     ########################################################################################################################
     # get near station info for each station/grid
@@ -34,31 +34,31 @@ if __name__ == '__main__':
     config = weight_calculation.calculate_weight_using_nearstn_info(config)
 
     ########################################################################################################################
-    # regression:
-    # cross validation station regression (i.e., at station points)
+    # perform regression
+    # (1) estimate predictive uncertainty using cross-validated (i.e., leave one out, LOO) regression at station points 
     config = regression.main_regression(config, 'loo')
 
-    # grid regression
+    # (2) estimate regression coefficients at all grid points
     config = regression.main_regression(config, 'grid')
 
     ########################################################################################################################
     # probabilistic / ensemble estimation
     if config['ensemble_flag'] == False:
-        print('ensemble_flag if false in the configuration file. No need to generate ensemble estimation.')
+        print('ensemble_flag is false in the configuration file -- ensemble generation will be skipped.')
+        
     else:
         ########################################################################################################################
-        # get uncertainty estimation based on difference between cross validation station regression estimates and station observations
-        # interpolation from points to grids
+        # estimate gridcell uncertainty based on interpolating estimation error from station locations (the LOO regression)
         config = probabilistic_auxiliary.extrapolate_auxiliary_info((config))
 
         ########################################################################################################################
-        # probabilistic estimation
+        # probabilistic estimation (ensemble generation)
 
         # 1. get space and time correlations
         config = data_correlation.station_space_time_correlation(config)
 
         # 2. probabilistic estimation
-        config = probabilistic_estimation.generate_probabilistic_estimates(config)
+        config = probabilistic_estimation.generate_prob_estimates(config)
 
-    print('Successfully finish the program!')
+    print('Successfully finished PyGMET run!')
 

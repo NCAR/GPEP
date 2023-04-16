@@ -1,9 +1,9 @@
 # generate random numbers
-
 import numpy as np
 
-# random field generation using Fortran GMET codes
-# translation from: https://github.com/NCAR/GMET/blob/master/source/ens_generation/spcorr_grd.f90, and https://github.com/NCAR/GMET/blob/master/source/ens_generation/field_rand.f90
+# random field generation using GMET v2.0 codes
+# translation from: https://github.com/NCAR/GMET/blob/master/source/ens_generation/spcorr_grd.f90
+#   and https://github.com/NCAR/GMET/blob/master/source/ens_generation/field_rand.f90
 
 def LU_Decomposition(a, b):
     # replace Fortran ludcmp and lubksb
@@ -39,11 +39,9 @@ def spcorr_grd(grid_lat, grid_lon, clen, outfile):
 
     nspl1, nspl2 = grid_lat.shape
 
-
     # ----------------------------------------------------------------------------------------
     # (0) CHECK THAT SPCORR IS NOT POPULATED ALREADY
     # ----------------------------------------------------------------------------------------
-
 
     # ----------------------------------------------------------------------------------------
     # (1) DEFINE HYPER-PARAMETERS
@@ -170,9 +168,8 @@ def spcorr_grd(grid_lat, grid_lon, clen, outfile):
                     spcorr_wght[isp1, isp2] = wght[0:npts-1]
                     spcorr_sdev[isp1, isp2] = sdev
 
-    # save structure to output file
+    # save structure to output file (npz format)
     np.savez_compressed(outfile, spcorr_ipos=spcorr_ipos, spcorr_jpos=spcorr_jpos, spcorr_wght=spcorr_wght, spcorr_sdev=spcorr_sdev, iorder=iorder, jorder=jorder)
-
 
 
 def field_rand(spcorr_jpos, spcorr_ipos, spcorr_wght, spcorr_sdev, iorder, jorder, seed=np.nan):
