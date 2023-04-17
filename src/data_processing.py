@@ -92,6 +92,8 @@ def assemble_fortran_GMET_stns_to_one_file(config):
 
     if 'transform_vars' in config:
         transform_vars = config['transform_vars']
+        if not isinstance(transform_vars, list):
+            transform_vars = [transform_vars] * len(target_vars)
     else:
         transform_vars = [''] * len(target_vars)
 

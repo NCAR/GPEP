@@ -164,18 +164,17 @@ def get_near_station_info(config):
 
     num_processes = config['num_processes']
 
+    stn_lat_name = config['stn_lat_name']
+    stn_lon_name = config['stn_lon_name']
+
+    grid_lat_name = config['grid_lat_name']
+    grid_lon_name = config['grid_lon_name']
+    grid_mask_name = config['grid_mask_name']
+
     if 'overwrite_stninfo' in config:
         overwrite_stninfo = config['overwrite_stninfo']
     else:
         overwrite_stninfo = False
-
-    # default settings
-    stn_lat_name = 'lat'
-    stn_lon_name = 'lon'
-
-    grid_lat_name = 'latitude'
-    grid_lon_name = 'longitude'
-    grid_mask_name = 'mask'
 
     print('#' * 50)
     print('Get near station information')
@@ -225,8 +224,8 @@ def get_near_station_info(config):
     lat_grid = ds_domain[grid_lat_name].values
     lon_grid = ds_domain[grid_lon_name].values
     mask_grid = ds_domain[grid_mask_name].values
-    ds_domain.coords['y'] = lat_grid[:, 0]
-    ds_domain.coords['x'] = lon_grid[0, :]
+    ds_domain.coords['y'] = np.arange(lat_grid.shape[0])
+    ds_domain.coords['x'] = np.arange(lat_grid.shape[1])
 
     # initialize output
     ds_nearinfo = ds_domain.copy()

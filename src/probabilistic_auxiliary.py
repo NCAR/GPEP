@@ -119,18 +119,24 @@ def extrapolate_auxiliary_info(config):
     file_grid_auxiliary = config['file_grid_auxiliary']
 
     target_vars = config['target_vars']
-    transform_vars = config['transform_vars']
+    if 'transform_vars' in config:
+        transform_vars = config['transform_vars']
+    else:
+        transform_vars = [''] * len(target_vars)
+
+    grid_lat_name = config['grid_lat_name']
+    grid_lon_name = config['grid_lon_name']
 
     if 'target_vars_max_constrain' in config:
         target_vars_max_constrain = config['target_vars_max_constrain']
     else:
         target_vars_max_constrain = []
 
-    if 'overwrite_loo_reg' in config:
+    if 'overwrite_cv_reg' in config:
         # because error is calculated from loo
-        overwrite_loo_reg = config['overwrite_loo_reg']
+        overwrite_cv_reg = config['overwrite_cv_reg']
     else:
-        overwrite_loo_reg = False
+        overwrite_cv_reg = False
 
     print('#' * 50)
     print(f'Station error interpolation')
@@ -143,10 +149,10 @@ def extrapolate_auxiliary_info(config):
 
     if os.path.isfile(file_grid_auxiliary):
         print('Note! Output gridded error file exists')
-        if overwrite_loo_reg == True:
-            print('overwrite_loo_reg is True. Continue.')
+        if overwrite_cv_reg == True:
+            print('overwrite_cv_reg is True. Continue.')
         else:
-            print('overwrite_loo_reg is False. Skip regression.')
+            print('overwrite_cv_reg is False. Skip regression.')
             return config
 
     ########################################################################################################################
@@ -162,6 +168,8 @@ def extrapolate_auxiliary_info(config):
     ds_out.coords['time'] = timeaxis
     ds_out.coords['x'] = xaxis
     ds_out.coords['y'] = yaxis
+    ds_out[grid_lat_name] = ds_nearinfo[grid_lat_name]
+    ds_out[grid_lon_name] = ds_nearinfo[grid_lon_name]
 
     ########################################################################################################################
     # loop variables
