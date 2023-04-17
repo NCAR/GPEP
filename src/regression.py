@@ -975,10 +975,10 @@ def main_regression(config, target):
             outfile = f'{path_regression}/{case_name}_stn_CV_regression_{datestamp}.nc'  # leave one out regression
         else:
             outfile = f'{path_regression}/{case_name}_stn_CV_regression.nc'
-
-        config['file_loo_reg'] = outfile
-        if 'overwrite_cv_reg' in config:
-            overwrite_flag = config['overwrite_cv_reg']
+        config['file_cval_reg'] = outfile
+        
+        if 'overwrite_stn_cv_reg' in config:
+            overwrite_flag = config['overwrite_stn_cv_reg']
         else:
             overwrite_flag = False
         predictor_name_static_target = config['predictor_name_static_stn']
@@ -1090,7 +1090,7 @@ def main_regression(config, target):
         if overwrite_flag == True:
             print('overwrite_flag is True. Continue.')
         else:
-            print('overwrite_flag is False. Skip regression.')
+            print('overwrite_flag is False. Skip regression.\n')
             return config
 
     dynamic_flag = initial_check_dynamic_predictor(dynamic_predictor_name, dynamic_predictor_filelist, target_vars)

@@ -113,17 +113,17 @@ def merge_stndata_into_single_file(config):
     print('#' * 50)
     print('Merging individual station files to one single file')
     print('#' * 50)
-    print('Input station list:  ', input_stn_list)
-    print('Input station folder:', input_stn_path)
-    print('Output station file: ', file_allstn)
-    print('Target variables:    ', input_vars)
+    print('Input station list:     ', input_stn_list)
+    print('Input station folder:   ', input_stn_path)
+    print('Output station file:    ', file_allstn)
+    print('Target variables:       ', input_vars)
 
     if os.path.isfile(file_allstn):
         print('NOTE: Merged station file exists')
         if overwrite_merged_stnfile == True:
             print('overwrite_merged_stnfile is True. Continue.')
         else:
-            print('overwrite_merged_stnfile is False. Skip station merging')
+            print('overwrite_merged_stnfile is False. Skip station merging.\n')
             return config
 
     # load station data

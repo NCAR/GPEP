@@ -111,11 +111,11 @@ def spcorr_structure(config):
     t1 = time.time()
 
     # parse and change configurations
-    outpath_parent = config['outpath_parent']
-    path_ensemble = f'{outpath_parent}/ensembles/'
+    outpath_parent            = config['outpath_parent']
+    path_ensemble             = f'{outpath_parent}/ensembles/'
     os.makedirs(path_ensemble, exist_ok=True)
-    config['path_ensemble'] = path_ensemble
-    file_ens_prefix = f'{path_ensemble}/Ensemble_estimate_'
+    config['path_ensemble']   = path_ensemble
+    file_ens_prefix           = f'{path_ensemble}/Ensemble_estimate_'    # this may get overwritten before use
     config['file_ens_prefix'] = file_ens_prefix
 
 
@@ -127,14 +127,12 @@ def spcorr_structure(config):
     config['file_spcorr_prefix'] = file_spcorr_prefix
 
     # in/out information to this function
-    file_stn_cc = config['file_stn_cc']
-    file_grid_reg = config['file_grid_reg']
+    file_stn_cc        = config['file_stn_cc']
+    file_grid_reg      = config['file_grid_reg']
     file_spcorr_prefix = file_spcorr_prefix
-
-    target_vars = config['target_vars']
-
-    grid_lat_name = config['grid_lat_name']
-    grid_lon_name = config['grid_lon_name']
+    target_vars        = config['target_vars']
+    grid_lat_name      = config['grid_lat_name']
+    grid_lon_name      = config['grid_lon_name']
 
     if 'clen' in config:
         clen_config = config['clen']
@@ -174,7 +172,7 @@ def spcorr_structure(config):
                 _ = os.remove(file_spcor)
                 rf_FGMET.spcorr_grd(grid_lat, grid_lon, allvar_clen[var_name], file_spcor)
             else:
-                print('overwrite_spcorr is False. Skip spcorr generation.')
+                print('overwrite_spcorr is False. Skip spcorr generation.\n')
                 continue
         else:
             print('Creating spcorr outfile:', file_spcor)
@@ -190,34 +188,31 @@ def generate_prob_estimates_serial(config, member_range=[]):
     t1 = time.time()
 
     # parse and change configurations
-    case_name = config['case_name']
-
-    outpath_parent = config['outpath_parent']
-    path_ensemble = f'{outpath_parent}/ensemble_outputs'
+    case_name                 = config['case_name']
+    outpath_parent            = config['outpath_parent']
+    path_ensemble             = f'{outpath_parent}/ensembles/'
     os.makedirs(path_ensemble, exist_ok=True)
-    config['path_ensemble'] = path_ensemble
-    file_ens_prefix = f'{path_ensemble}/{case_name}_Ensemble_'
+    config['path_ensemble']   = path_ensemble
+    file_ens_prefix           = f'{path_ensemble}/{case_name}_ensMember_'
     config['file_ens_prefix'] = file_ens_prefix
 
-
-    path_spcorr = f'{outpath_parent}/spcorr'
+    path_spcorr                  = f'{outpath_parent}/spcorr'
     os.makedirs(path_spcorr, exist_ok=True)
-    config['path_rfweight'] = path_spcorr
-
-    file_spcorr_prefix = f'{path_spcorr}/spcorr_'
+    config['path_rfweight']      = path_spcorr
+    file_spcorr_prefix           = f'{path_spcorr}/spcorr_'
     config['file_spcorr_prefix'] = file_spcorr_prefix
 
     # in/out information to this function
-    file_stn_cc = config['file_stn_cc']
-    file_grid_reg = config['file_grid_reg']
+    file_stn_cc         = config['file_stn_cc']
+    file_grid_reg       = config['file_grid_reg']
     file_grid_auxiliary = config['file_grid_auxiliary']
-    file_ens_prefix = config['file_ens_prefix']
-    file_spcorr_prefix = file_spcorr_prefix
-
-    target_vars = config['target_vars']
+    #file_ens_prefix     = config['file_ens_prefix']   # redundant
+    #file_spcorr_prefix  = file_spcorr_prefix
+    ensemble_start      = config['ensemble_start']
+    ensemble_end        = config['ensemble_end']
+    target_vars         = config['target_vars']
     target_vars_WithProbability = config['target_vars_WithProbability']
-    ensemble_start = config['ensemble_start']
-    ensemble_end = config['ensemble_end']
+    
     if 'master_seed' in config:
         master_seed = config['master_seed']
     else:
@@ -447,7 +442,7 @@ def generate_prob_estimates_serial(config, member_range=[]):
             if overwrite_ens == True:
                 print('overwrite_ens is True. Overwrite it.')
             else:
-                print('overwrite_ens is False. Skip probabilistic estimation.')
+                print('overwrite_ens is False. Skip probabilistic estimation.\n')
                 continue
 
         # initialize outputs

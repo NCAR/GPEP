@@ -267,6 +267,6 @@ def get_near_station_info(config):
 
     t2 = time.time()
     print('Time cost (s):', t2 - t1)
-    print('Completed search of station nearest neighbors!\n\n')
+    print('Completed search of station nearest neighbors!\n')
 
     return config
