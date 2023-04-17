@@ -605,7 +605,7 @@ def ML_regression_crossvalidation(stn_data, stn_predictor, ml_model, probflag, m
     estimates0[~indexmissing, :] = estimates
 
     t2 = time.time()
-    print('Regression time cost (sec):', t2-t1)
+    print('Regression time cost (s):', t2-t1)
     return np.squeeze(estimates0)
 
 def init_worker_sklearn(stn_data, stn_predictor, tar_predictor, ml_model, probflag, ml_settings, dynamic_predictors, train_index, test_index, indexmissing, randseed=123456789):
@@ -901,10 +901,10 @@ def regression_for_blocks(r1, r2, c1, c2):
 
     return ydata_tar
 
-#def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag, 
-#                                           settings, dynamic_predictors={}, num_processes=4, importmodules=[]):
 def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag, 
-                                           settings, dynamic_predictors={}, num_processes=4):
+                                           settings, dynamic_predictors={}, num_processes=4, importmodules=[]):
+#def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag, 
+#                                           settings, dynamic_predictors={}, num_processes=4):
     t1 = time.time()
 
     if len(dynamic_predictors) == 0:
@@ -920,13 +920,13 @@ def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearInde
     else:
         items = [(0, nrow, c, c + 1) for c in range(ncol)]
 
-    #with Pool(processes=num_processes, initializer=init_worker, initargs=(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, 
-    #                                                                      tar_predictor, method, probflag, settings, dynamic_predictors,
-    #                                                                      importmodules)) as pool:
     with Pool(processes=num_processes, initializer=init_worker, initargs=(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, 
-                                                                          tar_predictor, method, probflag, settings, 
-                                                                          dynamic_predictors)) as pool:        
-    result =       pool.starmap(regression_for_blocks, items)
+                                                                          tar_predictor, method, probflag, settings, dynamic_predictors,
+                                                                          importmodules)) as pool:
+    #with Pool(processes=num_processes, initializer=init_worker, initargs=(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, 
+    #                                                                      tar_predictor, method, probflag, settings, 
+    #                                                                      dynamic_predictors)) as pool:        
+        result = pool.starmap(regression_for_blocks, items)
 
     # fill estimates to matrix
     estimates = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
@@ -1070,12 +1070,12 @@ def main_regression(config, target):
     dynamic_grid_lon_name = config['dynamic_grid_lon_name']
 
     print('#' * 50)
-    if(target == 'loo'):
+    if(target == 'cval'):
         print('step 1:  station point cross-validated regression to estimate predictive uncertainty')
     elif(target == 'grid'):
         print('step 2:  regression for all grid points')
     else:
-        print('regression target not recognized')
+        print('regression target not recognized:', target)
     print('#' * 50)
     print('Input file_allstn:      ', file_allstn)
     print('Input file_stn_nearinfo:', file_stn_nearinfo)
@@ -1288,7 +1288,7 @@ def main_regression(config, target):
         if gridcore_continuous.startswith('LWR:'):
             estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor,
                                                                gridcore_continuous[4:], probflag, sklearn_config[gridcore_continuous_short],
-                                                               predictor_dynamic, num_processes, importmodules)
+                                                               predictor_dynamic, num_processes)
         else:
             if target == 'cval':
                 estimates = ML_regression_crossvalidation_multiprocessing(stn_value, stn_predictor, gridcore_continuous, probflag,
@@ -1315,7 +1315,7 @@ def main_regression(config, target):
                 var_name_save = var_name_trans
             else:
                 var_name_save = var_name
-                estimates = data_transformation(estimates, transform_vars[vn], transform_settings[transform_vars[vn]], 'retransform')
+                estimates = data_transformation(estimates, transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
         else:
             var_name_save = var_name
 
@@ -1327,7 +1327,7 @@ def main_regression(config, target):
             # evalution
             dtmp1 = ds_stn[var_name].values
             if (len(var_name_trans) > 0) and (backtransform == False):
-                dtmp2 = data_transformation(estimates, transform_vars[vn], transform_settings[transform_vars[vn]], 'retransform')
+                dtmp2 = data_transformation(estimates, transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
             else:
                 dtmp2 = estimates
 

@@ -34,9 +34,9 @@ def data_transformation(data, method, settings, mode='transform'):
         elif mode == 'back_transform':
             data = boxcox_back_transform(data, settings['exponent'])
         else:
-            sys.exit('Unknown transformation mode')
+            print('Unknown transformation mode: entry=', mode); sys.exit()
     else:
-        sys.exit('Unknown transformation method')
+        print('Unknown transformation method: entry=', method); sys.exit()
     return data
 
 

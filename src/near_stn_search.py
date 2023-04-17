@@ -92,7 +92,8 @@ def find_nearstn_for_Grids(lat_stn, lon_stn, lat_grid, lon_grid, mask_grid, try_
     with multiprocessing.Pool(processes=num_processes) as pool:
         results = []
         for chunk in chunks:
-            result = pool.apply_async(process_chunk, (chunk, lat_stn, lon_stn, lat_grid, lon_grid, mask_grid, try_radius, nearstn_min, nearstn_max, initial_distance))
+            result = pool.apply_async(process_chunk, (chunk, lat_stn, lon_stn, lat_grid, lon_grid, mask_grid, try_radius, 
+                                                      nearstn_min, nearstn_max, initial_distance))
             results.append(result)
 
         for result, chunk in zip(results, chunks):
@@ -163,25 +164,16 @@ def get_near_station_info(config):
     # target_vars = ['prcp', 'tmean', 'trange']
     target_vars        = config['target_vars']
     num_processes      = config['num_processes']
-
-    stn_lat_name = config['stn_lat_name']
-    stn_lon_name = config['stn_lon_name']
-
-    grid_lat_name = config['grid_lat_name']
-    grid_lon_name = config['grid_lon_name']
-    grid_mask_name = config['grid_mask_name']
+    stn_lat_name       = config['stn_lat_name']
+    stn_lon_name       = config['stn_lon_name']
+    grid_lat_name      = config['grid_lat_name']
+    grid_lon_name      = config['grid_lon_name']
+    grid_mask_name     = config['grid_mask_name']
 
     if 'overwrite_stninfo' in config:
         overwrite_stninfo = config['overwrite_stninfo']
     else:
         overwrite_stninfo = False
-
-    # default settings
-    stn_lat_name   = 'lat'
-    stn_lon_name   = 'lon'
-    grid_lat_name  = 'latitude'
-    grid_lon_name  = 'longitude'
-    grid_mask_name = 'mask'
 
     print('#' * 50)
     print('Get near station information')
