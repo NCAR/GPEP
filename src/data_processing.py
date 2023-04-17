@@ -18,8 +18,7 @@ def boxcox_transform(data, texp=4):
     # datat[data < -3] = -3
     return datat
 
-
-def boxcox_retransform(data, texp=4):
+def boxcox_back_transform(data, texp=4):
     # transform prcp to approximate normal distribution
     # mode: box-cox; power-law
     if not isinstance(data, np.ndarray):
@@ -31,11 +30,11 @@ def boxcox_retransform(data, texp=4):
 def data_transformation(data, method, settings, mode='transform'):
     if method == 'boxcox':
         if mode == 'transform':
-            data = boxcox_transform(data, settings['exp'])
-        elif mode == 'retransform':
-            data = boxcox_retransform(data, settings['exp'])
+            data = boxcox_transform(data, settings['exponent'])
+        elif mode == 'back_transform':
+            data = boxcox_back_transform(data, settings['exponent'])
         else:
-            sys.exit('Unknow transformation mode')
+            sys.exit('Unknown transformation mode')
     else:
         sys.exit('Unknown transformation method')
     return data
@@ -44,19 +43,19 @@ def data_transformation(data, method, settings, mode='transform'):
 ########################################################################################################################
 # input station data processing
 
-def assemble_fortran_GMET_stns_to_one_file(config):
-    # Fortran GMET assumes that each station has an independent file. PyGMET assumes that point-based stations are
-    # small concerning data size, and thus it is more convenient to assemble all stations in one file
+def merge_stndata_into_single_file(config):
+    # GMET v2.0 assumes that each station has an independent file. PyGMET will merge the station data into one file,
+    #   which can speed up i/o in subsequent runs of PYGMET using the same dataset. 
     t1 = time.time()
 
     # parse and change configurations
     outpath_parent = config['outpath_parent']
-    path_stn_info = f'{outpath_parent}/stn_info'
+    path_stn_info  = f'{outpath_parent}/stn_info'
+    file_allstn    = f'{path_stn_info}/all_station_data.nc'     # set default name for a merged station data file
     os.makedirs(path_stn_info, exist_ok=True)
-    file_allstn = f'{path_stn_info}/all_stn.nc'
 
     config['path_stn_info'] = path_stn_info
-    config['file_allstn'] = file_allstn
+    config['file_allstn']   = file_allstn             # store default name for a merged station data file in config
 
     # in/out information to this function
     if 'input_stn_list' in config:
@@ -68,12 +67,12 @@ def assemble_fortran_GMET_stns_to_one_file(config):
     else:
         input_stn_path = ''
     if 'input_stn_all' in config:
-        input_stn_all = config['input_stn_all']
+        input_stn_all  = config['input_stn_all']
     else:
-        input_stn_all = ''
+        input_stn_all  = ''
 
     file_allstn = config['file_allstn']
-    input_vars = config['input_vars']
+    input_vars  = config['input_vars']
     target_vars = config['target_vars']
 
     if 'minRange_vars' in config:
@@ -98,34 +97,40 @@ def assemble_fortran_GMET_stns_to_one_file(config):
         transform_vars = [''] * len(target_vars)
 
     transform_settings = config['transform']
-    mapping_InOut_var = config['mapping_InOut_var']
+    mapping_InOut_var  = config['mapping_InOut_var']
 
     if 'overwrite_stninfo' in config:
         overwrite_stninfo = config['overwrite_stninfo']
     else:
         overwrite_stninfo = False
+        
+    if 'overwrite_merged_stnfile' in config:
+        overwrite_merged_stnfile = config['overwrite_merged_stnfile']
+    else:
+        overwrite_merged_stnfile = True
 
     # settings and prints
     print('#' * 50)
-    print('Assembling individual station files to one single file')
+    print('Merging individual station files to one single file')
     print('#' * 50)
-    print('Input station list:', input_stn_list)
+    print('Input station list:  ', input_stn_list)
     print('Input station folder:', input_stn_path)
-    print('Output station file:', file_allstn)
-    print('Target variables:', input_vars)
+    print('Output station file: ', file_allstn)
+    print('Target variables:    ', input_vars)
 
     if os.path.isfile(file_allstn):
-        print('Note! Output station file exists')
-        if overwrite_stninfo == True:
-            print('overwrite_stninfo is True. Continue.')
+        print('NOTE: Merged station file exists')
+        if overwrite_merged_stnfile == True:
+            print('overwrite_merged_stnfile is True. Continue.')
         else:
-            print('overwrite_stninfo is False. Skip station assembling.')
+            print('overwrite_merged_stnfile is False. Skip station merging')
             return config
 
     # load station data
-    if os.path.isfile(input_stn_all):
-        print('input_stn_all exists:', input_stn_all)
-        print('reading station information from input_stn_all instead of individual files')
+    if 'input_stn_all' in config and os.path.isfile(input_stn_all):
+        print('input_stn_all exists:    ', input_stn_all)
+        print('reading station info from', input_stn_all, 'instead of individual files')
+        #print('reading station information from', file_allstn, 'instead of individual files')  # this looks incorrect
 
         ds_stn = xr.load_dataset(input_stn_all)
 
@@ -135,11 +140,10 @@ def assemble_fortran_GMET_stns_to_one_file(config):
                 ds_stn[col] = xr.DataArray(df_stn[col].values, dims=('stn'))
 
     else:
-        print('input_stn_all does not exist:', input_stn_all)
-        print('reading station information from individual files')
+        print('A merged station data file does not exist: reading station information from individual files')
 
         df_stn = pd.read_csv(input_stn_list)
-        nstn = len(df_stn)
+        nstn   = len(df_stn)
 
         infile0 = f'{input_stn_path}/{df_stn.stnid.values[0]}.nc'
         with xr.open_dataset(infile0) as ds:
@@ -147,9 +151,9 @@ def assemble_fortran_GMET_stns_to_one_file(config):
             ntime = len(ds.time)
 
         var_values = np.nan * np.zeros([nstn, ntime, len(input_vars)], dtype=np.float32)
-        print(f'Station number: {nstn}')
-        print(f'Time steps: {ntime}')
-        print('Start assembling ... ')
+        print(f'Number of input station: {nstn}')
+        print(f'Time steps:              {ntime}')
+        print('Start merging station data ... ')
 
         for i in range(nstn):
             infilei = f'{input_stn_path}/{df_stn.stnid.values[i]}.nc'
@@ -158,9 +162,9 @@ def assemble_fortran_GMET_stns_to_one_file(config):
                 if input_vars[j] in dsi.data_vars:
                     var_values[i, :, j] = np.squeeze(dsi[input_vars[j]].values)
 
-        ds_stn = xr.Dataset()
+        ds_stn                = xr.Dataset()
         ds_stn.coords['time'] = time_coord
-        ds_stn.coords['stn'] = np.arange(nstn)
+        ds_stn.coords['stn']  = np.arange(nstn)
 
         for col in df_stn.columns:
             ds_stn[col] = xr.DataArray(df_stn[col].values, dims=('stn'))
@@ -173,18 +177,18 @@ def assemble_fortran_GMET_stns_to_one_file(config):
     # convert input vars to target vars
     for mapping in mapping_InOut_var:
         mapping = mapping.replace(' ', '')
-        tarvar = mapping.split('=')[0]
+        tarvar  = mapping.split('=')[0]
 
         if tarvar in target_vars:
 
             if tarvar in ds_stn:
-                print(f'{tarvar} is already in ds_stn. no need to perfor {mapping}')
+                print(f'{tarvar} is already in ds_stn. no need to perform {mapping}')
             else:
                 invars = [v for v in input_vars if v in mapping]
                 for v in invars:
                     exec(f"{v}=ds_stn.{v}")
 
-                operation = mapping.split('=')[1]
+                operation      = mapping.split('=')[1]
                 ds_stn[tarvar] = eval(operation)
 
     # constrain variables
@@ -210,7 +214,8 @@ def assemble_fortran_GMET_stns_to_one_file(config):
                 print(f'{tvar} exists in ds_stn. no need to perform transformation')
                 continue
             ds_stn[tvar] = ds_stn[vari].copy()
-            ds_stn[tvar].values = data_transformation(ds_stn[target_vars[i]].values, transform_vars[i], transform_settings[transform_vars[i]], 'transform')
+            ds_stn[tvar].values = data_transformation(ds_stn[target_vars[i]].values, transform_vars[i],
+                                                      transform_settings[transform_vars[i]], 'transform')
         else:
             print(f'Do not perform transformation for {target_vars[i]}')
 
@@ -223,8 +228,7 @@ def assemble_fortran_GMET_stns_to_one_file(config):
     ds_stn.to_netcdf(file_allstn, encoding=encoding)
 
     t2 = time.time()
-    print('Time cost (seconds):', t2-t1)
-    print('Successful assembling!\n\n')
+    print('Time cost (s) for merging station data file:', t2-t1, '\n')
 
     return config
 

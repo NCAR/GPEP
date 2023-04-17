@@ -1,5 +1,4 @@
-import os
-import sys, time
+import os, sys, time
 import xarray as xr
 import numpy as np
 
@@ -38,7 +37,7 @@ def calculate_weights_from_distance(nearDistance, initial_distance=100, exp=3, f
             for j in range(ncol):
                 distij = nearDistance[i, j, :]
                 if distij[0] >= 0:
-                    distij = distij[distij>=0]
+                    distij   = distij[distij>=0]
                     max_dist = np.max([initial_distance, np.max(distij) + 1])
                     if len(formula) == 0:
                         nearWeight[i, j, 0:len(distij)] = distanceweight(distij, max_dist, exp)
@@ -55,14 +54,14 @@ def calculate_weight_using_nearstn_info(config):
     t1 = time.time()
 
     # parse and change configurations
-    path_stn_info = config['path_stn_info']
-    file_stn_weight = f"{path_stn_info}/all_stn_weight.nc"
+    path_stn_info      = config['path_stn_info']
+    file_stn_weight    = f"{path_stn_info}/all_stn_weight.nc"
     config['file_stn_weight'] = file_stn_weight
 
     # in/out information to this function
-    file_stn_nearinfo = config['file_stn_nearinfo']
-    file_stn_weight = config['file_stn_weight']
-    initial_distance = config['initial_distance']
+    file_stn_nearinfo  = config['file_stn_nearinfo']
+    file_stn_weight    = config['file_stn_weight']
+    initial_distance   = config['initial_distance']
 
     if 'weight_formula' in config:
         weight_formula = config['weight_formula']
@@ -83,14 +82,14 @@ def calculate_weight_using_nearstn_info(config):
     print('Calculate weights for near stations')
     print('#' * 50)
     print('input file_stn_nearinfo:', file_stn_nearinfo)
-    print('output file_stn_weight:', file_stn_weight)
+    print('output file_stn_weight: ', file_stn_weight)
 
     if os.path.isfile(file_stn_weight):
         print('Note! Weight file exists')
         if overwrite_weight == True:
             print('overwrite_weight is True. Continue.')
         else:
-            print('overwrite_weight is False. Skip weight calculation.')
+            print('overwrite_weight is False. Skip weight calculation.\n')
             return config
 
     ########################################################################################################################
@@ -101,11 +100,8 @@ def calculate_weight_using_nearstn_info(config):
         if keyword in var:
             print('Processing:', var)
             nearDistance = ds_inout[var].values
-
-            nearWeight = calculate_weights_from_distance(nearDistance, initial_distance, 3, weight_formula)
-
+            nearWeight   = calculate_weights_from_distance(nearDistance, initial_distance, 3, weight_formula)
             nearWeight[nearDistance > truncation_dist] = 0
-
             ds_inout[var.replace(keyword, 'nearWeight')] = xr.DataArray(nearWeight, dims=ds_inout[var].dims)
 
     # drop some vars
@@ -120,7 +116,7 @@ def calculate_weight_using_nearstn_info(config):
     ds_inout.to_netcdf(file_stn_weight, encoding=encoding)
 
     t2 = time.time()
-    print('Time cost (seconds):', t2 - t1)
-    print('Successful weight calculation!\n\n')
+    print('Time cost (s):', t2 - t1)
+    print('Weight calculation completed successfully!\n\n')
 
     return config
