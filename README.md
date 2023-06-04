@@ -2,7 +2,7 @@
 
 PyGMET is the Python version of the Gridded Meteorological Ensemble Tool ([GMET](https://github.com/NCAR/GMET)), a tool for generating gridded estimates for any meteorological variable using diverse methods. PyGMET comes with many methodological and technical differences and improvements compared to GMET.  
 
-**Note: PyGMET is under active development. A formal release is expected to happen in late June. 
+**Note: PyGMET is under active development. A formal release is expected to happen in late June.**  
 
 <p align="center">
   <img src="https://github.com/guoqiang-tang/public_pictures/blob/main/california2017_ensemble_prcp.gif" alt="ensemble precipitation" />
