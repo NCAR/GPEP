@@ -219,7 +219,9 @@ def assemble_fortran_GMET_stns_to_one_file(config):
     for var in ds_stn.data_vars:
         encoding[var] = {'zlib': True, 'complevel': 4}
 
-    ds_stn['stnid'] = ds_stn['stnid'].astype('|S')
+    if 'stnid' in ds_stn:
+        ds_stn['stnid'] = ds_stn['stnid'].astype('|S')
+
     ds_stn.to_netcdf(file_allstn, encoding=encoding)
 
     t2 = time.time()

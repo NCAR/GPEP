@@ -184,6 +184,7 @@ def spcorr_grd(grid_lat, grid_lon, clen, outfile):
 
 
 
+# Define a function that consumes the most time
 def field_rand(spcorr_jpos, spcorr_ipos, spcorr_wght, spcorr_sdev, iorder, jorder, seed=np.nan):
     # ----------------------------------------------------------------------------------------
     # GET THE NUMBER OF X AND Y POINTS AND ALLOCATE SPACE FOR THE RANDOM GRID
