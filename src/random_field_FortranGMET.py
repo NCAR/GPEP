@@ -1,7 +1,6 @@
 # generate random numbers
 import numpy as np
 
-
 # random field generation using GMET v2.0 codes
 # translation from: https://github.com/NCAR/GMET/blob/master/source/ens_generation/spcorr_grd.f90
 #   and https://github.com/NCAR/GMET/blob/master/source/ens_generation/field_rand.f90
@@ -28,6 +27,7 @@ def LU_Decomposition(a, b):
 
 
 def spcorr_grd(grid_lat, grid_lon, clen, outfile):
+
     # example input parameters
     # nspl1 = 100
     # nspl2 = 120
@@ -38,11 +38,11 @@ def spcorr_grd(grid_lat, grid_lon, clen, outfile):
     # grid_lon = np.tile(lon[np.newaxis, :], [100, 1])
     nspl1, nspl2 = grid_lat.shape
 
-    grid_lat = grid_lat.astype(np.float64)  # important for high resolution
+    grid_lat = grid_lat.astype(np.float64) # important for high resolution
     grid_lon = grid_lon.astype(np.float64)
     # grid_lat = grid_lat.T # to reproduce Fortran GMET
     # grid_lon = grid_lon.T
-
+    
     # ----------------------------------------------------------------------------------------
     # (0) CHECK THAT SPCORR IS NOT POPULATED ALREADY
     # ----------------------------------------------------------------------------------------
@@ -50,29 +50,29 @@ def spcorr_grd(grid_lat, grid_lon, clen, outfile):
     # ----------------------------------------------------------------------------------------
     # (1) DEFINE HYPER-PARAMETERS
     # ----------------------------------------------------------------------------------------
-    nnst = 10  # number of nests
-    nloc = 3  # number of local points to include in the estimation
+    nnst = 10 # number of nests
+    nloc = 3 # number of local points to include in the estimation
 
     # ----------------------------------------------------------------------------------------
     # (2) ALLOCATE SPACE FOR OUTPUT ARRAYS
     # ----------------------------------------------------------------------------------------
     # define the maximum number of previously generated points
-    maxp = (nloc * 2 + 1) ** 2
+    maxp = (nloc*2+1) ** 2
     gmsk = np.full((nspl1, nspl2), False, dtype=bool)
-    spcorr_ipos = np.empty((nspl1, nspl2), dtype=object)  # np.frompyfunc(list, 0, 1)(np.empty((3,2), dtype=object))
+    spcorr_ipos = np.empty((nspl1, nspl2), dtype=object) # np.frompyfunc(list, 0, 1)(np.empty((3,2), dtype=object))
     spcorr_jpos = np.empty((nspl1, nspl2), dtype=object)
     spcorr_wght = np.empty((nspl1, nspl2), dtype=object)
     spcorr_sdev = np.empty((nspl1, nspl2), dtype=float)
-    iorder = np.zeros(nspl1 * nspl2, dtype=int)
-    jorder = np.zeros(nspl1 * nspl2, dtype=int)
+    iorder = np.zeros(nspl1*nspl2, dtype=int)
+    jorder = np.zeros(nspl1*nspl2, dtype=int)
 
     # ----------------------------------------------------------------------------------------
     # (3) LOOP THROUGH THE DIFFERENT GRID RESOLUTIONS (PROCESS COARSE RESOLUTION FIRST)
     # ----------------------------------------------------------------------------------------
-    sdev = 0  # Initialize SDEV (added to account for the first point)  EÖH
-    iprc = 0  # counter for the number of grid points processed
-    for ires in range(nnst - 1, 0 - 1, -1):
-        incr = 2 ** ires  # increment(2 ** 4 = 16, 2 ** 3 = 8, 2 ** 2 = 4, 2 ** 1 = 2, 2 ** 0 = 1)
+    sdev = 0 # Initialize SDEV (added to account for the first point)  EÖH
+    iprc = 0 # counter for the number of grid points processed
+    for ires in range(nnst-1, 0-1, -1):
+        incr = 2 ** ires # increment(2 ** 4 = 16, 2 ** 3 = 8, 2 ** 2 = 4, 2 ** 1 = 2, 2 ** 0 = 1)
         print('Working on Loop: ', ires)
         # ---------------------------------------------------------------------------------------
         # (4) LOOP THROUGH THE LAT-LON OF THE GRID AT A GIVEN RESOLUTION
@@ -93,10 +93,10 @@ def spcorr_grd(grid_lat, grid_lon, clen, outfile):
                     # ------------------------------------------------------------------------------------
                     # (5) IDENTIFY PREVIOUSLY GENERATED POINTS
                     # ------------------------------------------------------------------------------------
-                    k = 0  # initialize the number of previous points generated to zero
+                    k = 0 # initialize the number of previous points generated to zero
                     # ! loop through points in the local neighbourhood
-                    for jsp1 in range(max(0, isp1 - (incr * nloc)), min(isp1 + (incr * nloc) + 1, nspl1)):  # doubt
-                        for jsp2 in range(max(0, isp2 - (incr * nloc)), min(isp2 + (incr * nloc) + 1, nspl2)):  # doubt
+                    for jsp1 in range(max(0, isp1-(incr*nloc)), min(isp1+(incr*nloc)+1, nspl1)): #doubt
+                        for jsp2 in range(max(0, isp2-(incr*nloc)), min(isp2+(incr*nloc)+1, nspl2)): #doubt
                             # ! check to see if the "local" point has been generated previously
                             if gmsk[jsp1, jsp2]:
                                 ipos[k] = jsp1
@@ -113,35 +113,34 @@ def spcorr_grd(grid_lat, grid_lon, clen, outfile):
                         # ------------------------------------------------------------------------------------
                         # (6) COMPUTE THE CORRELATION AMONG PREVIOUSLY GENERATED POINTS
                         # ------------------------------------------------------------------------------------
-                        corr = np.zeros([k - 1, k - 1])
-                        gvec = np.zeros(k - 1)
-                        twgt = np.zeros(k - 1)
-                        indx = np.zeros(k - 1, dtype=int)
+                        corr = np.zeros([k-1, k-1])
+                        gvec = np.zeros(k-1)
+                        twgt = np.zeros(k-1)
+                        indx = np.zeros(k-1, dtype=int)
                         # Note that the vector of previously generated points includes the current point as its
                         # last element.  The correlation among all previously generated points are computed over
                         # elements (1...k-1) and saved in the matrix corr.  The correlation between previously
                         # generated points (1...k-1) and the current point (k) is saved in ther vector gvec.
                         for iprev in range(0, k):
-                            for jprev in range(0, iprev + 1):
+                            for jprev in range(0, iprev+1):
                                 if iprev == jprev:
-                                    if iprev <= k - 2:
+                                    if iprev <= k-2:
                                         corr[iprev, jprev] = 1.0
                                 else:
-                                    lon1 = np.deg2rad(grid_lon[ipos[iprev], jpos[iprev]])  # NOTE, iprev, lon
-                                    lon2 = np.deg2rad(grid_lon[ipos[jprev], jpos[jprev]])  # NOTE, jprev, lon
-                                    lat1 = np.deg2rad(grid_lat[ipos[iprev], jpos[iprev]])  # NOTE, iprev, lat
-                                    lat2 = np.deg2rad(grid_lat[ipos[jprev], jpos[jprev]])  # NOTE, jprev, lat
+                                    lon1 = np.deg2rad(grid_lon[ipos[iprev], jpos[iprev]]) # NOTE, iprev, lon
+                                    lon2 = np.deg2rad(grid_lon[ipos[jprev], jpos[jprev]]) # NOTE, jprev, lon
+                                    lat1 = np.deg2rad(grid_lat[ipos[iprev], jpos[iprev]]) # NOTE, iprev, lat
+                                    lat2 = np.deg2rad(grid_lat[ipos[jprev], jpos[jprev]]) # NOTE, jprev, lat
                                     # ! compute distance (km) - on the surface of a sphere
-                                    dist = 6378.0 * np.arccos(
-                                        np.sin(lat1) * np.sin(lat2) + np.cos(lat1) * np.cos(lat2) * np.cos(lon1 - lon2))
+                                    dist = 6378.0 * np.arccos(np.sin(lat1) * np.sin(lat2) + np.cos(lat1) * np.cos(lat2) * np.cos(lon1 - lon2))
                                     # ! compute correlation
-                                    if iprev <= k - 2:
+                                    if iprev <= k-2:
                                         # ! correlation among all previously generated points (1...k-1,1...k-1) -- corr
                                         corr[iprev, jprev] = np.exp(-(dist / clen))
                                         corr[jprev, iprev] = corr[iprev, jprev]
                                     else:
                                         # ! correlation between all previously generated points and the current point -- gvec
-                                        if jprev <= k - 2:
+                                        if jprev <= k-2:
                                             gvec[jprev] = np.exp(-(dist / clen))
                         #  ------------------------------------------------------------------------------------
                         #  (7) COMPUTE THE WEIGHTS
@@ -174,14 +173,13 @@ def spcorr_grd(grid_lat, grid_lon, clen, outfile):
                     # (8) SAVE WEIGHTS IN THE SPATIAL CORRELATION STRUCTURE
                     # -------------------------------------------------------------------------------------
                     # populate the structures (-1 excludes the current (i,j) point)
-                    spcorr_ipos[isp1, isp2] = ipos[0:npts - 1]
-                    spcorr_jpos[isp1, isp2] = jpos[0:npts - 1]
-                    spcorr_wght[isp1, isp2] = wght[0:npts - 1]
+                    spcorr_ipos[isp1, isp2] = ipos[0:npts-1]
+                    spcorr_jpos[isp1, isp2] = jpos[0:npts-1]
+                    spcorr_wght[isp1, isp2] = wght[0:npts-1]
                     spcorr_sdev[isp1, isp2] = sdev
 
     # save structure to output file (npz format)
-    np.savez_compressed(outfile, spcorr_ipos=spcorr_ipos, spcorr_jpos=spcorr_jpos, spcorr_wght=spcorr_wght,
-                        spcorr_sdev=spcorr_sdev, iorder=iorder, jorder=jorder)
+    np.savez_compressed(outfile, spcorr_ipos=spcorr_ipos, spcorr_jpos=spcorr_jpos, spcorr_wght=spcorr_wght, spcorr_sdev=spcorr_sdev, iorder=iorder, jorder=jorder)
 
 
 def field_rand(spcorr_jpos, spcorr_ipos, spcorr_wght, spcorr_sdev, iorder, jorder, seed=np.nan):
@@ -192,7 +190,7 @@ def field_rand(spcorr_jpos, spcorr_ipos, spcorr_wght, spcorr_sdev, iorder, jorde
     if ~np.isnan(seed):
         np.random.seed(seed)
 
-    nlon, nlat = spcorr_jpos.shape  # nlon or nlat just represents row/col, not related to real lat/lon
+    nlon, nlat = spcorr_jpos.shape # nlon or nlat just represents row/col, not related to real lat/lon
     cran = np.nan * np.zeros([nlon, nlat], dtype=float)
 
     for igrd in range(nlon * nlat):
@@ -211,7 +209,7 @@ def field_rand(spcorr_jpos, spcorr_ipos, spcorr_wght, spcorr_sdev, iorder, jorde
             for iprev in range(0, nprv):
                 jlon = spcorr_ipos[ilon, ilat][iprev]
                 jlat = spcorr_jpos[ilon, ilat][iprev]
-                vprv[iprev] = cran[jlon, jlat]  # (previously generated point)
+                vprv[iprev] = cran[jlon, jlat] # (previously generated point)
             # ! and generate the "current" point
             aran = np.random.normal(0, 1)
             xbar = np.dot(vprv[0:nprv], spcorr_wght[ilon, ilat][0:nprv])
