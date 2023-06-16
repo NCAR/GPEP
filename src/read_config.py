@@ -4,12 +4,13 @@ import toml, pathlib, json
 
 def read_config(config_file):
 
+    # read main config file
     config = toml.load(config_file)
 
     # load model settings
-    modelsettings_file = config['modelsettings_file']
-    modelsettings_file = str(pathlib.Path(config_file).parent / modelsettings_file)
-    settings = toml.load(modelsettings_file)
+    settings_file = config['settings_file']
+    settings_file = str(pathlib.Path(config_file).parent / settings_file)
+    settings      = toml.load(settings_file)
 
     config.update(settings)
 

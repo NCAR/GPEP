@@ -81,7 +81,6 @@ def ludcmp(a, n, indx, d):
         # end for i
     # end for j
 
-
 # end of def ludcmp
 
 # We do backward substitution in lubksb() take the row swapped LU decomposed
@@ -107,7 +106,6 @@ def lubksb(a, n, indx, b):
         for j in range(i + 1, n):
             sum -= a[i][j] * b[j]
         b[i] = sum / a[i][i]
-
 
 # end lubksb()
 
@@ -238,28 +236,27 @@ def weight_linear_regression(nearinfo, weightnear, datanear, tarinfo):
     return datatar
 
 
-
 def weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
 
     try:
         w_pcp_red = np.diag(np.squeeze(weightnear))
 
         # if len(np.unique(datanear)) == 1:
-        #     poo = datanear[0] # all 0 (no rain) or all 1 (rain everywhere)
+        #     poe = datanear[0] # all 0 (no rain) or all 1 (rain everywhere)
         # else:
         tx_red = np.transpose(nearinfo)
         twx_red = np.matmul(tx_red, w_pcp_red)
         b = logistic_regression(nearinfo, twx_red, datanear)
         if np.all(b == 0) or np.any(np.isnan(b)):
-            poo = np.dot(weightnear, datanear)
+            poe = np.dot(weightnear, datanear)
         else:
             zb = - np.dot(tarinfo, b)
-            poo = 1 / (1 + np.exp(zb))
+            poe = 1 / (1 + np.exp(zb))
 
     except:
-        poo = sklearn_weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo)
+        poe = sklearn_weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo)
 
-    return poo
+    return poe
 
 def check_predictor_matrix_behavior(nearinfo, weightnear):
     # check to see if the station predictor matrix will be well behaved
@@ -288,8 +285,8 @@ def sklearn_weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
 
     model = LogisticRegression(solver='liblinear')
     model = model.fit(nearinfo, datanear, sample_weight=weightnear)
-    poo = model.predict_proba(tarinfo[np.newaxis,:])[0, 1]
-    return poo
+    poe = model.predict_proba(tarinfo[np.newaxis,:])[0, 1]
+    return poe
 
 
 ########################################################################################################################
@@ -329,9 +326,9 @@ def initial_check_dynamic_predictor(dynamic_predictor_name, dynamic_predictor_fi
                     dynamic_predictor_name[i] = tmp
 
     if flag == False:
-        print('Dynamic predictor is not activated')
+        print('Dynamic predictors are not activated')
     else:
-        print(f'Dynamic predictor is activated. Dynamic predicotrs are {dynamic_predictor_name}')
+        print(f'Dynamic predictors are activated. Dynamic predictors are {dynamic_predictor_name}')
     return flag
 
 def map_filelist_timestep(dynamic_predictor_filelist, timeseries):
@@ -581,12 +578,11 @@ def ML_regression_crossvalidation(stn_data, stn_predictor, ml_model, probflag, m
         dynamic_predictors['flag'] = False
 
     # remove missing stations
-    nstn0, ntime = np.shape(stn_data)
-    estimates0 = np.nan * np.zeros([nstn0, ntime], dtype=np.float32)
-
-    nannum = np.sum(np.isnan(stn_data), axis=1)
-    indexmissing = nannum == stn_data.shape[1]
-    stn_data = stn_data[~indexmissing, :]
+    nstn0, ntime  = np.shape(stn_data)
+    estimates0    = np.nan * np.zeros([nstn0, ntime], dtype=np.float32)
+    nannum        = np.sum(np.isnan(stn_data), axis=1)
+    indexmissing  = nannum == stn_data.shape[1]
+    stn_data      = stn_data[~indexmissing, :]
     stn_predictor = stn_predictor[~indexmissing, :]
 
     # cross-validation index
@@ -602,13 +598,14 @@ def ML_regression_crossvalidation(stn_data, stn_predictor, ml_model, probflag, m
             if dynamic_predictors['flag'] == True:
                 xdata_add = dynamic_predictors['stn_predictor_dynamic'][:, t, :].T
                 stn_predictor_t = np.hstack((stn_predictor_t, xdata_add[~indexmissing, :]))
-            ytest = train_and_return_test(stn_predictor_t[train_index, :], stn_data[train_index, t], stn_predictor_t[test_index, :], ml_model, probflag, ml_settings)
+            ytest = train_and_return_test(stn_predictor_t[train_index, :], stn_data[train_index, t], 
+                                          stn_predictor_t[test_index, :], ml_model, probflag, ml_settings)
             estimates[test_index, t] = ytest
 
     estimates0[~indexmissing, :] = estimates
 
     t2 = time.time()
-    print('Regression time cost (sec):', t2-t1)
+    print('Regression time cost (s):', t2-t1)
     return np.squeeze(estimates0)
 
 def init_worker_sklearn(stn_data, stn_predictor, tar_predictor, ml_model, probflag, ml_settings, dynamic_predictors, train_index, test_index, indexmissing, randseed=123456789):
@@ -792,19 +789,20 @@ def ML_regression_grid_multiprocessing(stn_data, stn_predictor, tar_predictor, m
 ########################################################################################################################
 # parallel version of loop regression: independent processes and large memory use if there are many cpus
 
-def init_worker(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag, settings, dynamic_predictors, importmodules):
+def init_worker(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag, settings, 
+                dynamic_predictors, importmodules):
     # Using a dictionary is not strictly necessary. You can also
     # use global variables.
     global mppool_ini_dict
-    mppool_ini_dict = {}
-    mppool_ini_dict['stn_data'] = stn_data
-    mppool_ini_dict['stn_predictor'] = stn_predictor
-    mppool_ini_dict['tar_nearIndex'] = tar_nearIndex
-    mppool_ini_dict['tar_nearWeight'] = tar_nearWeight
-    mppool_ini_dict['tar_predictor'] = tar_predictor
-    mppool_ini_dict['method'] = method
-    mppool_ini_dict['probflag'] = probflag
-    mppool_ini_dict['settings'] = settings
+    mppool_ini_dict                       = {}
+    mppool_ini_dict['stn_data']           = stn_data
+    mppool_ini_dict['stn_predictor']      = stn_predictor
+    mppool_ini_dict['tar_nearIndex']      = tar_nearIndex
+    mppool_ini_dict['tar_nearWeight']     = tar_nearWeight
+    mppool_ini_dict['tar_predictor']      = tar_predictor
+    mppool_ini_dict['method']             = method
+    mppool_ini_dict['probflag']           = probflag
+    mppool_ini_dict['settings']           = settings
     mppool_ini_dict['dynamic_predictors'] = dynamic_predictors
 
     for im in importmodules:
@@ -820,18 +818,18 @@ def init_worker(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_pred
 
 
 def regression_for_blocks(r1, r2, c1, c2):
-    stn_data = mppool_ini_dict['stn_data']
-    stn_predictor = mppool_ini_dict['stn_predictor']
-    tar_nearIndex = mppool_ini_dict['tar_nearIndex']
-    tar_nearWeight = mppool_ini_dict['tar_nearWeight']
-    tar_predictor = mppool_ini_dict['tar_predictor']
-    method = mppool_ini_dict['method']
-    probflag = mppool_ini_dict['probflag']
-    settings = mppool_ini_dict['settings']
+    stn_data           = mppool_ini_dict['stn_data']
+    stn_predictor      = mppool_ini_dict['stn_predictor']
+    tar_nearIndex      = mppool_ini_dict['tar_nearIndex']
+    tar_nearWeight     = mppool_ini_dict['tar_nearWeight']
+    tar_predictor      = mppool_ini_dict['tar_predictor']
+    method             = mppool_ini_dict['method']
+    probflag           = mppool_ini_dict['probflag']
+    settings           = mppool_ini_dict['settings']
     dynamic_predictors = mppool_ini_dict['dynamic_predictors']
 
     nstn, ntime = np.shape(stn_data)
-    ydata_tar = np.nan * np.zeros([r2-r1, c2-c1, ntime])
+    ydata_tar   = np.nan * np.zeros([r2-r1, c2-c1, ntime])
 
     for r in range(r1, r2):
         for c in range(c1, c2):
@@ -896,13 +894,17 @@ def regression_for_blocks(r1, r2, c1, c2):
                         elif method == 'Logistic':
                             ydata_tar[r-r1, c-c1, d] = weight_logistic_regression(xdata_near, sample_weight, ydata_near, xdata_g)
                         else:
-                            ydata_tar[r-r1, c-c1, d] = train_and_return_test(xdata_near, ydata_near, xdata_g, method, probflag, settings, sample_weight)
+                            ydata_tar[r-r1, c-c1, d] = train_and_return_test(xdata_near, ydata_near, xdata_g, method, probflag, 
+                                                                             settings, sample_weight)
                         # else:
                         #     sys.exit(f'Unknonwn regression method: {method}')
 
     return ydata_tar
 
-def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag, settings, dynamic_predictors={}, num_processes=4, importmodules=[]):
+def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag, 
+                                           settings, dynamic_predictors={}, num_processes=4, importmodules=[]):
+#def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag, 
+#                                           settings, dynamic_predictors={}, num_processes=4):
     t1 = time.time()
 
     if len(dynamic_predictors) == 0:
@@ -918,7 +920,12 @@ def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearInde
     else:
         items = [(0, nrow, c, c + 1) for c in range(ncol)]
 
-    with Pool(processes=num_processes, initializer=init_worker, initargs=(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag, settings, dynamic_predictors, importmodules)) as pool:
+    with Pool(processes=num_processes, initializer=init_worker, initargs=(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, 
+                                                                          tar_predictor, method, probflag, settings, dynamic_predictors,
+                                                                          importmodules)) as pool:
+    #with Pool(processes=num_processes, initializer=init_worker, initargs=(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, 
+    #                                                                      tar_predictor, method, probflag, settings, 
+    #                                                                      dynamic_predictors)) as pool:        
         result = pool.starmap(regression_for_blocks, items)
 
     # fill estimates to matrix
@@ -940,24 +947,38 @@ def main_regression(config, target):
     # parse and change configurations
     case_name = config['case_name']
 
-    outpath_parent = config['outpath_parent']
-    path_regression = f'{outpath_parent}/regression_outputs'
+    outpath_parent  = config['outpath_parent']
+    path_regression = f'{outpath_parent}/regression/'
     os.makedirs(path_regression, exist_ok=True)
 
     datestamp = f"{config['date_start'].replace('-', '')}-{config['date_end'].replace('-', '')}"
+    
+    if 'append_date_to_output' in config:
+        append_date_to_output = config['append_date_to_output']
+    else:
+        append_date_to_output = False
+    
     if target == 'grid':
-        outfile = f'{path_regression}/{case_name}_Grid_Regression_{datestamp}.nc'  # leave one out regression
+        if append_date_to_output == True:
+            outfile = f'{path_regression}/{case_name}_grid_regression_{datestamp}.nc'  # regression without cross-validation
+        else:
+            outfile = f'{path_regression}/{case_name}_grid_regression.nc' 
         config['file_grid_reg'] = outfile
         if 'overwrite_grid_reg' in config:
             overwrite_flag = config['overwrite_grid_reg']
         else:
             overwrite_flag = False
         predictor_name_static_target = config['predictor_name_static_grid']
+
     elif target == 'cval':
-        outfile = f'{path_regression}/{case_name}_CrossValidation_Regression_{datestamp}.nc'  # leave one out regression
-        config['file_loo_reg'] = outfile
-        if 'overwrite_cv_reg' in config:
-            overwrite_flag = config['overwrite_cv_reg']
+        if append_date_to_output == True:
+            outfile = f'{path_regression}/{case_name}_stn_CV_regression_{datestamp}.nc'  # leave one out regression
+        else:
+            outfile = f'{path_regression}/{case_name}_stn_CV_regression.nc'
+        config['file_cval_reg'] = outfile
+        
+        if 'overwrite_stn_cv_reg' in config:
+            overwrite_flag = config['overwrite_stn_cv_reg']
         else:
             overwrite_flag = False
         predictor_name_static_target = config['predictor_name_static_stn']
@@ -966,17 +987,18 @@ def main_regression(config, target):
 
     # in/out information to this function
 
-    file_allstn = config['file_allstn']
+    file_allstn       = config['file_allstn']
     file_stn_nearinfo = config['file_stn_nearinfo']
-    file_stn_weight = config['file_stn_weight']
-    outfile = outfile # just to make sure all in/out settings are in this section
+    file_stn_weight   = config['file_stn_weight']
+    outfile           = outfile # just to make sure all in/out settings are in this section
 
-    target_vars = config['target_vars']
+    target_vars       = config['target_vars']
     target_vars_WithProbability = config['target_vars_WithProbability']
 
-    date_start = config['date_start']
-    date_end = config['date_end']
-    predictor_name_static_stn = config['predictor_name_static_stn']
+    date_start        = config['date_start']
+    date_end          = config['date_end']
+    
+    predictor_name_static_stn    = config['predictor_name_static_stn']
     predictor_name_static_target = predictor_name_static_target
 
     if 'minRange_vars' in config:
@@ -1007,20 +1029,25 @@ def main_regression(config, target):
     else:
         transform_settings = {}
 
-    dynamic_predictor_name = config['dynamic_predictor_name']
-    dynamic_predictor_filelist = config['dynamic_predictor_filelist']
+    dynamic_predictor_name      = config['dynamic_predictor_name']
+    dynamic_predictor_filelist  = config['dynamic_predictor_filelist']
     dynamic_predictor_operation = config['dynamic_predictor_operation']
 
     num_processes = config['num_processes']
-    master_seed = config['master_seed']
+    if 'master_seed' in config:
+        master_seed = config['master_seed']
+    else:
+        master_seed = -1
     overwrite_flag = overwrite_flag
 
     gridcore_classification = config['gridcore_classification']
-    gridcore_continuous = config['gridcore_continuous']
+    gridcore_continuous     = config['gridcore_continuous']
+    
     n_splits = config['n_splits']
 
     ensemble_flag = config['ensemble_flag']
-    backtransform = not ensemble_flag # for example, if ensemble_flag=False, no need to create enmseble outputs, the regression outputs should be backtransformed in this step
+    backtransform = not ensemble_flag       # for example, if ensemble_flag=False, no need to create ensemble outputs, 
+                                            #   the regression outputs should be backtransformed in this step
 
     if 'sklearn' in config:
         sklearn_config = config['sklearn']
@@ -1029,7 +1056,7 @@ def main_regression(config, target):
 
     if target == 'cval':
         # keyword for near information (default setting in this script)
-        near_keyword = 'InStn' # input stations
+        near_keyword = 'InStn'   # input stations
     else:
         near_keyword = 'Grid'
 
@@ -1043,30 +1070,35 @@ def main_regression(config, target):
     dynamic_grid_lon_name = config['dynamic_grid_lon_name']
 
     print('#' * 50)
-    print(f'{target} regression')
+    if(target == 'cval'):
+        print('step 1:  station point cross-validated regression to estimate predictive uncertainty')
+    elif(target == 'grid'):
+        print('step 2:  regression for all grid points')
+    else:
+        print('regression target not recognized:', target)
     print('#' * 50)
-    print('Input file_allstn:', file_allstn)
+    print('Input file_allstn:      ', file_allstn)
     print('Input file_stn_nearinfo:', file_stn_nearinfo)
-    print('Input file_stn_weight:', file_stn_weight)
-    print('Output regression file:', outfile)
-    print('Output target:', target)
-    print('Target variables:', target_vars)
-    print('Number of processes:', num_processes)
+    print('Input file_stn_weight:  ', file_stn_weight)
+    print('Output regression file: ', outfile)
+    print('Output target:          ', target)
+    print('Target variables:       ', target_vars)
+    print('Number of processes:    ', num_processes)
 
     if os.path.isfile(outfile):
         print('Note! Output regression file exists')
         if overwrite_flag == True:
             print('overwrite_flag is True. Continue.')
         else:
-            print('overwrite_flag is False. Skip regression.')
+            print('overwrite_flag is False. Skip regression.\n')
             return config
 
     dynamic_flag = initial_check_dynamic_predictor(dynamic_predictor_name, dynamic_predictor_filelist, target_vars)
 
-
-    if master_seed <0:
+    if master_seed < 0:
         master_seed = np.random.randint(1e9)
     np.random.seed(master_seed)
+
 
     ########################################################################################################################
     # load sklearn methods and settings
@@ -1142,12 +1174,14 @@ def main_regression(config, target):
         for v in ds_dynamic.data_vars:
             if v in dyn_operation_trans:
                 print('Transform dynamic predictor:', v)
-                ds_dynamic[v].values = data_transformation(ds_dynamic[v].values, dyn_operation_trans[v], transform_settings[dyn_operation_trans[v]], 'transform')
+                ds_dynamic[v].values = data_transformation(ds_dynamic[v].values, dyn_operation_trans[v],
+                                                           transform_settings[dyn_operation_trans[v]], 'transform')
 
         ds_dynamic_stn = regrid_xarray(ds_dynamic, ds_stn[stn_lon_name].values, ds_stn[stn_lat_name].values, '1D', method=dyn_operation_interp)
         if target == 'grid':
             # ds_dynamic_tar2 = regrid_xarray(ds_dynamic, xaxis, yaxis, '2D', method=dyn_operation_interp)
-            ds_dynamic_tar = regrid_xarray(ds_dynamic, ds_nearinfo[grid_lon_name].values, ds_nearinfo[grid_lat_name].values, '2D', method=dyn_operation_interp)
+            ds_dynamic_tar = regrid_xarray(ds_dynamic, ds_nearinfo[grid_lon_name].values, ds_nearinfo[grid_lat_name].values, '2D',
+                                           method=dyn_operation_interp)
 
         elif target == 'cval':
             ds_dynamic_tar = ds_dynamic_stn.copy()
@@ -1252,13 +1286,18 @@ def main_regression(config, target):
         # get estimates at station points
         probflag = False  # for continuous variables
         if gridcore_continuous.startswith('LWR:'):
-            estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, gridcore_continuous[4:], probflag, sklearn_config[gridcore_continuous_short], predictor_dynamic, num_processes, importmodules)
+            estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor,
+                                                               gridcore_continuous[4:], probflag, sklearn_config[gridcore_continuous_short],
+                                                               predictor_dynamic, num_processes)
         else:
             if target == 'cval':
-                estimates = ML_regression_crossvalidation_multiprocessing(stn_value, stn_predictor, gridcore_continuous, probflag, sklearn_config[gridcore_continuous_short], predictor_dynamic, n_splits, num_processes, master_seed)
+                estimates = ML_regression_crossvalidation_multiprocessing(stn_value, stn_predictor, gridcore_continuous, probflag,
+                                                                          sklearn_config[gridcore_continuous_short], predictor_dynamic, 
+                                                                          n_splits, num_processes, master_seed)
             else:
-                estimates = ML_regression_grid_multiprocessing(stn_value, stn_predictor, tar_predictor, gridcore_continuous, probflag, sklearn_config[gridcore_continuous_short], predictor_dynamic, num_processes, master_seed)
-
+                estimates = ML_regression_grid_multiprocessing(stn_value, stn_predictor, tar_predictor, gridcore_continuous, probflag,
+                                                               sklearn_config[gridcore_continuous_short], predictor_dynamic, num_processes,
+                                                               master_seed)
         # constrain variables
         estimates = np.squeeze(estimates)
         if np.any(estimates < minRange_vars[vn]):
@@ -1276,7 +1315,7 @@ def main_regression(config, target):
                 var_name_save = var_name_trans
             else:
                 var_name_save = var_name
-                estimates = data_transformation(estimates, transform_vars[vn], transform_settings[transform_vars[vn]], 'retransform')
+                estimates = data_transformation(estimates, transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
         else:
             var_name_save = var_name
 
@@ -1288,7 +1327,7 @@ def main_regression(config, target):
             # evalution
             dtmp1 = ds_stn[var_name].values
             if (len(var_name_trans) > 0) and (backtransform == False):
-                dtmp2 = data_transformation(estimates, transform_vars[vn], transform_settings[transform_vars[vn]], 'retransform')
+                dtmp2 = data_transformation(estimates, transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
             else:
                 dtmp2 = estimates
 
@@ -1300,20 +1339,28 @@ def main_regression(config, target):
         ########################################################################################################################
         # if the variable has occurrence features, do logistic regression too
         if var_name in target_vars_WithProbability:
-            print(f'Add probability of occurrence for {var_name} because it is in target_vars_WithProbability {target_vars_WithProbability}')
-            if len(var_name_trans) > 0: # this means previous step uses transformed precipitation, while for logistic regression, we use raw precipitation
+            print(f'Add prob. of event occurrence (POE) for {var_name}: it is in target_vars_WithProbability {target_vars_WithProbability}')
+            if len(var_name_trans) > 0: # previous step used transformed variable; for logistic regression, use raw variable
                 stn_value = ds_stn[var_name].values.copy()
                 print('Number of negative values', np.sum(stn_value<0))
             stn_value[stn_value > 0] = 1
 
             probflag = True
             if gridcore_classification.startswith('LWR:'):
-                estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor, gridcore_classification[4:], probflag, sklearn_config[gridcore_continuous_short], predictor_dynamic, num_processes, importmodules)
+
+                estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor,
+                                                                   gridcore_classification[4:], probflag,
+                                                                   sklearn_config[gridcore_continuous_short], predictor_dynamic, 
+                                                                   num_processes, importmodules)
             else:
                 if target == 'cval':
-                    estimates = ML_regression_crossvalidation_multiprocessing(stn_value, stn_predictor, gridcore_classification, probflag, sklearn_config[gridcore_classification_short], predictor_dynamic, n_splits, num_processes, master_seed)
+                    estimates = ML_regression_crossvalidation_multiprocessing(stn_value, stn_predictor, gridcore_classification, probflag,
+                                                                              sklearn_config[gridcore_classification_short], predictor_dynamic,
+                                                                              n_splits, num_processes, master_seed)
                 else:
-                    estimates = ML_regression_grid_multiprocessing(stn_value, stn_predictor, tar_predictor, gridcore_classification, probflag, sklearn_config[gridcore_classification_short], predictor_dynamic, num_processes, master_seed)
+                    estimates = ML_regression_grid_multiprocessing(stn_value, stn_predictor, tar_predictor, gridcore_classification, probflag,
+                                                                   sklearn_config[gridcore_classification_short], predictor_dynamic,
+                                                                   num_processes, master_seed)
 
             var_poe = var_name + '_poe'
             if estimates.ndim == 3:
@@ -1321,7 +1368,7 @@ def main_regression(config, target):
             elif estimates.ndim == 2:
                 ds_out[var_poe] = xr.DataArray(estimates, dims=('stn', 'time'))
 
-                # evalution
+                # evaluation
                 dtmp1 = stn_value
                 dtmp2 = estimates
                 metvalue, metname = evaluate_allpoint(dtmp1, dtmp2, 0.1)
@@ -1337,7 +1384,7 @@ def main_regression(config, target):
     ds_out.to_netcdf(outfile, encoding=encoding)
 
     t2 = time.time()
-    print('Time cost (seconds):', t2-t1)
-    print('Successful regression!\n\n')
+    print('Time cost (s):', t2-t1)
+    print('Regression step completed successfully!\n')
 
     return config

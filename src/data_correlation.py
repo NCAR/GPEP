@@ -154,10 +154,10 @@ def station_space_time_correlation(config):
     config['file_stn_cc'] = file_stn_cc
 
     # in/out information to this function
-    file_allstn = config['file_allstn']
-    target_vars = config['target_vars']
-    file_stn_cc = config['file_stn_cc']
-    num_processes = config['num_processes']
+    file_allstn    = config['file_allstn']
+    target_vars    = config['target_vars']
+    file_stn_cc    = config['file_stn_cc']
+    num_processes  = config['num_processes']
     rolling_window = config['rolling_window']
 
     if 'auto_corr_method' in config:
@@ -189,18 +189,18 @@ def station_space_time_correlation(config):
     print('#' * 50)
     print(f'Calculate station space and time correlation')
     print('#' * 50)
-    print('Input file_allstn:', file_allstn)
-    print('Output file_stn_cc:', file_stn_cc)
-    print('Target variables:', target_vars)
+    print('Input file_allstn:  ', file_allstn)
+    print('Output file_stn_cc: ', file_stn_cc)
+    print('Target variables:   ', target_vars)
     print('Number of processes:', num_processes)
-    print('Linked variables:', linkvar)
+    print('Linked variables:   ', linkvar)
 
     if os.path.isfile(file_stn_cc):
         print('Note! Station correlation file exists')
         if overwrite_station_cc == True:
             print('overwrite_station_cc is True. Continue.')
         else:
-            print('overwrite_station_cc is False. Skip correlation calculation.')
+            print('overwrite_station_cc is False. Skip correlation calculation.\n')
             return config
 
     ########################################################################################################################
@@ -218,7 +218,7 @@ def station_space_time_correlation(config):
 
     for vn in range(len(target_vars)):
 
-        var_name = target_vars[vn]
+        var_name            = target_vars[vn]
         auto_corr_method_vn = auto_corr_method[vn]
 
         # calculate auto correlation
@@ -227,7 +227,7 @@ def station_space_time_correlation(config):
 
             if (len(ds_stn.time) < 12 * rolling_window) and (auto_corr_method_vn == 'anomaly'):
                 auto_corr_method_vn = 'direct'
-                print(f'Station data length is too short. Change auto_corr_method from anomaly to direct.')
+                print(f'Station data length is too short -- changing auto_corr_method from anomaly to direct.')
 
             # calculate var - moving_averaging(var) to remove monthly cycle
             if auto_corr_method_vn == 'direct':
@@ -237,7 +237,7 @@ def station_space_time_correlation(config):
                 stn_value_mv = ds_stn[var_name].rolling(time=rolling_window, center=True).mean().values
                 stn_value = stn_value_raw - stn_value_mv
             else:
-                sys.exit('Unknown auto_corr_method')
+                print('Unknown auto_corr_method: entry=', auto_corr_method_vn); sys.exit()
 
             lat = ds_stn['lat'].values
             lon = ds_stn['lon'].values
