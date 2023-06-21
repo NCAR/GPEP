@@ -42,12 +42,7 @@ When producing a dataset in a target domain or testing different method choices,
 
 ## Test Case(s) for PyGMET
 
-A test case for PyGMET is provided, leveraging the test case currently in use for GMET v2.0. The below codes show how to get the test case and how to run the test case.
-```  
-cd ../src  
-python main.py ../test_cases/testcase.config.static.toml  
-```
-Jupyter Notebooks in the `./docs` folder can be used to visualize PyGMET test case outputs.
+A test case for PyGMET is provided in the `./test_cases` folder, leveraging the test case currently in use for GMET v2.0. The `./tools/get_testcase.py` can be run to obtain the test case from Fortran GMET repo, which can reproduce the results in the `./test_cases` folder. Jupyter Notebooks in the `./docs` folder can be used to visualize PyGMET test case outputs.
 
 ## Notes
 This code is a work in progress and is provided without guarantee of fitness for any particular application.  
