@@ -147,7 +147,7 @@ The `outpath_parent` parameter specifies the folder where all PyGMET outputs wil
 
 ## **dynamic_predictor_filelist**
 
-The `dynamic_predictor_filelist` parameter is a list of input files that contain dynamic predictors used to support gridding estimation. If the file cannot be found (e.g., "NA" file name), dynamic predictors will not be used in the estimation process. The dynamic input netcdf files must have structured/regular latitude and longitude dimensions. The dynamic inputs will be interpolated to station points and regular/irregular grids of the target domain.
+_Optional._ The `dynamic_predictor_filelist` parameter is a list of input files that contain dynamic predictors used to support gridding estimation. If the file cannot be found (e.g., "NA" file name) or is not provided, dynamic predictors will not be used in the estimation process. The dynamic input netcdf files must have structured/regular latitude and longitude dimensions. The dynamic inputs will be interpolated to station points and regular/irregular grids of the target domain.
 
 An example of the `dynamic_predictor_filelist` parameter is provided in `./test_cases/cali2017/griddata_standard/grid_file_list.txt`, which is shown below:
 
@@ -195,14 +195,18 @@ A list of target output variables. This does not necessarily have to be the same
 
 ## mapping_InOut_var
 
-A list that maps input variables to target variables. If the input variable and target variable have the same name, there is no need to add a mapping relation. Examples include:
+_Optional._ A list that maps input variables to target variables. If the input variable and target variable have the same name, there is no need to add a mapping relation. Examples include:
 
 -   Converting tmin and tmax to tmean and trange: `mapping_InOut_var = ['tmean=(tmin+tmax)/2', 'trange=abs(tmax-tmin)']`
 -   Converting precipitation unit from inch to cm: `mapping_InOut_var = ['prcp=prcp * 2.54']`
 
 ## target_vars_WithProbability
 
-A list of variables (e.g., precipitation, snowfall, hail) requiring occurrence estimation with a probability between 0-1. This list should be a subset of `target_vars`, such as `['prcp']`.
+_Optional._ A list of variables (e.g., precipitation, snowfall, hail) requiring occurrence estimation with a probability between 0-1. This list should be a subset of `target_vars`, such as `['prcp']`.  
+
+## probability_thresholds
+
+_Optional._ Thresholds used to define the occurrence of variables from target_vars_WithProbability. Default values are zero for all variables if probability_thresholds is not provided or empty. For example, if `target_vars_WithProbability=['prcp']`, you can use `probability_thresholds=[0]`. Higher thresholds can be used to focus on large events.
 
 ## minRange_vars
 
@@ -214,11 +218,11 @@ _Optional._ Similar to `minRange_vars` but for maximum value constraint. Setting
 
 ## transform_vars
 
-_Optional._ Some variables (e.g., precipitation) may need to be transformed to reduce the skewness of the probability distribution. `boxcox` transformation is supported with the parameter defined in the `model.settings.toml` file. An empty value means no transformation. If not provided, no transformation. For example, `transform_vars = ['boxcox', '', '']`.
+_Optional._ Some variables (e.g., precipitation) may need to be transformed to reduce the skewness of the probability distribution. `boxcox` transformation is supported with the parameter defined in the `model.settings.toml` file. An empty value means no transformation. If not provided, no transformation. For example, `transform_vars = ['boxcox', '', '']`. For probabilistic estimation of skewed variables such as precipitation, transformation is recommended. In contrast, if only deterministic estimation is needed, transformation is not necessary.
 
 ## dynamic_predictor_name
 
-A list corresponding to `target_vars` that defines what dynamic predictors will be used in gridding estimation for each target variable. Invalid variable names or an empty list means that dynamic predictors won't be used. For example, `dynamic_predictor_name = ['cube_root_prec_rate, tmp_2m', 'tmp_2m', '']` where `prcp` will use `cube_root_prec_rate` and `tmp_2m` as dynamic predictors, `tmean` will use `tmp_2m`, and `trange` will not use dynamic predictors.
+_Optional._ A list corresponding to `target_vars` that defines what dynamic predictors will be used in gridding estimation for each target variable. Invalid variable names or an empty list means that dynamic predictors won't be used. For example, `dynamic_predictor_name = ['cube_root_prec_rate, tmp_2m', 'tmp_2m', '']` where `prcp` will use `cube_root_prec_rate` and `tmp_2m` as dynamic predictors, `tmean` will use `tmp_2m`, and `trange` will not use dynamic predictors.
 
 ```
 dynamic_predictor_name = [['cube_root_prec_rate', 'tmp_2m'],  
@@ -238,9 +242,9 @@ This list corresponds to `predictor_name_static_stn` but are static predictors o
 
 ## dynamic_predictor_operation
 
-Dynamic predictors may need some processing, such as interpolation from dynamic grids to target grids and station points, or transformation of the raw dynamic predictor.
+_Optional._ Dynamic predictors may need some processing, such as interpolation from dynamic grids to target grids and station points, or transformation of the raw dynamic predictor.
 
-The keyword `interp` accepts the following methods, enabled by `xarray.interp`: {"linear", "nearest", "zero", "slinear", "quadratic", "cubic", "polynomial"}. The default interpolation method is `linear`.
+The keyword `interp` accepts the following methods, enabled by `xarray.interp`: {"linear", "nearest", "zero", "slinear", "quadratic", "cubic", "polynomial"}. The default interpolation method is `nearest`.
 
 The keyword `transform` accepts methods defined in the transformation section.
 
@@ -299,23 +303,6 @@ Example: `model.settings.toml`. The file name can be changed and should be defin
 
 This parameter controls the random seed used for probabilistic processes such as machine learning and probabilistic estimation. If the value is negative, the generation is truly random without reproducibility.
 
-
-## stn_lat_name and stn_lon_name
-
-These parameters define the names of the latitude and longitude dimensions in the input station files.
-
-## grid_lat_name and grid_lon_name
-
-These parameters define the names of the latitude and longitude dimensions in the 2D array of the target domain.
-
-## grid_mask_name
-
-This parameter defines the name of the 2D mask array of the target domain. A value of 1 indicates that the grid will be generated, while a value of 0 indicates that it will not.
-
-## dynamic_grid_lat_name and dynamic_grid_lon_name
-
-These parameters define the names of the latitude and longitude dimensions in the dynamic predictor files.
-
 ## gridcore_continuous
 Gridding method for continuous spatial regression.  
 Sklearn module is used to support most functions: https://scikit-learn.org/stable/supervised_learning.html
@@ -347,20 +334,6 @@ These parameters define the minimum and maximum numbers of nearby stations to be
 
 When searching for nearby stations, this parameter defines the initial search radius (km). If not enough stations are found, the radius is expanded.
 
-## output_random_fields
-
-If set to `true`, random fields will be output in the ensemble outputs. If set to `false` (default), random fields will not be output to reduce file sizes.
-
-## overwrite flags
-**overwrite_stninfo**: Files related integrated station inputs and nearby information
-**overwrite_station_cc**: For the station correlation file  
-**overwrite_weight**: For station weight file  
-**overwrite_cv_reg**: For station-based cross validation file  
-**overwrite_grid_reg**: For gridded regression file  
-**overwrite_ens**: For ensemble output files  
-**overwrite_spcorr**: For spatial correlation structure files  
-By default, these flags are all `flase` to utilize existing outputs to speed up production. Users may change them to `true` to generate brand new files for all or part of PyGMET outputs to overwrite existing files. A safer way is to just change `outpath_parent` to create files in a new folder.  
-
 ## initial_distance
 Initial Search Distance in km (expanded if need be).  
 Example: `initial_distance = 100`
@@ -372,12 +345,30 @@ Weight calculation formula. Only two variables/parameters are allowed in the for
 
 The default formula is `weight_formula = '(1 - (dist / maxdist) ** 3) ** 3'` following Python syntax. 3 is the exponential factor and is the default parameter. Users can change the formula or the exponential factor.  
 
+## [netcdf_info]
+
+### stn_lat_name and stn_lon_name
+
+These parameters define the names of the latitude and longitude dimensions in the input station files.
+
+### grid_lat_name and grid_lon_name
+
+These parameters define the names of the latitude and longitude dimensions in the 2D array of the target domain.
+
+### grid_mask_name
+
+This parameter defines the name of the 2D mask array of the target domain. A value of 1 indicates that the grid will be generated, while a value of 0 indicates that it will not.
+
+### dynamic_grid_lat_name and dynamic_grid_lon_name
+
+These parameters define the names of the latitude and longitude dimensions in the dynamic predictor files.
+
 
 ## [transform]
 Transformation section. This will be read as a dictionary in Python. Current, only `boxcox` transformation is supported. 
 ### [transform.boxcox]
-#### exp
-The exponential factor used in box-cox transformation. Example: `exp = 4`.
+#### exponent
+The exponential factor used in box-cox transformation. Example: `exponent = 4`.
 
 ## [sklearn]
 *Optional*
@@ -388,3 +379,27 @@ Example:
 ### [sklearn.RandomForestRegressor]
 #### n_estimators   = 500
 #### n_jobs = 5
+
+## [flags]
+Boolean flags. They don't affect model performance. For simple run, no need to change flag values.  
+
+### output_random_fields
+
+If set to `true`, random fields will be output in the ensemble outputs. If set to `false` (default), random fields will not be output to reduce file sizes.
+
+### append_date_to_output_filename
+
+If set to `true` (default), output file names will contain the date range. If set to `false`, output file names will not contain date range.
+
+### print_config
+If set to `true`, all configurations will be printed at the beginning of model printouts. If set to `false` (default), nothing will be printed for simplicity.  
+
+### overwrite flags
+**overwrite_stninfo**: Files related integrated station inputs and nearby information
+**overwrite_station_cc**: For the station correlation file  
+**overwrite_weight**: For station weight file  
+**overwrite_cv_reg**: For station-based cross validation file  
+**overwrite_grid_reg**: For gridded regression file  
+**overwrite_ens**: For ensemble output files  
+**overwrite_spcorr**: For spatial correlation structure files  
+By default, these flags are all `flase` to utilize existing outputs to speed up production. Users may change them to `true` to generate brand new files for all or part of PyGMET outputs to overwrite existing files. A safer way is to just change `outpath_parent` to create files in a new folder.  

@@ -6,7 +6,7 @@
 ########################################################################################################################
 
 # case name. will be used in ensemble outputs generations
-case_name = 'LWLRstatic'
+case_name = 'LWLRdynamic'
 
 # worker number (cpu cores)
 num_processes = 5
@@ -23,7 +23,7 @@ modelsettings_file = "model.settings.toml"
 
 # Method-1: please give the input station file list (with attributes) and input station path
 input_stn_list = "../test_cases/cali2017/inputs/CALI.screened_stn_list_slope.v3.csv"
-input_stn_path = "../test_cases/cali2017/stndata"
+input_stn_path = "../test_cases/cali2017/inputs/stndata"
 
 # Method-2: please give the file name contains all stations.
 #input_stn_all = "../test_cases/cali2017/inputs/all_stn.nc"
@@ -32,15 +32,12 @@ input_stn_path = "../test_cases/cali2017/stndata"
 infile_grid_domain = "../test_cases/cali2017/inputs/CALI.gridinfo.0625_v3.nc"
 
 # parent output path
-outpath_parent = "../test_cases/cali2017/PyGMET_output"
-
-# file list containing dynamic predictor inputs (optional). Give it a nonsense string (e.g., "NA") can turn off dynamic predictors
-dynamic_predictor_filelist = "NA"
+outpath_parent = "../test_cases/cali2017/outputs"
 
 ############################## target variables and periods
 # target period
 date_start = "2017-02-01"
-date_end = "2017-02-15"
+date_end = "2017-02-10"
 
 # input/output variables
 input_vars = ['prcp', 'tmin', 'tmax'] # variables in the raw station files
@@ -59,6 +56,9 @@ transform_vars = ['boxcox', '', '']
 
 ############################## dynamic predictors for regression
 # only useful when dynamic_predictor_filelist is valid
+
+# file list containing dynamic predictor inputs (optional). Give it a nonsense string (e.g., "NA") can turn off dynamic predictors
+dynamic_predictor_filelist = "../test_cases/cali2017/inputs/gridded_datafile_list.txt"
 
 # dynamic predictors for each target_vars. Empty list means no dynamic predictors
 dynamic_predictor_name = [['cube_root_prec_rate', 'tmp_2m'],

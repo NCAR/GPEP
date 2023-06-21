@@ -14,8 +14,8 @@ warnings.filterwarnings('ignore')
 if __name__ == '__main__':
     t1 = time.time()
 
-    # config_file = sys.argv[1]
-    config_file = '../developer/experiments/SWE/debug.config.toml'
+    config_file = sys.argv[1]
+
     ########################################################################################################################
     # load configuration file
 

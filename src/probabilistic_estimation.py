@@ -126,6 +126,8 @@ def spcorr_structure(config):
     file_spcorr_prefix = f'{path_spcorr}/spcorr_'
     config['file_spcorr_prefix'] = file_spcorr_prefix
 
+    file_stn_nearinfo = config['file_stn_nearinfo']
+
     # in/out information to this function
     file_stn_cc        = config['file_stn_cc']
     file_grid_reg      = config['file_grid_reg']
@@ -159,9 +161,9 @@ def spcorr_structure(config):
                 allvar_clen[var_name] = ds_stn_cc[var_name + '_space_Clen'].values
 
     # regression estimates
-    with xr.open_dataset(file_grid_reg) as ds_grid_reg:
-        grid_lat = ds_grid_reg[grid_lat_name].values
-        grid_lon = ds_grid_reg[grid_lon_name].values
+    with xr.open_dataset(file_stn_nearinfo) as ds_nearinfo:
+        grid_lat = ds_nearinfo[grid_lat_name].values
+        grid_lon = ds_nearinfo[grid_lon_name].values
 
     for var_name in target_vars:
         file_spcor = f'{file_spcorr_prefix}{var_name}.npz'
@@ -211,17 +213,28 @@ def generate_prob_estimates_serial(config, member_range=[]):
     ensemble_start      = config['ensemble_start']
     ensemble_end        = config['ensemble_end']
     target_vars         = config['target_vars']
-    target_vars_WithProbability = config['target_vars_WithProbability']
-    
+
+    if 'target_vars_WithProbability' in config:
+        target_vars_WithProbability = config['target_vars_WithProbability']
+    else:
+        target_vars_WithProbability = []
+
+    if 'probability_thresholds' in config:
+        probability_thresholds      = config['probability_thresholds']
+    else:
+        probability_thresholds = [0] * len(target_vars_WithProbability)
+
+    file_stn_nearinfo = config['file_stn_nearinfo']
+
     if 'master_seed' in config:
         master_seed = config['master_seed']
     else:
         master_seed = -1
     
-    if 'append_date_to_output' in config:
-        append_date_to_output = config['append_date_to_output']
+    if 'append_date_to_output_filename' in config:
+        append_date_to_output_filename = config['append_date_to_output_filename']
     else:
-        append_date_to_output = False
+        append_date_to_output_filename = True
         
     datestamp = f"{config['date_start'].replace('-', '')}-{config['date_end'].replace('-', '')}"
 
@@ -432,7 +445,7 @@ def generate_prob_estimates_serial(config, member_range=[]):
 
     for ens in range(member_range[0], member_range[1]):
         # define output file name
-        if append_date_to_output == True:
+        if append_date_to_output_filename == True:
             outfile_ens = f'{file_ens_prefix}{datestamp}_{ens + ensemble_start:03}.nc'
         else:
             outfile_ens = f'{file_ens_prefix}{ens + ensemble_start:03}.nc'
@@ -448,10 +461,12 @@ def generate_prob_estimates_serial(config, member_range=[]):
         # initialize outputs
         ds_out                = xr.Dataset()
         ds_out.coords['time'] = tartime
-        ds_out.coords['x']    = ds_grid_reg.coords['x']
-        ds_out.coords['y']    = ds_grid_reg.coords['y']
-        ds_out[grid_lat_name] = ds_grid_reg[grid_lat_name]
-        ds_out[grid_lon_name] = ds_grid_reg[grid_lon_name]
+
+        with xr.open_dataset(file_stn_nearinfo) as ds_nearinfo:
+            ds_out.coords['x']    = ds_nearinfo.coords['x']
+            ds_out.coords['y']    = ds_nearinfo.coords['y']
+            ds_out[grid_lat_name] = ds_nearinfo[grid_lat_name]
+            ds_out[grid_lon_name] = ds_nearinfo[grid_lon_name]
 
         # loop over variables
 
@@ -509,6 +524,17 @@ def generate_prob_estimates_serial(config, member_range=[]):
 
         # save output file
         ds_out = ds_out.transpose('time', 'y', 'x')
+
+        # reduce coordinate dims if needed
+        if 'x' in ds_out.dims and 'y' in ds_out.dims:
+            grid_lat_diff = np.abs(ds_out[grid_lat_name].isel(x=0).values - ds_out[grid_lat_name].isel(x=-1).values)
+            grid_lon_diff = np.abs(ds_out[grid_lon_name].isel(y=0).values - ds_out[grid_lon_name].isel(y=-1).values)
+            if (np.nanmax(grid_lat_diff) < 1e-10) and (np.nanmax(grid_lon_diff) < 1e-10):
+                ds_out.coords['x'] = ds_out[grid_lon_name].isel(y=0).values
+                ds_out.coords['y'] = ds_out[grid_lat_name].isel(x=0).values
+                ds_out = ds_out.drop_vars([grid_lat_name, grid_lon_name])
+                ds_out = ds_out.rename({'y': 'lat', 'x': 'lon'})
+
         ds_out = ds_out.fillna(-9999.0)
         encoding = {}
         for var in ds_out.data_vars:

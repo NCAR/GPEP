@@ -1,4 +1,4 @@
-import sys, os, math
+import sys, os, math, pathlib, time
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -25,9 +25,6 @@ from sklearn import *
 # Here a is a list of list, n is integer (size of the matrix)
 # index is a list, and d is also a list of size 1
 # Python list index starts from 0.  So matrix index is from 0 to n-1.
-#
-import math
-import time
 
 def ludcmp(a, n, indx, d):
     d[0] = 1.0
@@ -291,6 +288,30 @@ def sklearn_weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
 
 ########################################################################################################################
 # dynmaic predictor-related functions
+
+def check_dynamic_filepath(dynamic_predictor_filelist):
+    # check whether files in dynamic_predictor_filelist use relative or absolute path
+    # if the relative path is used, change it to the absolute path for simplicity
+    with open(dynamic_predictor_filelist, 'r') as f:
+        file0 = f.readlines()
+
+    file1 = []
+    path0 = str(pathlib.Path(os.path.abspath(dynamic_predictor_filelist)).parent)
+    flag = False
+    for f in file0:
+        f = f.strip()
+        if not os.path.isabs(f):
+            file1.append(f'{path0}/{f}')
+            flag = True
+        else:
+            file1.append(f)
+
+    if flag == True:
+        print(f'Changing the relative path in {dynamic_predictor_filelist} to the absolute path')
+        with open(dynamic_predictor_filelist, 'w') as f:
+            for fi in file1:
+                _ = f.write(f'{fi}\n')
+
 def initial_check_dynamic_predictor(dynamic_predictor_name, dynamic_predictor_filelist, target_vars):
 
     if not isinstance(dynamic_predictor_name, list):
@@ -305,6 +326,10 @@ def initial_check_dynamic_predictor(dynamic_predictor_name, dynamic_predictor_fi
     elif len(dynamic_predictor_name) == 0:
         print('dynamic_predictor_name length is 0')
     else:
+
+        # change relative path to absolute path if needed
+        check_dynamic_filepath(dynamic_predictor_filelist)
+
         with open(dynamic_predictor_filelist, 'r') as f:
             file0 = f.readline().strip()
         if not os.path.isfile(file0):
@@ -397,7 +422,7 @@ def regrid_xarray(ds, tarlon, tarlat, target, method):
     # if target='1D', tarlon and tarlat are vector of station points
     # if target='2D', tarlon and tarlat are vector defining grids
 
-    default_method = 'linear'
+    default_method = 'nearest'
     if len(method) == 0:
         method = default_method
 
@@ -598,7 +623,7 @@ def ML_regression_crossvalidation(stn_data, stn_predictor, ml_model, probflag, m
             if dynamic_predictors['flag'] == True:
                 xdata_add = dynamic_predictors['stn_predictor_dynamic'][:, t, :].T
                 stn_predictor_t = np.hstack((stn_predictor_t, xdata_add[~indexmissing, :]))
-            ytest = train_and_return_test(stn_predictor_t[train_index, :], stn_data[train_index, t], 
+            ytest = train_and_return_test(stn_predictor_t[train_index, :], stn_data[train_index, t],
                                           stn_predictor_t[test_index, :], ml_model, probflag, ml_settings)
             estimates[test_index, t] = ytest
 
@@ -789,7 +814,7 @@ def ML_regression_grid_multiprocessing(stn_data, stn_predictor, tar_predictor, m
 ########################################################################################################################
 # parallel version of loop regression: independent processes and large memory use if there are many cpus
 
-def init_worker(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag, settings, 
+def init_worker(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag, settings,
                 dynamic_predictors, importmodules):
     # Using a dictionary is not strictly necessary. You can also
     # use global variables.
@@ -861,13 +886,20 @@ def regression_for_blocks(r1, r2, c1, c2):
                             xdata_g_add = dynamic_predictors['tar_predictor_dynamic'][:, d, r, c]
                             if np.all(~np.isnan(xdata_near_add)) and np.all(~np.isnan(xdata_g_add)):
 
-                                # unique value check
-                                uniquenum = np.zeros(xdata_near_add.shape[1])
-                                for i in range(xdata_near_add.shape[1]):
-                                    uniquenum[i] = len(np.unique(xdata_near_add[:, i]))
+                                # # unique value check
+                                # uniquenum = np.zeros(xdata_near_add.shape[1])
+                                # for i in range(xdata_near_add.shape[1]):
+                                #     uniquenum[i] = len(np.unique(xdata_near_add[:, i]))
+                                #
+                                # xdata_near_add = xdata_near_add[:, uniquenum > 1]
+                                # xdata_g_add = xdata_g_add[uniquenum > 1]
 
-                                xdata_near_add = xdata_near_add[:, uniquenum > 1]
-                                xdata_g_add = xdata_g_add[uniquenum > 1]
+                                # whether use a dynamic predictor
+                                diff = np.max(xdata_near_add, axis=0) - np.min(xdata_near_add, axis=0)
+                                tolerance = 1e-10
+
+                                xdata_near_add = xdata_near_add[:, diff > tolerance]
+                                xdata_g_add = xdata_g_add[diff > tolerance]
 
                                 if xdata_near_add.size > 0:
                                     xdata_near_try = np.hstack((xdata_near, xdata_near_add))
@@ -894,16 +926,16 @@ def regression_for_blocks(r1, r2, c1, c2):
                         elif method == 'Logistic':
                             ydata_tar[r-r1, c-c1, d] = weight_logistic_regression(xdata_near, sample_weight, ydata_near, xdata_g)
                         else:
-                            ydata_tar[r-r1, c-c1, d] = train_and_return_test(xdata_near, ydata_near, xdata_g, method, probflag, 
+                            ydata_tar[r-r1, c-c1, d] = train_and_return_test(xdata_near, ydata_near, xdata_g, method, probflag,
                                                                              settings, sample_weight)
                         # else:
                         #     sys.exit(f'Unknonwn regression method: {method}')
 
     return ydata_tar
 
-def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag, 
+def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag,
                                            settings, dynamic_predictors={}, num_processes=4, importmodules=[]):
-#def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag, 
+#def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag,
 #                                           settings, dynamic_predictors={}, num_processes=4):
     t1 = time.time()
 
@@ -920,12 +952,12 @@ def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearInde
     else:
         items = [(0, nrow, c, c + 1) for c in range(ncol)]
 
-    with Pool(processes=num_processes, initializer=init_worker, initargs=(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, 
+    with Pool(processes=num_processes, initializer=init_worker, initargs=(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight,
                                                                           tar_predictor, method, probflag, settings, dynamic_predictors,
                                                                           importmodules)) as pool:
-    #with Pool(processes=num_processes, initializer=init_worker, initargs=(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, 
-    #                                                                      tar_predictor, method, probflag, settings, 
-    #                                                                      dynamic_predictors)) as pool:        
+    #with Pool(processes=num_processes, initializer=init_worker, initargs=(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight,
+    #                                                                      tar_predictor, method, probflag, settings,
+    #                                                                      dynamic_predictors)) as pool:
         result = pool.starmap(regression_for_blocks, items)
 
     # fill estimates to matrix
@@ -952,17 +984,17 @@ def main_regression(config, target):
     os.makedirs(path_regression, exist_ok=True)
 
     datestamp = f"{config['date_start'].replace('-', '')}-{config['date_end'].replace('-', '')}"
-    
-    if 'append_date_to_output' in config:
-        append_date_to_output = config['append_date_to_output']
+
+    if 'append_date_to_output_filename' in config:
+        append_date_to_output_filename = config['append_date_to_output_filename']
     else:
-        append_date_to_output = False
-    
+        append_date_to_output_filename = False
+
     if target == 'grid':
-        if append_date_to_output == True:
+        if append_date_to_output_filename == True:
             outfile = f'{path_regression}/{case_name}_grid_regression_{datestamp}.nc'  # regression without cross-validation
         else:
-            outfile = f'{path_regression}/{case_name}_grid_regression.nc' 
+            outfile = f'{path_regression}/{case_name}_grid_regression.nc'
         config['file_grid_reg'] = outfile
         if 'overwrite_grid_reg' in config:
             overwrite_flag = config['overwrite_grid_reg']
@@ -971,12 +1003,12 @@ def main_regression(config, target):
         predictor_name_static_target = config['predictor_name_static_grid']
 
     elif target == 'cval':
-        if append_date_to_output == True:
+        if append_date_to_output_filename == True:
             outfile = f'{path_regression}/{case_name}_stn_CV_regression_{datestamp}.nc'  # leave one out regression
         else:
             outfile = f'{path_regression}/{case_name}_stn_CV_regression.nc'
         config['file_cval_reg'] = outfile
-        
+
         if 'overwrite_stn_cv_reg' in config:
             overwrite_flag = config['overwrite_stn_cv_reg']
         else:
@@ -993,11 +1025,20 @@ def main_regression(config, target):
     outfile           = outfile # just to make sure all in/out settings are in this section
 
     target_vars       = config['target_vars']
-    target_vars_WithProbability = config['target_vars_WithProbability']
+
+    if 'target_vars_WithProbability' in config:
+        target_vars_WithProbability = config['target_vars_WithProbability']
+    else:
+        target_vars_WithProbability = []
+
+    if 'probability_thresholds' in config:
+        probability_thresholds      = config['probability_thresholds']
+    else:
+        probability_thresholds = [0] * len(target_vars_WithProbability)
 
     date_start        = config['date_start']
     date_end          = config['date_end']
-    
+
     predictor_name_static_stn    = config['predictor_name_static_stn']
     predictor_name_static_target = predictor_name_static_target
 
@@ -1029,9 +1070,14 @@ def main_regression(config, target):
     else:
         transform_settings = {}
 
-    dynamic_predictor_name      = config['dynamic_predictor_name']
-    dynamic_predictor_filelist  = config['dynamic_predictor_filelist']
-    dynamic_predictor_operation = config['dynamic_predictor_operation']
+    if 'dynamic_predictor_filelist' in config:
+        dynamic_predictor_filelist  = config['dynamic_predictor_filelist']
+        dynamic_predictor_name      = config['dynamic_predictor_name']
+        dynamic_predictor_operation = config['dynamic_predictor_operation']
+    else:
+        dynamic_predictor_filelist  = ''
+        dynamic_predictor_name      = []
+        dynamic_predictor_operation = []
 
     num_processes = config['num_processes']
     if 'master_seed' in config:
@@ -1042,11 +1088,11 @@ def main_regression(config, target):
 
     gridcore_classification = config['gridcore_classification']
     gridcore_continuous     = config['gridcore_continuous']
-    
+
     n_splits = config['n_splits']
 
     ensemble_flag = config['ensemble_flag']
-    backtransform = not ensemble_flag       # for example, if ensemble_flag=False, no need to create ensemble outputs, 
+    backtransform = not ensemble_flag       # for example, if ensemble_flag=False, no need to create ensemble outputs,
                                             #   the regression outputs should be backtransformed in this step
 
     if 'sklearn' in config:
@@ -1292,7 +1338,7 @@ def main_regression(config, target):
         else:
             if target == 'cval':
                 estimates = ML_regression_crossvalidation_multiprocessing(stn_value, stn_predictor, gridcore_continuous, probflag,
-                                                                          sklearn_config[gridcore_continuous_short], predictor_dynamic, 
+                                                                          sklearn_config[gridcore_continuous_short], predictor_dynamic,
                                                                           n_splits, num_processes, master_seed)
             else:
                 estimates = ML_regression_grid_multiprocessing(stn_value, stn_predictor, tar_predictor, gridcore_continuous, probflag,
@@ -1340,17 +1386,18 @@ def main_regression(config, target):
         # if the variable has occurrence features, do logistic regression too
         if var_name in target_vars_WithProbability:
             print(f'Add prob. of event occurrence (POE) for {var_name}: it is in target_vars_WithProbability {target_vars_WithProbability}')
-            if len(var_name_trans) > 0: # previous step used transformed variable; for logistic regression, use raw variable
-                stn_value = ds_stn[var_name].values.copy()
-                print('Number of negative values', np.sum(stn_value<0))
-            stn_value[stn_value > 0] = 1
+            stn_value = ds_stn[var_name].values.copy()
+            var_threshold = probability_thresholds[target_vars_WithProbability.index(var_name)]
+            # print(f'Number of values <= threshold {var_threshold}', np.sum(stn_value<=var_threshold))
+            stn_value[stn_value <= var_threshold] = 0
+            stn_value[stn_value > var_threshold] = 1
 
             probflag = True
             if gridcore_classification.startswith('LWR:'):
 
                 estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor,
                                                                    gridcore_classification[4:], probflag,
-                                                                   sklearn_config[gridcore_continuous_short], predictor_dynamic, 
+                                                                   sklearn_config[gridcore_continuous_short], predictor_dynamic,
                                                                    num_processes, importmodules)
             else:
                 if target == 'cval':
@@ -1375,6 +1422,16 @@ def main_regression(config, target):
                 ds_out.coords['met'] = metname
                 ds_out[var_poe + '_metric'] = xr.DataArray(metvalue, dims=('stn', 'met'))
                 del dtmp1, dtmp2
+
+    # reduce coordinate dims if needed
+    if 'x' in ds_out.dims and 'y' in ds_out.dims:
+        grid_lat_diff = np.abs(ds_out[grid_lat_name].isel(x=0).values - ds_out[grid_lat_name].isel(x=-1).values)
+        grid_lon_diff = np.abs(ds_out[grid_lon_name].isel(y=0).values - ds_out[grid_lon_name].isel(y=-1).values)
+        if (np.nanmax(grid_lat_diff) < 1e-10) and (np.nanmax(grid_lon_diff) < 1e-10):
+            ds_out.coords['x'] = ds_out[grid_lon_name].isel(y=0).values
+            ds_out.coords['y'] = ds_out[grid_lat_name].isel(x=0).values
+            ds_out = ds_out.drop_vars([grid_lat_name, grid_lon_name])
+            ds_out = ds_out.rename({'y': 'lat', 'x': 'lon'})
 
     # save output file
     encoding = {}

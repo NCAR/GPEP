@@ -96,8 +96,15 @@ def merge_stndata_into_single_file(config):
     else:
         transform_vars = [''] * len(target_vars)
 
-    transform_settings = config['transform']
-    mapping_InOut_var  = config['mapping_InOut_var']
+    if 'transform' in config:
+        transform_settings = config['transform']
+    else:
+        transform_settings = {}
+
+    if 'mapping_InOut_var' in config:
+        mapping_InOut_var  = config['mapping_InOut_var']
+    else:
+        mapping_InOut_var = []
 
     if 'overwrite_stninfo' in config:
         overwrite_stninfo = config['overwrite_stninfo']
@@ -225,7 +232,10 @@ def merge_stndata_into_single_file(config):
         encoding[var] = {'zlib': True, 'complevel': 4}
 
     if 'stnid' in ds_stn:
-        ds_stn['stnid'] = ds_stn['stnid'].astype('|S')
+        try:
+            ds_stn['stnid'] = ds_stn['stnid'].astype('|S')
+        except:
+            print('Failed to process station ID information.')
 
     ds_stn.to_netcdf(file_allstn, encoding=encoding)
 
