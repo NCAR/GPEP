@@ -44,8 +44,8 @@ def data_transformation(data, method, settings, mode='transform'):
 # input station data processing
 
 def merge_stndata_into_single_file(config):
-    # GMET v2.0 assumes that each station has an independent file. PyGMET will merge the station data into one file,
-    #   which can speed up i/o in subsequent runs of PYGMET using the same dataset. 
+    # GMET v2.0 assumes that each station has an independent file. GPEP will merge the station data into one file,
+    #   which can speed up i/o in subsequent runs of GPEP using the same dataset. 
     t1 = time.time()
 
     # parse and change configurations

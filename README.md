@@ -1,55 +1,55 @@
-# PyGMET
-PyGMET is a python-based tool for generating gridded analyses of time-varying geophysical variables based on merging point/in-situ and spatially-distributed (i.e., gridded) observations and predictor variables. It was developed to expand on and advance the capabilities of the Gridded Meteorological Ensemble Tool (GMET: https://github.com/NCAR/GMET), which is written in FORTRAN. PyGMET reproduces the baseline GMET capabilities (see Bunn et al, 2022) that were developed largely for meteorological dataset generation in climate and water resources applications, including creating inputs for hydrologic simulation and prediction. PyGMET has a more flexible structure and provides a much broader array of methods than GMET, which relied solely on locally-weighted spatial linear and logistic regression methods. PyGMET also has certain technical differences which were either unavoidable or pragmatic due to the conversion from FORTRAN to Python (including a different approach to cross-validation). 
+# GPEP
+Geospatial Probabilistic Estimation Package (GPEP) is a python-based tool for generating gridded analyses of time-varying geophysical variables based on merging point/in-situ and spatially-distributed (i.e., gridded) observations and predictor variables. It was developed to expand on and advance the capabilities of the Gridded Meteorological Ensemble Tool (GMET: https://github.com/NCAR/GMET), which is written in FORTRAN. GPEP reproduces the baseline GMET capabilities (see Bunn et al, 2022) that were developed largely for meteorological dataset generation in climate and water resources applications, including creating inputs for hydrologic simulation and prediction. GPEP has a more flexible structure and provides a much broader array of methods than GMET, which relied solely on locally-weighted spatial linear and logistic regression methods. GPEP also has certain technical differences which were either unavoidable or pragmatic due to the conversion from FORTRAN to Python (including a different approach to cross-validation). 
 
 <p align="center">
-  <img src="https://github.com/NCAR/PyGMET/blob/develop/docs/california2017_ensemble_prcp.gif" alt="ensemble precipitation" />
+  <img src="https://github.com/NCAR/GPEP/blob/develop/docs/california2017_ensemble_prcp.gif" alt="ensemble precipitation" />
 </p>
 
 ## Functionality
-PyGMET can perform the following tasks: 
+GPEP can perform the following tasks: 
 -   Generate deterministic estimates of any input variable defined in the configuration file using various regression methods, including machine learning methods supported by scikit-learn.
 -   Generate cross-validation outputs with evaluation results at station points.
 -   Generate probabilistic estimates of any number of ensemble members.
 -   Provide intermediate outputs, such as spatiotemporally correlated random fields, spatial correlation, temporal autocorrelation (lag 1), nearby station index/weights, and more.
 
 ## Installation
-PyGMET attempts to rely on common library dependencies in Python (version 3 or greater) environment. It can be run as long as the packages listed in environment.yml or requirements.txt are installed. Users can also create virtual environments following below instructions. 
+GPEP attempts to rely on common library dependencies in Python (version 3 or greater) environment. It can be run as long as the packages listed in environment.yml or requirements.txt are installed. Users can also create virtual environments following below instructions. 
 - Pip
 ```  
-cd /your/path/of/PyGMET  
-virtualenv PyGMET-env  
-source PyGMET-env/bin/activate  
+cd /your/path/of/GPEP  
+virtualenv GPEP-env  
+source GPEP-env/bin/activate  
 pip install -r requirements.txt  
 ```  
 - Conda
 ```  
 conda env create -f environment.yml  
-conda activate PyGMET-env  
+conda activate GPEP-env  
 ```
 
 ## Usage
 
-To run PyGMET, follow these steps:
+To run GPEP, follow these steps:
 
 1.  Prepare the configuration file.  
 Use configuration files in the `./test_cases` folder as templates. Refer to `How_to_create_config_files.md` for more details.
-2.  Run PyGMET  
+2.  Run GPEP  
 `python main.py /your/path/config_filename.toml`.
 3. Batch run / operational run  
-When producing a dataset in a target domain or testing different method choices, PyGMET can be run in many batches (e.g., month by month). We recommend users run PyGMET in two steps to improve efficiency:
-    -   **Test run**: Run PyGMET on a test period or the first batch. Basic outputs (e.g., nearby station information, weights, and spatial correlation structures) will be generated and saved, which can be used by following batch runs.
-    -   **Batch run**: Run PyGMET without changing `outpath_parent` so that PyGMET can find the outputs generated in the test run.
+When producing a dataset in a target domain or testing different method choices, GPEP can be run in many batches (e.g., month by month). We recommend users run GPEP in two steps to improve efficiency:
+    -   **Test run**: Run GPEP on a test period or the first batch. Basic outputs (e.g., nearby station information, weights, and spatial correlation structures) will be generated and saved, which can be used by following batch runs.
+    -   **Batch run**: Run GPEP without changing `outpath_parent` so that GPEP can find the outputs generated in the test run.
 
-## Test Case(s) for PyGMET
+## Test Case(s) for GPEP
 
-A test case for PyGMET is provided in the `./test_cases` folder, leveraging the test case currently in use for GMET v2.0. The `./tools/get_testcase.py` can be run to obtain the test case from Fortran GMET repo, which can reproduce the results in the `./test_cases` folder. Jupyter Notebooks in the `./docs` folder can be used to visualize PyGMET test case outputs.
+A test case for GPEP is provided in the `./test_cases` folder, leveraging the test case currently in use for GMET v2.0. The `./tools/get_testcase.py` can be run to obtain the test case from Fortran GMET repo, which can reproduce the results in the `./test_cases` folder. Jupyter Notebooks in the `./docs` folder can be used to visualize GPEP test case outputs.
 
 ## Notes
 This code is a work in progress and is provided without guarantee of fitness for any particular application.  
-The PyGMET develop branch is the most recent. Branch structure may be changed during the development.  
+The main branch is the formal released version and the develop branch is the most recent. Branch structure may be changed during the development.  
 
-## PyGMET (prototype) Datasets
-Prior to formal PyGMET development at NCAR, a python code including some of the GMET functionality was developed by G. Tang.  This code was a precursor to the current PyGMET development effort at NCAR, and was used to generate the following ensemble meteorological datasets.  
+## GPEP (prototype) Datasets
+Prior to formal GPEP development at NCAR, a python code including some of the GMET functionality was developed by G. Tang.  This code was a precursor to the current GPEP development effort at NCAR, and was used to generate the following ensemble meteorological datasets.  
 EMDNA: Ensemble Meteorological Dataset for North America, https://doi.org/10.20383/101.0275  
 EM-Earth: The Ensemble Meteorological Dataset for Planet Earth, https://doi.org/10.20383/102.0547
 
@@ -67,9 +67,9 @@ Newman, A. J. et al. (2019) ‘Use of daily station observations to produce high
 Newman, AJ, MP Clark, J Craig, B Nijssen, AW Wood, E Gutmann, N Mizukami, L Brekke, and JR Arnold, 2015, Gridded Ensemble Precipitation and Temperature Estimates for the Contiguous United States, J. Hydromet., doi: http://dx.doi.org/10.1175/JHM-D-15-0026.1  
 Clark, M. P. and Slater, A. G. (2006) ‘Probabilistic Quantitative Precipitation Estimation in Complex Terrain’, Hydrometeorology, Journal O F, (2000), pp. 3–22.
 
-### PyGMET prototype
+### GPEP prototype
 Tang, G., Clark, M. P., & Papalexiou, S. M. (2022). EM-Earth: The Ensemble Meteorological Dataset for Planet Earth. Bulletin of the American Meteorological Society, 103(4), E996–E1018. https://doi.org/10.1175/BAMS-D-21-0106.1  
 Tang, G., Clark, M. P., Papalexiou, S. M., Newman, A. J., Wood, A. W., Brunet, D., & Whitfield, P. H. (2021). EMDNA: an Ensemble Meteorological Dataset for North America. Earth System Science Data, 13(7), 3337–3362. https://doi.org/10.5194/essd-13-3337-2021
 
-### PyGMET
-A journal article is currently under development.
+### GPEP
+Tang, G., Wood, A. W., Newman, A. J., Clark, M. P., Papalexiou, S. M. GPEP v1.0: a Geospatial Probabilistic Estimation Package to support Earth Science applications, Geoscientific Model Development (submitted)  

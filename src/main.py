@@ -62,5 +62,5 @@ if __name__ == '__main__':
 
     t2 = time.time()
     print('Total time cost (s):', t2-t1)
-    print('Successfully finished PyGMET run!')
+    print('Successfully finished GPEP run!')
 
