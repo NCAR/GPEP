@@ -21,7 +21,7 @@ def read_config(config_file):
     config.update(settings)
 
     # model paths
-    for p in ['input_stn_list', 'input_stn_path', 'infile_grid_domain', 'outpath_parent']:
+    for p in ['input_stn_list', 'input_stn_path', 'infile_grid_domain', 'outpath_parent', 'dynamic_predictor_filelist']:
         if p in config:
             pathconfig = str(pathlib.Path(os.path.abspath(config_file)).parent)
             if not os.path.isabs(config[p]):

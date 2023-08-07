@@ -42,12 +42,7 @@ When producing a dataset in a target domain or testing different method choices,
 
 ## Test Cases for GPEP
 
-test cases for GPEP can be obtained using the `./tools/get_testcase.py` script. The cali2017 test case leverages the test case currently in use for GMET v2.0. The script will retrieve test cases from Zenodo. The default output path of the test case is `../../GPEP_test_cases`, which can be changed by users. 
-
-
-testcase.config.dynamic.toml
-
-The script can be run to obtain the test case from Fortran GMET repo, which can reproduce the results in the `./test_cases` folder. Jupyter Notebooks in the `./docs` folder can be used to visualize GPEP test case outputs.
+The test cases of GPEP are open access on Zenodo: https://zenodo.org/record/8222852. They can be obtained using the `./tools/get_testcase.py` script. See ./tools/README.md for more descriptions.
 
 ## Notes
 This code is a work in progress and is provided without guarantee of fitness for any particular application.  
@@ -65,12 +60,12 @@ EM-Earth: The Ensemble Meteorological Dataset for Planet Earth, https://doi.org/
 
 ## References
 ### FORTRAN-based GMET
-__GMET v2.0__:  Bunn, PTW, AW Wood, AJ Newman, H Chang, CL Castro, MP Clark and JR Arnold, 2022, Improving station-based ensemble surface meteorological analyses using numerical weather prediction:  A case study of the Oroville Dam crisis precipitation event. J. Hydromet. 23(7), 1155-1169. https://doi-org.cuucar.idm.oclc.org/10.1175/JHM-D-21-0193.1
-Liu, Hongli, AW Wood, AJ Newman and MP Clark, 2021, Ensemble dressing of meteorological fields: using spatial regression to estimate uncertainty in deterministic gridded meteorological datasets, AMS J. Hydromet., https://doi.org/10.1175/JHM-D-21-0176.1
-Newman, A. J. et al. (2020) ‘Probabilistic Spatial Meteorological Estimates for Alaska and the Yukon’, Journal of Geophysical Research: Atmospheres, 125(22), pp. 1–21. doi: 10.1029/2020JD032696.   
-Newman, A. J. et al. (2019) ‘Use of daily station observations to produce high-resolution gridded probabilistic precipitation and temperature time series for the Hawaiian Islands’, Journal of Hydrometeorology, 20(3), pp. 509–529. doi: 10.1175/JHM-D-18-0113.1.    
-Newman, AJ, MP Clark, J Craig, B Nijssen, AW Wood, E Gutmann, N Mizukami, L Brekke, and JR Arnold, 2015, Gridded Ensemble Precipitation and Temperature Estimates for the Contiguous United States, J. Hydromet., doi: http://dx.doi.org/10.1175/JHM-D-15-0026.1  
-Clark, M. P. and Slater, A. G. (2006) ‘Probabilistic Quantitative Precipitation Estimation in Complex Terrain’, Hydrometeorology, Journal O F, (2000), pp. 3–22.
+__GMET v2.0__:  Bunn, PTW, AW Wood, AJ Newman, H Chang, CL Castro, MP Clark and JR Arnold, 2022, Improving station-based ensemble surface meteorological analyses using numerical weather prediction:  A case study of the Oroville Dam crisis precipitation event. J. Hydromet. 23(7), 1155-1169. https://doi.org/10.1175/JHM-D-21-0193.1  
+Liu, Hongli, AW Wood, AJ Newman and MP Clark, 2021, Ensemble dressing of meteorological fields: using spatial regression to estimate uncertainty in deterministic gridded meteorological datasets, AMS J. Hydromet., https://doi.org/10.1175/JHM-D-21-0176.1   
+Newman, A. J. et al. (2020) Probabilistic Spatial Meteorological Estimates for Alaska and the Yukon, Journal of Geophysical Research: Atmospheres, 125(22), pp. 1–21. https://doi.org/10.1029/2020JD032696  
+Newman, A. J. et al. (2019) Use of daily station observations to produce high-resolution gridded probabilistic precipitation and temperature time series for the Hawaiian Islands, Journal of Hydrometeorology, 20(3), pp. 509–529. https://doi.org/10.1175/JHM-D-18-0113.1  
+Newman, AJ, MP Clark, J Craig, B Nijssen, AW Wood, E Gutmann, N Mizukami, L Brekke, and JR Arnold, 2015, Gridded Ensemble Precipitation and Temperature Estimates for the Contiguous United States, J. Hydromet., doi: http://dx.doi.org/10.1175/JHM-D-15-0026.1   
+Clark, M. P. and Slater, A. G. (2006) Probabilistic Quantitative Precipitation Estimation in Complex Terrain, Hydrometeorology, Journal O F, (2000), pp. 3–22. https://doi.org/10.1175/JHM474.1  
 
 ### GPEP prototype
 Tang, G., Clark, M. P., & Papalexiou, S. M. (2022). EM-Earth: The Ensemble Meteorological Dataset for Planet Earth. Bulletin of the American Meteorological Society, 103(4), E996–E1018. https://doi.org/10.1175/BAMS-D-21-0106.1  

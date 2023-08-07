@@ -58,7 +58,7 @@ transform_vars = ['boxcox', '', '']
 # only useful when dynamic_predictor_filelist is valid
 
 # file list containing dynamic predictor inputs (optional). Give it a nonsense string (e.g., "NA") can turn off dynamic predictors
-dynamic_predictor_filelist = "../test_cases/cali2017/inputs/gridded_datafile_list.txt"
+dynamic_predictor_filelist = "../../GPEP_test_cases/cali2017/inputs/gridded_datafile_list.txt"
 
 # dynamic predictors for each target_vars. Empty list means no dynamic predictors
 dynamic_predictor_name = [['cube_root_prec_rate', 'tmp_2m'],
