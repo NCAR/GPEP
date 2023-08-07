@@ -24,14 +24,14 @@ modelsettings_file = "model.settings.RF.toml"
 ############################## input/output files
 # station input data: method 1 or 2
 
-input_stn_list = "../test_cases/cali2017/inputs/CALI.screened_stn_list_slope.v3.csv"
-input_stn_path = "../test_cases/cali2017/inputs/stndata"
+input_stn_list = "../../GPEP_test_cases/cali2017/inputs/CALI.screened_stn_list_slope.v3.csv"
+input_stn_path = "../../GPEP_test_cases/cali2017/inputs/stndata"
 
 # domain gridded attributes (e.g., dem, lon, lat, slope)
-infile_grid_domain = "../test_cases/cali2017/inputs/CALI.gridinfo.0625_v3.nc"
+infile_grid_domain = "../../GPEP_test_cases/cali2017/inputs/CALI.gridinfo.0625_v3.nc"
 
 # parent output path
-outpath_parent = "../test_cases/cali2017/outputs"
+outpath_parent = "../../GPEP_test_cases/cali2017/outputs"
 
 ############################## target variables and periods
 # target period
@@ -50,7 +50,7 @@ maxRange_vars = [+inf]
 # only useful when dynamic_predictor_filelist is valid
 
 # file list containing dynamic predictor inputs (optional). Give it a nonsense string (e.g., "NA") can turn off dynamic predictors
-dynamic_predictor_filelist = "../test_cases/cali2017/inputs/gridded_datafile_list.txt"
+dynamic_predictor_filelist = "../../GPEP_test_cases/cali2017/inputs/gridded_datafile_list.txt"
 
 # dynamic predictors for each target_vars. Empty list means no dynamic predictors
 dynamic_predictor_name = [['cube_root_prec_rate', 'tmp_2m']

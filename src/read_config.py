@@ -1,6 +1,6 @@
 # read model configurations
 
-import toml, pathlib, json
+import os, toml, pathlib, json
 
 def read_config(config_file):
 
@@ -20,10 +20,19 @@ def read_config(config_file):
 
     config.update(settings)
 
+    # model paths
+    for p in ['input_stn_list', 'input_stn_path', 'infile_grid_domain', 'outpath_parent', 'dynamic_predictor_filelist']:
+        if p in config:
+            pathconfig = str(pathlib.Path(os.path.abspath(config_file)).parent)
+            if not os.path.isabs(config[p]):
+                config[p] = pathconfig + '/' + config[p]
+
     print('#'*50)
     print('Configuration file:', config_file)
-    if config['print_config'] == True:
-        print(json.dumps(config, sort_keys=True, indent=4))
+    
+    if 'print_config' in config:
+        if config['print_config'] == True:
+            print(json.dumps(config, sort_keys=True, indent=4))
     print('#'*50, '\n'*2)
 
     return config

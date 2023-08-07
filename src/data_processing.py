@@ -106,10 +106,6 @@ def merge_stndata_into_single_file(config):
     else:
         mapping_InOut_var = []
 
-    if 'overwrite_stninfo' in config:
-        overwrite_stninfo = config['overwrite_stninfo']
-    else:
-        overwrite_stninfo = False
         
     if 'overwrite_merged_stnfile' in config:
         overwrite_merged_stnfile = config['overwrite_merged_stnfile']
