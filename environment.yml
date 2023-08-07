@@ -1,4 +1,4 @@
-name: PyGMET-env
+name: GPEP-env
 channels:
   - conda-forge
 dependencies:

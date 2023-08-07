@@ -154,10 +154,10 @@ def station_space_time_correlation(config):
     config['file_stn_cc'] = file_stn_cc
 
     # in/out information to this function
-    file_allstn = config['file_allstn']
-    target_vars = config['target_vars']
-    file_stn_cc = config['file_stn_cc']
-    num_processes = config['num_processes']
+    file_allstn    = config['file_allstn']
+    target_vars    = config['target_vars']
+    file_stn_cc    = config['file_stn_cc']
+    num_processes  = config['num_processes']
     rolling_window = config['rolling_window']
 
     if 'auto_corr_method' in config:
@@ -189,18 +189,18 @@ def station_space_time_correlation(config):
     print('#' * 50)
     print(f'Calculate station space and time correlation')
     print('#' * 50)
-    print('Input file_allstn:', file_allstn)
-    print('Output file_stn_cc:', file_stn_cc)
-    print('Target variables:', target_vars)
+    print('Input file_allstn:  ', file_allstn)
+    print('Output file_stn_cc: ', file_stn_cc)
+    print('Target variables:   ', target_vars)
     print('Number of processes:', num_processes)
-    print('Linked variables:', linkvar)
+    print('Linked variables:   ', linkvar)
 
     if os.path.isfile(file_stn_cc):
         print('Note! Station correlation file exists')
         if overwrite_station_cc == True:
             print('overwrite_station_cc is True. Continue.')
         else:
-            print('overwrite_station_cc is False. Skip correlation calculation.')
+            print('overwrite_station_cc is False. Skip correlation calculation.\n')
             return config
 
     ########################################################################################################################
@@ -218,34 +218,38 @@ def station_space_time_correlation(config):
 
     for vn in range(len(target_vars)):
 
-        var_name = target_vars[vn]
+        var_name            = target_vars[vn]
         auto_corr_method_vn = auto_corr_method[vn]
 
         # calculate auto correlation
         print('Auto correlation calculation for:', var_name)
         with xr.open_dataset(file_allstn) as ds_stn:
 
+            lat = ds_stn['lat'].values
+            lon = ds_stn['lon'].values
+
             if (len(ds_stn.time) < 12 * rolling_window) and (auto_corr_method_vn == 'anomaly'):
                 auto_corr_method_vn = 'direct'
-                print(f'Station data length is too short. Change auto_corr_method from anomaly to direct.')
+                print(f'Station data length is too short -- changing auto_corr_method from anomaly to direct.')
 
             # calculate var - moving_averaging(var) to remove monthly cycle
             if auto_corr_method_vn == 'direct':
                 stn_value = ds_stn[var_name].values
+                cc = station_lag_correlation(stn_value, lag)
+
             elif auto_corr_method_vn == 'anomaly':
-                stn_value_raw = ds_stn[var_name].values
+                stn_value = ds_stn[var_name].values
                 stn_value_mv = ds_stn[var_name].rolling(time=rolling_window, center=True).mean().values
-                stn_value = stn_value_raw - stn_value_mv
+                stn_value_anom = stn_value - stn_value_mv
+                cc = station_lag_correlation(stn_value_anom, lag)
+
             else:
-                sys.exit('Unknown auto_corr_method')
-
-            lat = ds_stn['lat'].values
-            lon = ds_stn['lon'].values
-
-        cc = station_lag_correlation(stn_value, lag)
+                print('Unknown auto_corr_method: entry=', auto_corr_method_vn); sys.exit()
 
         ds_out[var_name + '_cc_lag1'] = xr.DataArray(cc, dims=('stn'))
         ds_out[var_name + '_cc_lag1_mean'] = xr.DataArray([np.nanmean(cc)], dims=('z'))
+
+        print(f'The mean lag-1 auto CC for {var_name} is {np.nanmean(cc)}')
 
         # calculate space correlation
         if not clen_config[vn] > 0:
@@ -262,10 +266,10 @@ def station_space_time_correlation(config):
             ds_out[f'{var_name}_space_Clen'] = xr.DataArray([popt[0]], dims=('z'))
             # ds_out[f'{var_name}_space_param2'] = xr.DataArray([popt[1]], dims=('z'))
 
+            print(f'The mean spatial correlation length (Clen) for {var_name} is {popt[0]}')
+
     ########################################################################################################################
     # calculate cross correlation
-    # just precipitation VS trange. This should be changed in the future to variable dependence setting without any hard-caoded variable
-
     # calculate var - moving_averaging(var) to remove monthly cycle
     for var1, var2 in linkvar.items():
         print(f'Calculate cross correlation between {var1} and {var2}')
@@ -290,6 +294,8 @@ def station_space_time_correlation(config):
 
         ds_out[f'{var1}_{var2}_cc_cross'] = xr.DataArray(cc, dims=('stn'))
         ds_out[f'{var1}_{var2}_cc_cross_mean'] = xr.DataArray([np.nanmean(cc)], dims=('z'))
+
+        print(f'The cross correlation between {var1} and {var2} is {np.nanmean(cc)}')
 
     ########################################################################################################################
     # save output file

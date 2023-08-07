@@ -103,17 +103,17 @@ def extrapolate_auxiliary_info(config):
     # parse and change configurations
     case_name = config['case_name']
     outpath_parent = config['outpath_parent']
-    path_regression = f'{outpath_parent}/regression_outputs'
+    path_regression = f'{outpath_parent}/regression/'
     os.makedirs(path_regression, exist_ok=True)
 
     datestamp = f"{config['date_start'].replace('-', '')}-{config['date_end'].replace('-', '')}"
-    file_grid_auxiliary = f'{path_regression}/{case_name}_Auxiliary_{datestamp}.nc'  # leave one out regression
+    file_grid_auxiliary = f'{path_regression}/{case_name}_auxiliary_{datestamp}.nc'  # leave one out regression
     config['file_grid_auxiliary'] = file_grid_auxiliary
 
 
     # in/out information to this function
     file_allstn = config['file_allstn']
-    file_loo_reg = config['file_loo_reg']
+    file_cval_reg = config['file_cval_reg']
     file_stn_nearinfo = config['file_stn_nearinfo']
     file_stn_weight = config['file_stn_weight']
     file_grid_auxiliary = config['file_grid_auxiliary']
@@ -132,33 +132,33 @@ def extrapolate_auxiliary_info(config):
     else:
         target_vars_max_constrain = []
 
-    if 'overwrite_cv_reg' in config:
+    if 'overwrite_stn_cv_reg' in config:
         # because error is calculated from loo
-        overwrite_cv_reg = config['overwrite_cv_reg']
+        overwrite_stn_cv_reg = config['overwrite_stn_cv_reg']
     else:
-        overwrite_cv_reg = False
+        overwrite_stn_cv_reg = False
 
     print('#' * 50)
     print(f'Station error interpolation')
     print('#' * 50)
-    print('Input file_loo_reg:', file_loo_reg)
-    print('Input file_stn_nearinfo:', file_stn_nearinfo)
-    print('Input file_stn_weight:', file_stn_weight)
+    print('Input file_cval_reg:       ', file_cval_reg)
+    print('Input file_stn_nearinfo:   ', file_stn_nearinfo)
+    print('Input file_stn_weight:     ', file_stn_weight)
     print('Output file_grid_auxiliary:', file_grid_auxiliary)
-    print('Target variables:', target_vars)
+    print('Target variables:          ', target_vars)
 
     if os.path.isfile(file_grid_auxiliary):
         print('Note! Output gridded error file exists')
-        if overwrite_cv_reg == True:
-            print('overwrite_cv_reg is True. Continue.')
+        if overwrite_stn_cv_reg == True:
+            print('overwrite_stn_cv_reg is True. Continue.')
         else:
-            print('overwrite_cv_reg is False. Skip regression.')
+            print('overwrite_stn_cv_reg is False. Skip regression.\n')
             return config
 
     ########################################################################################################################
     # initialize outputs
-    with xr.open_dataset(file_loo_reg) as ds_loo:
-        timeaxis = ds_loo.time.values
+    with xr.open_dataset(file_cval_reg) as ds_cval:
+        timeaxis = ds_cval.time.values
 
     with xr.open_dataset(file_stn_nearinfo) as ds_nearinfo:
         xaxis = ds_nearinfo.x
@@ -187,14 +187,14 @@ def extrapolate_auxiliary_info(config):
         # load data
 
         # station data
-        with xr.open_dataset(file_loo_reg) as ds_loo:
+        with xr.open_dataset(file_cval_reg) as ds_cval:
             if len(var_name_trans) > 0:
-                loo_value = ds_loo[var_name_trans].values
+                loo_value = ds_cval[var_name_trans].values
             else:
-                loo_value = ds_loo[var_name].values
+                loo_value = ds_cval[var_name].values
 
         with xr.open_dataset(file_allstn) as ds_stn:
-            ds_stn = ds_stn.sel(time=ds_loo.time)
+            ds_stn = ds_stn.sel(time=ds_cval.time)
             if len(var_name_trans) > 0:
                 stn_value = ds_stn[var_name_trans].values
             else:

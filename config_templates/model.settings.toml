@@ -1,0 +1,83 @@
+# Model settings. Default values can be used unless users wwant to investigate various methods or formats.
+# See ./docs/How_to_create_config_files.md for instructions
+
+# master seed controlling all probabilistic process
+master_seed = 20230104
+
+########################################################################################################################
+# local/global regression methods
+
+########################################################################################################################
+gridcore_continuous = 'LWR:Linear'
+gridcore_classification = 'LWR:Logistic' # for probability of event
+n_splits = 10 # only useful for sklearn machine learning methods
+
+########################################################################################################################
+# distance-based weight calculation
+########################################################################################################################
+
+# Number of stations to consider for each target point. nearstn_min<=nearstn_max.
+nearstn_min = 35  # nearby stations: minimum number
+nearstn_max = 35  # nearby stations: maximum number
+
+# Weight calculation formula. See ./docs/How_to_create_config_files.md for instruction.
+weight_formula = '(1 - (dist / maxdist) ** 3) ** 3'
+
+# Initial Search Distance in km
+initial_distance = 100
+
+# first try this radius (km). if not enough, expand. Could be useful to reduce computation time for large domain search.
+try_radius = 10000
+
+########################################################################################################################
+# default settings
+########################################################################################################################
+[netcdf_info]
+# the spatial dims of input stations
+stn_lat_name = 'lat'
+stn_lon_name = 'lon'
+
+# the 2D spatial dims of the target grid domain
+# note that target grid domain netcdf must have x/y dims, while lat and lon are 2D arrays
+grid_lat_name = 'latitude'
+grid_lon_name = 'longitude'
+grid_mask_name = 'mask'
+
+# the 2D spatial dims of dynamic predictor inputs
+dynamic_grid_lat_name = 'lat'
+dynamic_grid_lon_name = 'lon'
+
+
+[transform]
+# note: the name must be consistent with transform_vars
+[transform.boxcox]
+exponent = 4
+
+
+[sklearn]
+# if no parameters are provided or if the section does not even exist, default parameters will be used.
+[sklearn.RandomForestRegressor]
+n_estimators = 500 # a example of RandomForestRegressor parameter
+n_jobs = 5
+[sklearn.RandomForestClassifier]
+n_estimators = 500 # a example of RandomForestRegressor parameter
+n_jobs = 5
+
+[flags]
+# output random fields
+output_randomfield = false
+
+# output filename format
+append_date_to_output_filename = true
+
+# print configuration information
+print_config = false
+
+# overwrite existing files
+overwrite_merged_stnfile = false
+overwrite_station_cc = false
+overwrite_weight = false
+overwrite_cv_reg = false
+overwrite_grid_reg = false
+overwrite_ens = false
+overwrite_spcorr = false

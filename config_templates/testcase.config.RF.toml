@@ -1,0 +1,76 @@
+# a simple version of configuration file which only addresses the spatial regression of precipitation
+# random forest is used as the regression methods
+# check ./doc/How_to_create_config_files for detailed guidance
+
+# Caveat: The performance of the Random Forest model depends on the selection of input predictors/features.
+
+########################################################################################################################
+# general settings
+########################################################################################################################
+
+# case name. will be used in ensemble outputs generations
+case_name = 'simpleRF'
+
+# worker number (cpu cores)
+num_processes = 5
+
+# model setting file
+modelsettings_file = "model.settings.RF.toml"
+
+########################################################################################################################
+# settings for gridded estimation using regression or machine learning methods
+########################################################################################################################
+
+############################## input/output files
+# station input data: method 1 or 2
+
+input_stn_list = "../../GPEP_test_cases/cali2017/inputs/CALI.screened_stn_list_slope.v3.csv"
+input_stn_path = "../../GPEP_test_cases/cali2017/inputs/stndata"
+
+# domain gridded attributes (e.g., dem, lon, lat, slope)
+infile_grid_domain = "../../GPEP_test_cases/cali2017/inputs/CALI.gridinfo.0625_v3.nc"
+
+# parent output path
+outpath_parent = "../../GPEP_test_cases/cali2017/outputs"
+
+############################## target variables and periods
+# target period
+date_start = "2017-02-01"
+date_end = "2017-02-10"
+
+# input/output variables
+input_vars = ['prcp'] # variables in the raw station files
+target_vars = ['prcp'] # target output variables
+
+# the below three settings are optional. if not provided, there will be no min/max limit or transformation
+minRange_vars = [0]
+maxRange_vars = [+inf]
+
+############################## dynamic predictors for regression
+# only useful when dynamic_predictor_filelist is valid
+
+# file list containing dynamic predictor inputs (optional). Give it a nonsense string (e.g., "NA") can turn off dynamic predictors
+dynamic_predictor_filelist = "../../GPEP_test_cases/cali2017/inputs/gridded_datafile_list.txt"
+
+# dynamic predictors for each target_vars. Empty list means no dynamic predictors
+dynamic_predictor_name = [['cube_root_prec_rate', 'tmp_2m']
+                          ]
+
+# dynamic predictors may needs some processing. two keywords: "interp" an "transform"
+# Example "cube_root_prec_rate:interp=linear:transform=boxcox"
+dynamic_predictor_operation = []
+
+
+############################## static/dynamic predictors used in regression
+# static predictors in input_stn_list or input_stn_all
+predictor_name_static_stn = ['lat', 'lon', 'elev', 'slp_n', 'slp_e']
+
+# dynamic predictors in infile_grid_domain
+predictor_name_static_grid = ['latitude', 'longitude', 'elev', 'gradient_n_s', 'gradient_w_e']
+
+########################################################################################################################
+# settings for probabilistic estimation
+########################################################################################################################
+
+# run ensemble or not: true or false
+ensemble_flag = false
