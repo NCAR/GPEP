@@ -32,7 +32,7 @@ conda activate GPEP-env
 To run GPEP, follow these steps:
 
 1.  Prepare the configuration file.  
-Use configuration files in the `./test_cases` folder as templates. Refer to `How_to_create_config_files.md` for more details.
+Use configuration files in the `./config_templates` folder as templates. Refer to `./docs/How_to_create_config_files.md` for more details.
 2.  Run GPEP  
 `python main.py /your/path/config_filename.toml`.
 3. Batch run / operational run  
@@ -40,9 +40,14 @@ When producing a dataset in a target domain or testing different method choices,
     -   **Test run**: Run GPEP on a test period or the first batch. Basic outputs (e.g., nearby station information, weights, and spatial correlation structures) will be generated and saved, which can be used by following batch runs.
     -   **Batch run**: Run GPEP without changing `outpath_parent` so that GPEP can find the outputs generated in the test run.
 
-## Test Case(s) for GPEP
+## Test Cases for GPEP
 
-A test case for GPEP is provided in the `./test_cases` folder, leveraging the test case currently in use for GMET v2.0. The `./tools/get_testcase.py` can be run to obtain the test case from Fortran GMET repo, which can reproduce the results in the `./test_cases` folder. Jupyter Notebooks in the `./docs` folder can be used to visualize GPEP test case outputs.
+test cases for GPEP can be obtained using the `./tools/get_testcase.py` script. The cali2017 test case leverages the test case currently in use for GMET v2.0. The script will retrieve test cases from Zenodo. The default output path of the test case is `../../GPEP_test_cases`, which can be changed by users. 
+
+
+testcase.config.dynamic.toml
+
+The script can be run to obtain the test case from Fortran GMET repo, which can reproduce the results in the `./test_cases` folder. Jupyter Notebooks in the `./docs` folder can be used to visualize GPEP test case outputs.
 
 ## Notes
 This code is a work in progress and is provided without guarantee of fitness for any particular application.  

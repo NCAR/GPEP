@@ -74,7 +74,7 @@ append_date_to_output_filename = true
 print_config = false
 
 # overwrite existing files
-overwrite_stninfo = false
+overwrite_merged_stnfile = false
 overwrite_station_cc = false
 overwrite_weight = false
 overwrite_cv_reg = false
