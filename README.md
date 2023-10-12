@@ -1,4 +1,7 @@
-# GPEP
+# GPEP  
+
+[![DOI](https://zenodo.org/badge/674783032.svg)](https://zenodo.org/badge/latestdoi/674783032)  
+
 Geospatial Probabilistic Estimation Package (GPEP) is a python-based tool for generating gridded analyses of time-varying geophysical variables based on merging point/in-situ and spatially-distributed (i.e., gridded) observations and predictor variables. It was developed to expand on and advance the capabilities of the Gridded Meteorological Ensemble Tool (GMET: https://github.com/NCAR/GMET), which is written in FORTRAN. GPEP reproduces the baseline GMET capabilities (see Bunn et al, 2022) that were developed largely for meteorological dataset generation in climate and water resources applications, including creating inputs for hydrologic simulation and prediction. GPEP has a more flexible structure and provides a much broader array of methods than GMET, which relied solely on locally-weighted spatial linear and logistic regression methods. GPEP also has certain technical differences which were either unavoidable or pragmatic due to the conversion from FORTRAN to Python (including a different approach to cross-validation). 
 
 <p align="center">
@@ -73,3 +76,6 @@ Tang, G., Clark, M. P., Papalexiou, S. M., Newman, A. J., Wood, A. W., Brunet, D
 
 ### GPEP
 Tang, G., Wood, A. W., Newman, A. J., Clark, M. P., Papalexiou, S. M. GPEP v1.0: a Geospatial Probabilistic Estimation Package to support Earth Science applications, Geoscientific Model Development (submitted)  
+
+## Contact
+Guoqiang Tang (guoqiang@ucar.edu)
