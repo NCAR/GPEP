@@ -87,7 +87,7 @@ def merge_stndata_into_single_file(config):
         if isinstance(maxRange_vars, (int, float)):
             maxRange_vars = [maxRange_vars] * len(target_vars)
     else:
-        minRange_vars = [np.inf] * len(target_vars)
+        maxRange_vars = [np.inf] * len(target_vars)
 
     if 'transform_vars' in config:
         transform_vars = config['transform_vars']
