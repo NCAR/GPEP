@@ -4,40 +4,178 @@ import os, time, sys
 import pandas as pd
 import numpy as np
 import xarray as xr
+from decorators import timer
+from scipy.stats import norm
+from scipy.interpolate import interp1d
+from empirical_cdf import calculate_monthly_cdfs, normal_quantile_transform, inverse_normal_quantile_transform
 
 ########################################################################################################################
 # data transformation
 
 def boxcox_transform(data, texp=4):
-    # transform prcp to approximate normal distribution
-    # mode: box-cox; power-law
+    """
+    Apply the Box-Cox transformation to the input data.
+    
+    Parameters:
+    - data (array-like): Input data to be transformed.
+    - texp (float): The exponent for the Box-Cox transformation. Default is 4.
+    
+    Returns:
+    - ndarray: Transformed data.
+    """
     if not isinstance(data, np.ndarray):
         data = np.array(data)
-    data[data<0] = 0
+    data[data<=0] = 0
     datat = (data ** (1 / texp) - 1) / (1 / texp)
-    # datat[data < -3] = -3
+
     return datat
 
 def boxcox_back_transform(data, texp=4):
-    # transform prcp to approximate normal distribution
-    # mode: box-cox; power-law
+    """
+    Apply the inverse of the Box-Cox transformation to the input data.
+    
+    Parameters:
+    - data (array-like): Transformed data to be reverted.
+    - texp (float): The exponent used in the original Box-Cox transformation. Default is 4.
+    
+    Returns:
+    - ndarray: Original (reverted) data.
+    """
     if not isinstance(data, np.ndarray):
         data = np.array(data)
     data[data<-texp] = -texp
     datat = (data / texp + 1) ** texp
     return datat
 
-def data_transformation(data, method, settings, mode='transform'):
+def lognormal_transform(data, c=0.001):
+    """
+    Apply the lognormal transformation to the input data.
+    
+    Parameters:
+    - data (array-like): Input data to be transformed.
+    - c (float): A small constant added to handle zero values. Default is 0.001.
+    
+    Returns:
+    - ndarray: Transformed data.
+    """
+    if not isinstance(data, np.ndarray):
+        data = np.array(data)
+    data[data < 0] = 0
+    datat = np.log(data + c)
+    return datat
+
+def lognormal_back_transform(data, c=0.001):
+    """
+    Apply the inverse of the lognormal transformation to the input data.
+    
+    Parameters:
+    - data (array-like): Transformed data to be reverted.
+    - c (float): The constant used in the original lognormal transformation. Default is 0.001.
+    
+    Returns:
+    - ndarray: Original (reverted) data.
+    """
+    if not isinstance(data, np.ndarray):
+        data = np.array(data)
+    datat = np.exp(data) - c
+    return datat
+
+def empirical_cdf_transform(data,times,cdfs):
+    """
+    Apply the normal quantile transform to the input precipitation data for each month.
+
+    This function transforms the empirical distribution of monthly precipitation data 
+    to a standard normal distribution using the cumulative distribution function (CDF).
+
+    Parameters:
+    - data (array-like): 2D array of precipitation data with shape (nstn, ntime).
+    - time (array-like): Array of dates corresponding to the precipitation data.
+
+    Returns:
+    - ndarray: Transformed data with Z-scores, shape (nstn, ntime).
+    """
+    if data.shape[0] != len(times):
+        data = data.T
+
+    df = pd.DataFrame(data=data, index=pd.to_datetime(times))
+    transformed_df = normal_quantile_transform(df, cdfs)
+    datat = transformed_df.to_numpy()
+
+    datat = datat.T
+
+    return datat
+ 
+def empirical_cdf_back_transform(data, times, cdfs):
+    """
+    Apply the inverse of the normal quantile transform to the input transformed data.
+
+    This function reverts the transformed Z-scores back to the original precipitation values
+    using the inverse of the empirical cumulative distribution function (CDF).
+
+    Parameters:
+    - data (array-like): 2D array of transformed data (Z-scores) with shape (nstn, ntime).
+    - time (array-like): Array of dates corresponding to the transformed data.
+
+    Returns:
+    - ndarray: Original (reverted) precipitation data, shape (nstn, ntime).
+    """
+    if data.shape[0] != len(times):
+        data = data.T
+
+    df = pd.DataFrame(data=data, index=pd.to_datetime(times))
+    back_transformed_df = inverse_normal_quantile_transform(df, cdfs)
+    datat = back_transformed_df.to_numpy()
+    #datat = datat.T
+
+    return datat
+
+
+def data_transformation(data,method, settings, mode='transform',times=None,cdfs=None):
+    """
+    Transform or back-transform the input data based on the specified method and mode.
+    
+    Parameters:
+    - data (array-like): Input data to be processed.
+    - method (str): The transformation method. Accepts 'boxcox','lognormal' or 'monthly_cdf'.
+    - settings (dict): Dictionary containing parameters for the transformation methods.
+    - mode (str): Specifies the operation mode. Accepts 'transform' or 'back_transform'. Default is 'transform'.
+    
+    Returns:
+    - ndarray: Processed data.
+    """
+
     if method == 'boxcox':
         if mode == 'transform':
             data = boxcox_transform(data, settings['exponent'])
         elif mode == 'back_transform':
             data = boxcox_back_transform(data, settings['exponent'])
         else:
-            print('Unknown transformation mode: entry=', mode); sys.exit()
+            print('Unknown transformation mode: entry=', mode)
+            sys.exit()
+
+    elif method == 'lognormal':
+        if mode == 'transform':
+            data = lognormal_transform(data, settings.get('constant', 0.001))
+        elif mode == 'back_transform':
+            data = lognormal_back_transform(data, settings.get('constant', 0.001))
+        else:
+            print('Unknown transformation mode: entry=', mode)
+            sys.exit()
+    
+    elif method == 'empirical_cdf':
+        if mode == 'transform':
+            data = empirical_cdf_transform(data,times,cdfs)
+        elif mode == 'back_transform':
+            data = empirical_cdf_back_transform(data,times,cdfs)
+        else:
+            print('Unknown transformation mode: entry=', mode)
+            sys.exit()
     else:
-        print('Unknown transformation method: entry=', method); sys.exit()
+        print('Unknown transformation method: entry=', method)
+        sys.exit()
+    
     return data
+
 
 
 ########################################################################################################################
@@ -217,8 +355,14 @@ def merge_stndata_into_single_file(config):
                 print(f'{tvar} exists in ds_stn. no need to perform transformation')
                 continue
             ds_stn[tvar] = ds_stn[vari].copy()
-            ds_stn[tvar].values = data_transformation(ds_stn[target_vars[i]].values, transform_vars[i],
-                                                      transform_settings[transform_vars[i]], 'transform')
+            if transform_vars[i] == 'empirical_cdf':
+                cdfs = calculate_monthly_cdfs(config['file_allstn'], target_vars[i])
+                ds_stn[tvar].values = data_transformation(ds_stn[target_vars[i]].values, transform_vars[i],
+                                                transform_settings[transform_vars[i]], 'transform',
+                                                times=ds_stn['time'].values,cdfs=cdfs)
+            else:
+                ds_stn[tvar].values = data_transformation(ds_stn[target_vars[i]].values, transform_vars[i],
+                                                transform_settings[transform_vars[i]], 'transform')
         else:
             print(f'Do not perform transformation for {target_vars[i]}')
 

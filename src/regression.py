@@ -13,7 +13,7 @@ from sklearn.model_selection import KFold
 # from sklearn.neural_network import MLPRegressor, MLPClassifier
 import sklearn
 from sklearn import *
-
+from empirical_cdf import calculate_monthly_cdfs
 ########################################################################################################################
 # ludcmp, lubksb, and linearsolver
 
@@ -376,13 +376,13 @@ def map_filelist_timestep(dynamic_predictor_filelist, timeseries):
 
     # for each time step, find the closest
     df_mapping = pd.DataFrame()
+
     for t in timeseries:
         if t >= df['intime'].iloc[0] and t <= df['intime'].iloc[-1]: # don't extrapolate
             indi = np.argmin(np.abs(df['intime'] - t)) # nearest neighbor
             df_mapping = pd.concat((df_mapping, df.iloc[[indi]]))
         else:
             df_mapping = pd.concat((df_mapping, pd.DataFrame({'intime': [np.nan], 'file': [''], 'ind': [np.nan]})))
-
     df_mapping['tartime'] = timeseries
     df_mapping.index = np.arange(len(df_mapping))
 
@@ -1201,7 +1201,6 @@ def main_regression(config, target):
     if dynamic_flag == True:
 
         allvars = flatten_list(dynamic_predictor_name)
-
         df_mapping = map_filelist_timestep(dynamic_predictor_filelist, timeaxis)
         ds_dynamic = read_period_input_data(df_mapping, allvars)
         ds_dynamic = ds_dynamic.rename({dynamic_grid_lat_name:'lat', dynamic_grid_lon_name:'lon'})
@@ -1220,7 +1219,7 @@ def main_regression(config, target):
         for v in ds_dynamic.data_vars:
             if v in dyn_operation_trans:
                 print('Transform dynamic predictor:', v)
-                ds_dynamic[v].values = data_transformation(ds_dynamic[v].values, dyn_operation_trans[v],
+                ds_dynamic[v].values = data_transformation(ds_dynamic[v].values,ds_dynamic['time'].values. dyn_operation_trans[v],
                                                            transform_settings[dyn_operation_trans[v]], 'transform')
 
         ds_dynamic_stn = regrid_xarray(ds_dynamic, ds_stn[stn_lon_name].values, ds_stn[stn_lat_name].values, '1D', method=dyn_operation_interp)
@@ -1245,10 +1244,11 @@ def main_regression(config, target):
             var_name_trans = var_name + '_' + transform_vars[vn]
             print(f'Variable {var_name} is transformed using {transform_vars[vn]}')
             print(f'{var_name_trans} instead of {var_name} will be loaded from the station data file {file_allstn}.')
-
-            # adjust max/min limits
-            minRange_vars[vn] = data_transformation(minRange_vars[vn], transform_vars[vn], transform_settings[transform_vars[vn]], 'transform')
-            maxRange_vars[vn] = data_transformation(maxRange_vars[vn], transform_vars[vn], transform_settings[transform_vars[vn]], 'transform')
+            # If provided, minRange_vars and maxRange_vars should be for the transformed variable
+            if minRange_vars[vn] != -np.inf:
+                minRange_vars[vn] = data_transformation(minRange_vars[vn], transform_vars[vn], transform_settings[transform_vars[vn]], 'transform')
+            if maxRange_vars[vn] != np.inf:
+                maxRange_vars[vn] = data_transformation(maxRange_vars[vn], transform_vars[vn], transform_settings[transform_vars[vn]], 'transform')
 
         else:
             var_name_trans = ''
@@ -1361,7 +1361,12 @@ def main_regression(config, target):
                 var_name_save = var_name_trans
             else:
                 var_name_save = var_name
-                estimates = data_transformation(estimates, transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
+                if 'empirical_cdf' in var_name_trans:
+                    cdfs = calculate_monthly_cdfs(config['file_allstn'],var_name)
+                    estimates = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform',times=ds_out['time'].values, cdfs=cdfs)
+                else:   
+                    estimates = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
+
         else:
             var_name_save = var_name
 
@@ -1373,7 +1378,11 @@ def main_regression(config, target):
             # evalution
             dtmp1 = ds_stn[var_name].values
             if (len(var_name_trans) > 0) and (backtransform == False):
-                dtmp2 = data_transformation(estimates, transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
+                if 'empirical_cdf' in var_name_trans:
+                    cdfs = calculate_monthly_cdfs(config['file_allstn']) 
+                    dtmp2 = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform',time=ds_out['time'].values, cdfs=cdfs)
+                else:
+                    dtmp2 = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
             else:
                 dtmp2 = estimates
 

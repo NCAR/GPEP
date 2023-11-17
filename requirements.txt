@@ -1,5 +1,8 @@
 dask
+imageio
+ipykernel
 netcdf4
+matplotlib
 scikit-learn
 scipy
 toml
