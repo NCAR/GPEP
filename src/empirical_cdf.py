@@ -8,7 +8,7 @@ import xarray as xr
 from scipy.stats import norm
 from scipy.interpolate import interp1d
 
-def calculate_monthly_cdfs(all_stn_path,target_var='prcp'):
+def calculate_monthly_cdfs(ds,var_name):
     """
     Calculate the empirical cumulative distribution functions (CDFs) for each month and each station.
 
@@ -22,8 +22,7 @@ def calculate_monthly_cdfs(all_stn_path,target_var='prcp'):
     """
 
     # Read in the data
-    all_stn = xr.open_dataset(all_stn_path)
-    df = all_stn[target_var].to_dataframe()
+    df = ds[var_name].to_dataframe()
 
     all_stations_cdfs = {}
     for station in df.index.get_level_values(0).unique():
@@ -78,8 +77,8 @@ def normal_quantile_transform(df, all_stations_cdfs):
             empirical_cdf = all_stations_cdfs[station][month]
 
             if empirical_cdf is not None and not empirical_cdf.empty:
-                cdf_interp = interp1d(empirical_cdf['Value'], empirical_cdf['CDF'],bounds_error=False, fill_value="extrapolate")
-                cum_probs = np.clip(cdf_interp(month_data.dropna()), 0, 1)
+                cdf_interp = interp1d(empirical_cdf['Value'], empirical_cdf['CDF'],bounds_error=False, fill_value=(-2.55,2.55))
+                cum_probs = np.clip(cdf_interp(month_data.dropna()), 0, 0.999)
                 z_scores = norm.ppf(cum_probs)
                 transformed_data.loc[month_data.index, station] = z_scores
             else:
@@ -88,7 +87,7 @@ def normal_quantile_transform(df, all_stations_cdfs):
 
     return transformed_data
 
-def inverse_normal_quantile_transform(transformed_data, all_stations_cdfs):
+def inverse_normal_quantile_transform(df, all_stations_cdfs):
     """
     Reverse the normal quantile transform applied to the precipitation data.
 
@@ -99,19 +98,20 @@ def inverse_normal_quantile_transform(transformed_data, all_stations_cdfs):
     :param all_stations_cdfs: Dictionary containing the empirical CDFs for each station and month.
     :return: DataFrame containing the original precipitation values after reverse transformation.
     """
-    back_transformed_data = pd.DataFrame(index=transformed_data.index)
+    back_transformed_data = pd.DataFrame(index=df.index)
 
-    for station in transformed_data.columns:
+    for station in df.columns:
         for month in range(1, 13):
 
-            z_scores = transformed_data[station][transformed_data.index.month == month]
+            z_scores = df[station][df.index.month == month]
 
             empirical_cdf = all_stations_cdfs[station][month]
 
             if empirical_cdf is not None and not empirical_cdf.empty:
 
                 cum_probs = norm.cdf(z_scores)
-                value_interp = interp1d(empirical_cdf['CDF'], empirical_cdf['Value'], bounds_error=False, fill_value="extrapolate")
+
+                value_interp = interp1d(empirical_cdf['CDF'], empirical_cdf['Value'], bounds_error=True)
 
                 original_values = value_interp(cum_probs)
 

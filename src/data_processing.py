@@ -356,7 +356,7 @@ def merge_stndata_into_single_file(config):
                 continue
             ds_stn[tvar] = ds_stn[vari].copy()
             if transform_vars[i] == 'empirical_cdf':
-                cdfs = calculate_monthly_cdfs(config['file_allstn'], target_vars[i])
+                cdfs = calculate_monthly_cdfs(ds_stn,target_vars[i])
                 ds_stn[tvar].values = data_transformation(ds_stn[target_vars[i]].values, transform_vars[i],
                                                 transform_settings[transform_vars[i]], 'transform',
                                                 times=ds_stn['time'].values,cdfs=cdfs)

@@ -1264,7 +1264,7 @@ def main_regression(config, target):
                 stn_value = ds_stn[var_name_trans].values
             else:
                 stn_value = ds_stn[var_name].values
-
+            
             nstn = len(ds_stn.stn)
             predictor_static_stn = np.ones([nstn, len(predictor_name_static_stn) + 1])  # first column used for regression
             for i in range(len(predictor_name_static_stn)):
@@ -1362,7 +1362,7 @@ def main_regression(config, target):
             else:
                 var_name_save = var_name
                 if 'empirical_cdf' in var_name_trans:
-                    cdfs = calculate_monthly_cdfs(config['file_allstn'],var_name)
+                    cdfs = calculate_monthly_cdfs(xr.open_dataset(file_allstn),var_name)
                     estimates = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform',times=ds_out['time'].values, cdfs=cdfs)
                 else:   
                     estimates = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
