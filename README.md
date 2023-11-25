@@ -31,11 +31,12 @@ conda activate GPEP-env
 ```
 
 ## Usage
+Please refer to the demonstration notebook (`./docs/GPEP_demo.ipynb`), which includes downloading test cases, running the test cases, and visualizing the results. This notebook is an easy way to start the usage of GPEP.  
 
-To run GPEP, follow these steps:
+It is easy and recommended to directly run GPEP using Python, follow these steps:
 
 1.  Prepare the configuration file.  
-Use configuration files in the `./config_templates` folder as templates. Refer to `./docs/How_to_create_config_files.md` for more details.
+Use configuration files in the `./config_templates` folder as templates. Refer to `./docs/How_to_create_config_files.md` for more details. Configuration files are the core of GPEP cases.  
 2.  Run GPEP  
 `python main.py /your/path/config_filename.toml`.
 3. Batch run / operational run  
@@ -45,7 +46,7 @@ When producing a dataset in a target domain or testing different method choices,
 
 ## Test Cases for GPEP
 
-The test cases of GPEP are open access on Zenodo: https://zenodo.org/record/8222852. They can be obtained using the `./tools/get_testcase.py` script. See ./tools/README.md for more descriptions.
+The test cases of GPEP are open access on Zenodo: https://zenodo.org/record/8222852. They can be obtained using the `./tools/get_testcase.py` script, which is used in `./docs/GPEP_demo.ipynb`. See ./tools/README.md for more descriptions.  
 
 ## Notes
 This code is a work in progress and is provided without guarantee of fitness for any particular application.  
