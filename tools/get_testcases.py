@@ -42,6 +42,7 @@ for i in numbers:
     
     # uncompress
     print('Uncompress files')
+    cwd = os.getcwd()
     os.chdir(outpath)
     if urls[i][1].endswith('tar') or urls[i][1].endswith('tar.gz'): 
         os.system(f'tar -xf {urls[i][1]}')
@@ -49,4 +50,5 @@ for i in numbers:
         os.system(f'unzip {urls[i][1]}')
     else:
         print('Unsupported format')
+    os.chdir(cwd)
     
