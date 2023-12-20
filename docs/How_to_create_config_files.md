@@ -1,8 +1,11 @@
-﻿# How to create configuration files for GPEP
 
-To ensure that your configuration files are correct and efficient, it is recommended that you base them on the template files in the `./test_cases` folder. The format for these files is [TOML](https://toml.io/en/), which is easy to read and simple to use.
+# How to create configuration files for GPEP
 
-When running a specific case, you will need two configuration files: the control file and the setting file. These files can be found in `./test_cases` under the names `testcase.config.dynamic.toml` and `model.settings.toml`, respectively. The name of `model.settings.toml` is defined in `testcase.config.dynamic.toml` to ensure that the model knows what settings to use. The setting file only needs minimal or no changes unless major data or method choice differences exist between a specific case and the test case. Additionally, there are other example configuration files, such as `testcase.config.regonly.toml`, which provide simplified settings.
+To ensure that your configuration files are correct and efficient, it is recommended that you base them on the template files in the `./config_templates` folder. The format for these files is [TOML](https://toml.io/en/), which is easy to read and simple to use.
+
+When running a specific case, you will need two configuration files: the control file and the setting file. These files can be found in `./config_templates` under the names `testcase.config.dynamic.toml` and `model.settings.toml`, respectively. The file name of `model.settings.toml` is defined in `testcase.config.dynamic.toml` to ensure that the model knows what settings to use. The setting file only needs minimal or no changes unless major data or method choice differences exist between a specific case and the test case. Additionally, there are other example configuration files, such as `testcase.config.RF.toml`, which provide alternate settings.  
+
+Besides, to create a test case from scratch, we recommend users follow the test case to prepare all necessary files. The test cases of GPEP are open access on [Zenodo](https://zenodo.org/record/8222852). They can be obtained using the `./tools/get_testcase.py` script, which is used in `./docs/GPEP_demo.ipynb`. See `./tools/README.md` for more descriptions. The example files shown in this document are from the test case `../GPEP_test_cases/cali2017` which is the default folder in `./tools/get_testcase.py`. The `../` relative path assumes you are in the main directory of GPEP.
 
 For a more detailed explanation, please refer to the following section.
 
@@ -19,12 +22,12 @@ This parameter determines the number of workers or CPU cores used for paralleliz
 
 ## modelsettings_file
 
-This parameter specifies the GPEP model settings file, e.g., `model.settings.toml` in the `./test_cases`. This file does not need to be changed for a specific case using default settings. Still, it contains crucial and advanced parameters (e.g., machine learning methods).
+This parameter specifies the GPEP model settings file, e.g., `model.settings.toml` in the `../GPEP_test_cases/cali2017`. This file does not need to be changed for a specific case using default settings. Still, it contains crucial and advanced parameters (e.g., machine learning methods).
 
 ## input_stn_list
 *Unnecessary if input_stn_all is provided*  
 
-This parameter specifies the CSV file containing the IDs and attributes of stations used by GPEP to generate gridded estimates. The CSV file should have the `stnid`, `lat`, and `lon` columns, and optionally, other columns with auxiliary variables used in the regression. An example file is `./test_cases/cali2017/inputs/CALI.screened_stn_list_slope.v3.csv`.
+This parameter specifies the CSV file containing the IDs and attributes of stations used by GPEP to generate gridded estimates. The CSV file should have the `stnid`, `lat`, and `lon` columns, and optionally, other columns with auxiliary variables used in the regression. If you would like to use variables like elevation and slope, make sure you include those variables in this file and define the variable names in the configuration file. An example file is `../GPEP_test_cases/cali2017/inputs/CALI.screened_stn_list_slope.v3.csv`.
 
 Below is a simplified example table of a station list.  
 | stnid       | lat     | lon        | elev  | slp_n    | slp_e  |
@@ -41,7 +44,7 @@ Below is a simplified example table of a station list.
 
 *Unnecessary if input_stn_all is provided*  
 
-This parameter specifies the path of station inputs. The file names are `stnid.nc`, where `stnid` comes from `input_stn_list`. The input variables (e.g., `prcp`, `tmin`, and `tax`) are read from these stations. Other auxiliary variables (e.g., `fill_flag_prcp`) will not be used by GPEP. Note that it is okay if some input variables are missing in some station files because sometimes stations may only measure a few variables. An example folder path is `./test_cases/cali2017/stndata`, and below is a simplified example of a station file named `USW00094299.nc` .
+This parameter specifies the path of station inputs. The file names are `stnid.nc`, where `stnid` comes from `input_stn_list`. The input variables (e.g., `prcp`, `tmin`, and `tax`) are read from these stations. Other auxiliary variables (e.g., `fill_flag_prcp`) will not be used by GPEP. Note that it is okay if some input variables are missing in some station files because sometimes stations may only measure a few variables. An example folder path is `../GPEP_test_cases/cali2017/inputs/stndata`, and below is a simplified example of a station file named `USW00094299.nc` .
 ```
 netcdf USW00094299 {
 dimensions:
@@ -69,7 +72,7 @@ variables:
 
 The `input_stn_all` parameter is used to provide station input data to GPEP. It is not necessary to use this parameter if `input_stn_list` and `input_stn_path` are already provided. However, if all three parameters are provided, `input_stn_all` has a higher priority.
 
-This parameter is particularly useful when all stations and variables are stored in a single netCDF file, which can be more convenient in some cases. For example, the file `./test_cases/cali2017/GPEP_output/stn_info/all_stn.nc` is generated by GPEP using `input_stn_list` and `input_stn_path`, and can be used as a template for creating similar files for other domains. To use `input_stn_all`, simply provide the path to the netCDF file containing all station and variable data.
+This parameter is particularly useful when all stations and variables are stored in a single netCDF file, which can be more convenient in some cases. For example, the file `../GPEP_test_cases/cali2017/outputs/stn_info/all_station_data.nc` is generated by GPEP using `input_stn_list` and `input_stn_path`, and can be used as a template for creating similar files for other domains. To use `input_stn_all`, simply provide the path to the netCDF file containing all station and variable data.
 ```
 netcdf all_stn {
 dimensions:
@@ -149,20 +152,18 @@ The `outpath_parent` parameter specifies the folder where all GPEP outputs will 
 
 _Optional._ The `dynamic_predictor_filelist` parameter is a list of input files that contain dynamic predictors used to support gridding estimation. If the file cannot be found (e.g., "NA" file name) or is not provided, dynamic predictors will not be used in the estimation process. The dynamic input netcdf files must have structured/regular latitude and longitude dimensions. The dynamic inputs will be interpolated to station points and regular/irregular grids of the target domain.
 
-An example of the `dynamic_predictor_filelist` parameter is provided in `./test_cases/cali2017/griddata_standard/grid_file_list.txt`, which is shown below:
+An example of the `dynamic_predictor_filelist` parameter is provided in `../GPEP_test_cases/cali2017/inputs/gridded_datafile_list.txt`, which is shown below:
 
 ```
-./test_cases/cali2017/griddata_standard/inputfile_0.nc
-./test_cases/cali2017/griddata_standard/inputfile_1.nc
-./test_cases/cali2017/griddata_standard/inputfile_2.nc
-./test_cases/cali2017/griddata_standard/inputfile_3.nc
+../GPEP_test_cases/cali2017/inputs/griddata/inputfile_0.nc
+../GPEP_test_cases/cali2017/inputs/griddata/inputfile_1.nc
 ```
 
 Part of the information of `inputfile_0.nc` is as below:
 ```
 netcdf inputfile_0 {
 dimensions:
-	time = 7 ;
+	time = 5 ;
 	lat = 144 ;
 	lon = 112 ;
 variables:
