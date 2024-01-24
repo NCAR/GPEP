@@ -9,6 +9,7 @@ from multiprocessing import Pool
 
 import random_field_FortranGMET as rf_FGMET
 from data_processing import data_transformation
+from empirical_cdf import calculate_monthly_cdfs
 
 # ====== subroutines/ functions ======
 
@@ -71,13 +72,18 @@ def perturb_estimates_general(data, uncert, rndnum, minrndnum=-3.99, maxrndnum=3
 
 
 def prob_estimate_for_one_var(var_name, reg_estimate, reg_error, nearby_stn_max, poe, random_field, minrndnum, maxrndnum, 
-                              transform_method, transform_setting, ds_out):
+                              transform_method, transform_setting, ds_out,config):
     # generate probabilistic estimates
     if poe.shape == reg_estimate.shape:
         ens_estimate = perturb_estimates_withoccurrence(reg_estimate, reg_error, poe, random_field, minrndnum, maxrndnum)
         # back transformation
         if len(transform_method) > 0:
-            ens_estimate = data_transformation(ens_estimate, transform_method, transform_setting, 'back_transform')
+            if transform_method == 'empirical_cdf':
+                cdfs = calculate_monthly_cdfs(xr.open_dataset(config['file_allstn']),var_name)
+                ens_estimate = data_transformation(ens_estimate, transform_method, transform_setting, 'back_transform',
+                                                times=ds_out['time'].values,cdfs=cdfs)
+            else:
+                ens_estimate = data_transformation(ens_estimate, transform_method, transform_setting, 'back_transform')
             # variable and unit dependent ...
             # minprcp = 0.01
             # ens_estimate[ens_estimate < minprcp] = 0
@@ -89,7 +95,12 @@ def prob_estimate_for_one_var(var_name, reg_estimate, reg_error, nearby_stn_max,
     if np.array(nearby_stn_max).shape == reg_estimate.shape:
         if len(transform_method) > 0:
             precip_err_cap = 0.2 # hard coded ...
-            nearby_stn_max = data_transformation(nearby_stn_max+reg_error*precip_err_cap, transform_method, transform_setting, 'back_transform')
+            if transform_method == 'empirical_cdf':
+                cdfs = calculate_monthly_cdfs(xr.open_dataset(config['file_allstn']),var_name)
+                nearby_stn_max = data_transformation(nearby_stn_max+reg_error*precip_err_cap, transform_method, transform_setting, 'back_transform',
+                                                times=ds_out['time'].values,cdfs=cdfs)
+            else:
+                nearby_stn_max = data_transformation(nearby_stn_max+reg_error*precip_err_cap, transform_method, transform_setting, 'back_transform')
         else:
             nearby_stn_max = nearby_stn_max + reg_error * 2
         mask = ens_estimate > nearby_stn_max
@@ -491,7 +502,7 @@ def generate_prob_estimates_serial(config, member_range=[]):
             ds_out = prob_estimate_for_one_var(var_name, allvar_reg_estimate[var_name], allvar_reg_error[var_name],
                                                nearby_stn_max[var_name], allvar_poe[var_name], random_field, 
                                                minrndnum, maxrndnum, transform_vars[var_name],
-                                               transform_settings[transform_vars[var_name]], ds_out)
+                                               transform_settings[transform_vars[var_name]], ds_out,config)
             
             if output_randomfield == True:
                 ds_out[var_name + '_rnd'] = xr.DataArray(random_field, dims=('y', 'x', 'time'))
@@ -517,7 +528,7 @@ def generate_prob_estimates_serial(config, member_range=[]):
                     ds_out = prob_estimate_for_one_var(var_name_dep, allvar_reg_estimate[var_name_dep], allvar_reg_error[var_name_dep],
                                                        nearby_stn_max[var_name], allvar_poe[var_name_dep], random_field_dep, 
                                                        minrndnum, maxrndnum, transform_vars[var_name_dep],
-                                                       transform_settings[transform_vars[var_name_dep]], ds_out)
+                                                       transform_settings[transform_vars[var_name_dep]], ds_out,config)
 
                     if output_randomfield == True:
                         ds_out[var_name + '_rnd'] = xr.DataArray(random_field_dep, dims=('y', 'x', 'time'))

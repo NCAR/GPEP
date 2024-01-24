@@ -224,9 +224,31 @@ def weight_linear_regression(nearinfo, weightnear, datanear, tarinfo):
     # datanear = np.zeros(nnum)
 
     # start regression
-    w_pcp_red = np.diag(np.squeeze(weightnear))
+    #w_pcp_red = np.diag(np.squeeze(weightnear))
+    #tx_red = np.transpose(nearinfo)
+    #twx_red = np.matmul(tx_red, w_pcp_red)
+    #b = least_squares_ludcmp(nearinfo, datanear, twx_red)
+    #datatar = np.dot(tarinfo, b)
+
+    #print("nearinfo shape:", nearinfo.shape)
+    #print("weightnear shape:", weightnear.shape)
+    #print("datanear shape:", datanear.shape)
+    #print("tarinfo shape:", tarinfo.shape)
+
+    # Ensure weightnear is a square matrix
+    if weightnear.ndim == 1 or weightnear.shape[0] != weightnear.shape[1]:
+        weightnear = np.diag(weightnear)
+
+    # Calculate the transpose of nearinfo
     tx_red = np.transpose(nearinfo)
-    twx_red = np.matmul(tx_red, w_pcp_red)
+
+    # Adjust the matrix multiplication
+    # The shape of tx_red should be [npred+1, nnum]
+    # The shape of weightnear should be [nnum, nnum]
+    # Adjusted operation to ensure the inner dimensions match (nnum)
+    twx_red = np.matmul(tx_red, weightnear)  # This should now be a valid operation
+
+    # least_squares_ludcmp expects nearinfo (nnum, npred+1), datanear (nnum), twx_red (npred+1, nnum)
     b = least_squares_ludcmp(nearinfo, datanear, twx_red)
     datatar = np.dot(tarinfo, b)
 
@@ -863,6 +885,7 @@ def regression_for_blocks(r1, r2, c1, c2):
             index_valid = sample_nearIndex >= 0
 
             if np.sum(index_valid) > 0:
+
                 sample_nearIndex = sample_nearIndex[index_valid]
 
                 sample_weight = tar_nearWeight[r, c, :][index_valid]
@@ -870,17 +893,53 @@ def regression_for_blocks(r1, r2, c1, c2):
                 xdata_near0 = stn_predictor[sample_nearIndex, :]
                 xdata_g0 = tar_predictor[r, c, :]
 
+                sample_nearIndex_backup = sample_nearIndex
+                sample_weight_backup = sample_weight
+                xdata_near0_backup = xdata_near0
+                xdata_g0_backup = xdata_g0
+
                 # interpolation for every time step
                 for d in range(ntime):
 
+                    sample_nearIndex = sample_nearIndex_backup 
+                    sample_weight = sample_weight_backup 
+                    xdata_near0 = xdata_near0_backup
+                    xdata_g0= xdata_g0_backup
+                    sample_weight_sum = 10
+
                     ydata_near = np.squeeze(stn_data[sample_nearIndex, d])
+
                     if len(np.unique(ydata_near)) == 1:  # e.g., for prcp, all zero
                         ydata_tar[r-r1, c-c1, d] = ydata_near[0]
+                    if np.isnan(ydata_near).all():
+                        ydata_tar[r-r1, c-c1, d] = ydata_near[0]
                     else:
+                        # Check if any station values are NaN
+                        if np.isnan(ydata_near).any(): 
+                            # Identify indices where ydata_near is NaN
+                            nan_indices = np.where(np.isnan(ydata_near))[0]
+                            num = -3
+                            ydata_near = np.nan_to_num(ydata_near,nan = num)
+                            #sample_nearIndex[nan_indices] = num
+                            #sample_weight[nan_indices] = num
+                            #xdata_near0[nan_indices] = num
+                            # Remove elements from other arrays at these indices
+                            #ydata_near = np.delete(ydata_near,nan_indices)
+                            #sample_nearIndex = np.delete(sample_nearIndex, nan_indices)
+                            #sample_weight = np.delete(sample_weight, nan_indices)
+                            #xdata_near0 = np.delete(xdata_near0, nan_indices, axis=0)
+                            
+                            #sample_weight_sum = np.sum(sample_weight)
 
-                        # add dynamic predictors if flag is true and predictors are good
+                        #if sample_weight_sum < 5:
+                        #    print(f'Sample_weight_sum is {sample_weight_sum}, no regression performed')
+                        #    ydata_tar[r-r1, c-c1, d] = np.mean(ydata_near)
+                        #    continue
+                                
+                        # add dynamic predictors if flag is true and predictors are goods
                         xdata_near = xdata_near0
                         xdata_g = xdata_g0
+
                         if dynamic_predictors['flag'] == True:
                             xdata_near_add = dynamic_predictors['stn_predictor_dynamic'][:, d, sample_nearIndex].T
                             xdata_g_add = dynamic_predictors['tar_predictor_dynamic'][:, d, r, c]
@@ -928,6 +987,8 @@ def regression_for_blocks(r1, r2, c1, c2):
                         else:
                             ydata_tar[r-r1, c-c1, d] = train_and_return_test(xdata_near, ydata_near, xdata_g, method, probflag,
                                                                              settings, sample_weight)
+                        if ydata_tar[r-r1, c-c1, d] > 400:
+                            print(f'Anomalous point: {r}, {c}, {d}')
                         # else:
                         #     sys.exit(f'Unknonwn regression method: {method}')
 
@@ -1264,6 +1325,7 @@ def main_regression(config, target):
                 stn_value = ds_stn[var_name_trans].values
             else:
                 stn_value = ds_stn[var_name].values
+
             
             nstn = len(ds_stn.stn)
             predictor_static_stn = np.ones([nstn, len(predictor_name_static_stn) + 1])  # first column used for regression
@@ -1366,7 +1428,22 @@ def main_regression(config, target):
                     estimates = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform',times=ds_out['time'].values, cdfs=cdfs)
                 else:   
                     estimates = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
+                    if 'percent_limit' in transform_settings[transform_vars[vn]]:
+                        # Calculate 10% more than the comparison array
+                        percent_limit = transform_settings[transform_vars[vn]]['percent_limit']
+                        limit_values = ds_stn[var_name] * (1 + percent_limit/100)
 
+                        # Calculate the maximum per timestep in the comparison array
+                        max_per_timestep = ds_stn[var_name].max(dim='stn')
+
+                        # Increase this maximum by 10%
+                        limit_values = max_per_timestep * (1 + percent_limit/100)
+
+                        # Broadcast the limit values to the shape of the data_array
+                        broadcasted_limits = limit_values.broadcast_like(estimates)
+
+                        # Where data_array is greater than the broadcasted_limits, replace with broadcasted_limits
+                        estimates = xr.where(estimates > broadcasted_limits, broadcasted_limits, estimates)
         else:
             var_name_save = var_name
 
@@ -1379,10 +1456,14 @@ def main_regression(config, target):
             dtmp1 = ds_stn[var_name].values
             if (len(var_name_trans) > 0) and (backtransform == False):
                 if 'empirical_cdf' in var_name_trans:
-                    cdfs = calculate_monthly_cdfs(config['file_allstn']) 
-                    dtmp2 = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform',time=ds_out['time'].values, cdfs=cdfs)
+                    cdfs = calculate_monthly_cdfs(xr.open_dataset(file_allstn),var_name) 
+                    dtmp2 = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform',times=ds_out['time'].values, cdfs=cdfs)
                 else:
                     dtmp2 = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
+                    if transform_settings[transform_vars[vn]] == 'percent_limit':
+                        # Calculate 10% more than the comparison arrays
+                        limit_values = ds_stn[var_name] * 1.1
+                        dtmp2 = xr.where(dtmp2 > limit_values, limit_values, dtmp2)
             else:
                 dtmp2 = estimates
 

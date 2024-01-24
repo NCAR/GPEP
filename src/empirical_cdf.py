@@ -22,6 +22,7 @@ def calculate_monthly_cdfs(ds,var_name):
     """
 
     # Read in the data
+    print(f'Reading data from {var_name}')
     df = ds[var_name].to_dataframe()
 
     all_stations_cdfs = {}
@@ -111,7 +112,7 @@ def inverse_normal_quantile_transform(df, all_stations_cdfs):
 
                 cum_probs = norm.cdf(z_scores)
 
-                value_interp = interp1d(empirical_cdf['CDF'], empirical_cdf['Value'], bounds_error=True)
+                value_interp = interp1d(empirical_cdf['CDF'], empirical_cdf['Value'], bounds_error=False, fill_value=(0,100))
 
                 original_values = value_interp(cum_probs)
 
