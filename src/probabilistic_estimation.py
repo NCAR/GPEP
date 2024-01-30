@@ -12,7 +12,7 @@ from data_processing import data_transformation
 
 # ====== subroutines/ functions ======
 
-def perturb_estimates_withoccurrence(data, uncert, poe, rndnum, minrndnum=-3.99, maxrndnum=3.99):
+def perturb_estimates_withoccurrence(data, uncert, poe, rndnum, minrndnum=-3.99, maxrndnum=3.99, minpost=None, zerovalue=0):
     data     = data.copy()
     uncert   = uncert.copy()
     poe      = poe.copy()
@@ -33,12 +33,6 @@ def perturb_estimates_withoccurrence(data, uncert, poe, rndnum, minrndnum=-3.99,
     cs = (cprob - (1 - poe)) / poe
     cs[~index_positive] = np.nan  # because poe == 0 is not excluded in the matrix
     
-    # assign a small precipitation value to positive grids if their values = 0
-    dtemp = data[index_positive]
-    dtemp[dtemp < 0.1] = 0.1
-    data[index_positive] = dtemp
-    del dtemp
-    
     # generate random numbers
     cs[cs > 0.99997] = 0.99997
     cs[cs < 3e-5] = 3e-5
@@ -48,11 +42,19 @@ def perturb_estimates_withoccurrence(data, uncert, poe, rndnum, minrndnum=-3.99,
 
     ## start probabilistic estimation
     # generate mu and sigma from lognormal distribution
-    data_out[index_positive] = data[index_positive] + rn[index_positive] * uncert[index_positive]
 
-    ## zero precipitation
+    dtmp = data[index_positive] + rn[index_positive] * uncert[index_positive]
+    if minpost == None:
+        minpost = zerovalue + 0.01 # 0.01 may still be too large. better to input minpost
+    
+    dtmp[dtmp <= minpost ] = minpost # minimum value when the event occurs 
+        
+    data_out[index_positive] = dtmp
+
+    ## non event value
+    # zerovalue can be zero or another value (-4) if transformation is performed
     index_nonpositive = cprob < (1 - poe)
-    data_out[index_nonpositive] = np.nanmin(data_out)
+    data_out[index_nonpositive] = zerovalue
     del index_nonpositive, index_positive
 
     return data_out
@@ -74,7 +76,15 @@ def prob_estimate_for_one_var(var_name, reg_estimate, reg_error, nearby_stn_max,
                               transform_method, transform_setting, ds_out):
     # generate probabilistic estimates
     if poe.shape == reg_estimate.shape:
-        ens_estimate = perturb_estimates_withoccurrence(reg_estimate, reg_error, poe, random_field, minrndnum, maxrndnum)
+
+        if len(transform_method) > 0:
+            zerovalue = -transform_setting['exponent']
+            minpost = data_transformation(0.1, transform_method, transform_setting, 'transform')
+        else:
+            zerovalue = 0 # assume 0 is non-event value
+            minpost = 0.1 # assume 0.1 is the minimum positive values when an event occurs
+        
+        ens_estimate = perturb_estimates_withoccurrence(reg_estimate, reg_error, poe, random_field, minrndnum, maxrndnum, minpost=minpost, zerovalue=zerovalue)
         # back transformation
         if len(transform_method) > 0:
             ens_estimate = data_transformation(ens_estimate, transform_method, transform_setting, 'back_transform')
