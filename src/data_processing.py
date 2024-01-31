@@ -13,9 +13,9 @@ def boxcox_transform(data, texp=4):
     # mode: box-cox; power-law
     if not isinstance(data, np.ndarray):
         data = np.array(data)
+    data = data.copy()
     data[data<0] = 0
     datat = (data ** (1 / texp) - 1) / (1 / texp)
-    # datat[data < -3] = -3
     return datat
 
 def boxcox_back_transform(data, texp=4):
@@ -23,6 +23,7 @@ def boxcox_back_transform(data, texp=4):
     # mode: box-cox; power-law
     if not isinstance(data, np.ndarray):
         data = np.array(data)
+    data = data.copy()
     data[data<-texp] = -texp
     datat = (data / texp + 1) ** texp
     return datat
