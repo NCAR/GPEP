@@ -12,12 +12,13 @@ from data_processing import data_transformation
 
 # ====== subroutines/ functions ======
 
-def perturb_estimates_withoccurrence(data, uncert, poe, rndnum, minrndnum=-3.99, maxrndnum=3.99, minpost=None, zerovalue=0):
-    data     = data.copy()
-    uncert   = uncert.copy()
-    poe      = poe.copy()
-    rndnum   = rndnum.copy()
-    
+def perturb_estimates_withoccurrence(data, uncert, poe, rndnum, minrndnum=-3.99, maxrndnum=3.99):
+
+    data = data.copy()
+    uncert = uncert.copy()
+    poe = poe.copy()
+    rndnum = rndnum.copy()
+
     # initialize output array
     data_out = np.nan * np.zeros(data.shape, dtype=np.float32)
 
@@ -32,7 +33,7 @@ def perturb_estimates_withoccurrence(data, uncert, poe, rndnum, minrndnum=-3.99,
     index_positive = cprob >= (1 - poe)
     cs = (cprob - (1 - poe)) / poe
     cs[~index_positive] = np.nan  # because poe == 0 is not excluded in the matrix
-    
+
     # generate random numbers
     cs[cs > 0.99997] = 0.99997
     cs[cs < 3e-5] = 3e-5
@@ -44,20 +45,13 @@ def perturb_estimates_withoccurrence(data, uncert, poe, rndnum, minrndnum=-3.99,
     # generate mu and sigma from lognormal distribution
 
     dtmp = data[index_positive] + rn[index_positive] * uncert[index_positive]
-    if minpost == None:
-        minpost = zerovalue + 0.01 # 0.01 may still be too large. better to input minpost
-    
-    dtmp[dtmp <= minpost ] = minpost # minimum value when the event occurs 
-        
     data_out[index_positive] = dtmp
 
     ## non event value
     # zerovalue can be zero or another value (-4) if transformation is performed
     index_nonpositive = cprob < (1 - poe)
-    data_out[index_nonpositive] = zerovalue
-    del index_nonpositive, index_positive
 
-    return data_out
+    return data_out, index_positive, index_nonpositive
 
 
 def perturb_estimates_general(data, uncert, rndnum, minrndnum=-3.99, maxrndnum=3.99):
@@ -72,26 +66,23 @@ def perturb_estimates_general(data, uncert, rndnum, minrndnum=-3.99, maxrndnum=3
     return data_out
 
 
-def prob_estimate_for_one_var(var_name, reg_estimate, reg_error, nearby_stn_max, poe, random_field, minrndnum, maxrndnum, 
+def prob_estimate_for_one_var(var_name, reg_estimate, reg_error, nearby_stn_max, poe, random_field, minrndnum, maxrndnum,
                               transform_method, transform_setting, ds_out):
     # generate probabilistic estimates
     if poe.shape == reg_estimate.shape:
 
-        if len(transform_method) > 0:
-            zerovalue = -transform_setting['exponent']
-            minpost = data_transformation(0.1, transform_method, transform_setting, 'transform')
-        else:
-            zerovalue = 0 # assume 0 is non-event value
-            minpost = 0.1 # assume 0.1 is the minimum positive values when an event occurs
-        
-        ens_estimate = perturb_estimates_withoccurrence(reg_estimate, reg_error, poe, random_field, minrndnum, maxrndnum, minpost=minpost, zerovalue=zerovalue)
+        ens_estimate, index_positive, index_nonpositive = perturb_estimates_withoccurrence(reg_estimate, reg_error, poe, random_field, minrndnum, maxrndnum)
         # back transformation
         if len(transform_method) > 0:
             ens_estimate = data_transformation(ens_estimate, transform_method, transform_setting, 'back_transform')
-            # variable and unit dependent ...
-            # minprcp = 0.01
-            # ens_estimate[ens_estimate < minprcp] = 0
-            # ens_estimate[(ens_estimate > minprcp) & (ens_estimate < minprcp)] = minprcp
+
+            zerovalue = 0  # assume 0 is non-event value
+            ens_estimate[index_nonpositive] = zerovalue
+
+            minpost = 0.1  # assume 0.1 is the minimum positive values when an event occurs
+            dtmp = ens_estimate[index_positive]
+            dtmp[dtmp < minpost] = minpost
+            ens_estimate[index_positive] = dtmp
     else:
         ens_estimate = perturb_estimates_general(reg_estimate, reg_error, random_field, minrndnum, maxrndnum)
 
@@ -240,12 +231,12 @@ def generate_prob_estimates_serial(config, member_range=[]):
         master_seed = config['master_seed']
     else:
         master_seed = -1
-    
+
     if 'append_date_to_output_filename' in config:
         append_date_to_output_filename = config['append_date_to_output_filename']
     else:
         append_date_to_output_filename = True
-        
+
     datestamp = f"{config['date_start'].replace('-', '')}-{config['date_end'].replace('-', '')}"
 
     grid_lat_name = config['grid_lat_name']
@@ -459,7 +450,7 @@ def generate_prob_estimates_serial(config, member_range=[]):
             outfile_ens = f'{file_ens_prefix}{datestamp}_{ens + ensemble_start:03}.nc'
         else:
             outfile_ens = f'{file_ens_prefix}{ens + ensemble_start:03}.nc'
-            
+
         if os.path.isfile(outfile_ens):
             print(f'Ensemble outfile exists: {outfile_ens}')
             if overwrite_ens == True:
@@ -499,10 +490,10 @@ def generate_prob_estimates_serial(config, member_range=[]):
 
             # probabilistic estimation (ensemble generation)
             ds_out = prob_estimate_for_one_var(var_name, allvar_reg_estimate[var_name], allvar_reg_error[var_name],
-                                               nearby_stn_max[var_name], allvar_poe[var_name], random_field, 
+                                               nearby_stn_max[var_name], allvar_poe[var_name], random_field,
                                                minrndnum, maxrndnum, transform_vars[var_name],
                                                transform_settings[transform_vars[var_name]], ds_out)
-            
+
             if output_randomfield == True:
                 ds_out[var_name + '_rnd'] = xr.DataArray(random_field, dims=('y', 'x', 'time'))
 
@@ -516,7 +507,7 @@ def generate_prob_estimates_serial(config, member_range=[]):
                     random_field_dep = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
                     for i in range(ntime):
                         rndi = rf_FGMET.field_rand(spcorr_jpos[var_name_dep], spcorr_ipos[var_name_dep], spcorr_wght[var_name_dep],
-                                                   spcorr_sdev[var_name_dep], iorder[var_name_dep], jorder[var_name_dep], 
+                                                   spcorr_sdev[var_name_dep], iorder[var_name_dep], jorder[var_name_dep],
                                                    seeds_rf[var_name_dep][ens, i])
                         random_field_dep[:, :, i] = rndi
                     random_field_dep = random_field * target_vars_dependent_cross_cc[d] + np.sqrt(1 - target_vars_dependent_cross_cc[d]**2) * random_field_dep
@@ -525,7 +516,7 @@ def generate_prob_estimates_serial(config, member_range=[]):
 
                     # probabilistic estimation
                     ds_out = prob_estimate_for_one_var(var_name_dep, allvar_reg_estimate[var_name_dep], allvar_reg_error[var_name_dep],
-                                                       nearby_stn_max[var_name], allvar_poe[var_name_dep], random_field_dep, 
+                                                       nearby_stn_max[var_name], allvar_poe[var_name_dep], random_field_dep,
                                                        minrndnum, maxrndnum, transform_vars[var_name_dep],
                                                        transform_settings[transform_vars[var_name_dep]], ds_out)
 
