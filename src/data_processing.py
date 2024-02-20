@@ -28,6 +28,22 @@ def boxcox_back_transform(data, texp=4):
     datat = (data / texp + 1) ** texp
     return datat
 
+
+def boxcox_back_transform_biasadjustment(data, sigma_square, texp=4):
+    # Box-Cox back transformation can lead to bias
+    # This function is put here for future use
+    # mode: box-cox; power-law
+    # Reference: https://otexts.com/fpp2/transformations.html
+    data = data.copy()
+    if not isinstance(data, np.ndarray):
+        data = np.array(data)
+    data[data < -texp] = -texp
+    datat = (data / texp + 1) ** texp * (1 + sigma_square * (1 - 1 / texp) / (2 * (data / texp + 1) ** 2))
+
+    datat[data == -texp] = 0
+
+    return datat
+
 def data_transformation(data, method, settings, mode='transform'):
     if method == 'boxcox':
         if mode == 'transform':
