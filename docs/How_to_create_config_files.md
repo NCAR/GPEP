@@ -234,7 +234,7 @@ dynamic_predictor_name = [['cube_root_prec_rate', 'tmp_2m'],
 
 ## predictor_name_static_stn
 This list contains names of static predictors of input stations that will be used to support gridding estimation. These variables must be contained in `input_stn_list` or `input_stn_all`.  
-Example: `predictor_name_static_stn = ['lat', 'lon', 'elev', 'slp_n', 'slp_e']` 
+Example: `predictor_name_static_stn = ['lat', 'lon', 'elev', 'slp_n', 'slp_e']`
 
 ## predictor_name_static_grid
 
@@ -312,7 +312,7 @@ Sklearn module is used to support most functions: https://scikit-learn.org/stabl
 (2) Sklearn-based methods support simple usage with `model.fit()` and `model.predict` or `model.predict_prob`, in the format of `LWR:linear_model.METHOD`. Examples of METHOD are `LinearRegression`, `LogisticRegression`, `Ridge`, `BayesianRidge`, `ARDRegression`, `Lasso`, `ElasticNet`, `Lars`, etc.  
 
 - Global regression using machine learnig methods:
-Machine learning methods are supported by sklearn. Parametrs of methods supported by sklearn can be defined at the bottom of this configuration file (optional). Examples: `ensemble.RandomForestRegressor`, `ensemble.RandomForestClassifier`, `neural_network.MLPRegressor`, `neural_network.MLPClassifier`, `ensemble.GradientBoostingClassifier`, and `ensemble.GradientBoostingRegressor`. 
+Machine learning methods are supported by sklearn. Parametrs of methods supported by sklearn can be defined at the bottom of this configuration file (optional). Examples: `ensemble.RandomForestRegressor`, `ensemble.RandomForestClassifier`, `neural_network.MLPRegressor`, `neural_network.MLPClassifier`, `ensemble.GradientBoostingClassifier`, and `ensemble.GradientBoostingRegressor`.
 
 The parameters of sklearn methods can be defined in the [sklearn] section.  
 
@@ -366,16 +366,31 @@ These parameters define the names of the latitude and longitude dimensions in th
 
 
 ## [transform]
-Transformation section. This will be read as a dictionary in Python. Current, only `boxcox` transformation is supported. 
+Transformation section. This will be read as a dictionary in Python. Currently,`boxcox` and `ecdf` transformation is supported. Please note that `ecdf` is still experimental, and requires a longer station data record to be provided to build the empirical cdf (ecdf).
+
 ### [transform.boxcox]
 #### exponent
 The exponential factor used in box-cox transformation. Example: `exponent = 4`.
 
+### [transform.ecdf]
+#### pooled
+Boolean to describe if a pooled (True) or station ecdf approach is taken. Example: `pooled=True`.
+#### min_z_value
+This is a value to be assigned to all nan values, following the ecdf transform. It represents a lower standard score (z), in the case of precipitation, it corresponds to a near zero amount. Example: `min_z_value=-4`.
+#### interp_method
+Selection of the method to translate cumulative probabilities back to measurements values in the ecdf back transform. Current options are linear interpolation with extrapolation, and a gamma distribution fit.
+Example: `interp_method=interp1d`, `interp_method=gamma`.
+
+#### min_est_value
+Very small values from back transformation below this threshold value are converted to nan, and then zero. Minimum estimated value is used a a cut off for mariginal values that are created in the regression process.
+Example: `min_est_value=0.01`.
+
+
 ## [sklearn]
 *Optional*
 scikit-learn section defining the parameters of sklearn methods used by `gridcore_continuous` and `gridcore_classification`. If no parameters are provided or if the section does not even exist, default parameters will be used.    
-Note: Use the pure name of sklearn method as the sub-dict name. For example, if `gridcore_continuous='ensemble.RandomForestRegressor'`, define the parameters of `ensemble.RandomForestRegressor` under the section `[sklearn.RandomForestRegressor]` (see the example). Don't inlcude `ensemble.` in the dict name. Similarly, if `gridcore_continuous='LWR:linear_model.Ridge'`, define the parameters of `Ridge` under the section `sklearn.Ridge`. 
- 
+Note: Use the pure name of sklearn method as the sub-dict name. For example, if `gridcore_continuous='ensemble.RandomForestRegressor'`, define the parameters of `ensemble.RandomForestRegressor` under the section `[sklearn.RandomForestRegressor]` (see the example). Don't inlcude `ensemble.` in the dict name. Similarly, if `gridcore_continuous='LWR:linear_model.Ridge'`, define the parameters of `Ridge` under the section `sklearn.Ridge`.
+
 Example:
 ### [sklearn.RandomForestRegressor]
 #### n_estimators   = 500
@@ -403,4 +418,4 @@ If set to `true`, all configurations will be printed at the beginning of model p
 **overwrite_grid_reg**: For gridded regression file  
 **overwrite_ens**: For ensemble output files  
 **overwrite_spcorr**: For spatial correlation structure files  
-By default, these flags are all `flase` to utilize existing outputs to speed up production. Users may change them to `true` to generate brand new files for all or part of GPEP outputs to overwrite existing files. A safer way is to just change `outpath_parent` to create files in a new folder.  
+By default, these flags are all `false` to utilize existing outputs to speed up production. Users may change them to `true` to generate brand new files for all or part of GPEP outputs to overwrite existing files. A safer way is to just change `outpath_parent` to create files in a new folder.  
