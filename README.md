@@ -62,10 +62,10 @@ The python version of GMET, re-named to a more generalized 'GPEP', was subsequen
 In 2024-2025, GPEP development continues with support of projects from USACE, Reclamation and recently NOAA, which is sponsoring an effort in collaboration with U. of Oklahoma/NSSL to develop a GPEP-based 2-km US-wide ensemble multi-decadal to real-time surface meteorological forcing dataset.  
 
 ## Sponsorship
-- (current) US Army Corps of Engineers -- Climate Preparedness and Resilience Program (at NCAR)
-- (current) US Bureau of Reclamation -- Snow Water Supply Forecasting Program; and Science and Technology Program (at NCAR)  
-- (current) NOAA OAR -- Community Observations and Modeling (COM) program (at NCAR)
-- (prior, related) Global Water Futures (at U. Saskatchewan)
+- (current) US Army Corps of Engineers, Climate Preparedness and Resilience Program (NCAR projects)
+- (current) US Bureau of Reclamation, Snow Water Supply Forecasting Program; and Science and Technology Program (NCAR projects)  
+- (current) NOAA OAR, Community Observations and Modeling (COM) program (NCAR projects)
+- (prior, related) Global Water Futures (U. Saskatchewan project)
 
 ## Related References
 ### GPEP reference
