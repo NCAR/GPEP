@@ -75,7 +75,7 @@ def prob_estimate_for_one_var(var_name, reg_estimate, reg_error, nearby_stn_max,
         # back transformation
         if len(transform_method) > 0:
             if transform_method == 'ecdf':
-                cdfs = calculate_monthly_cdfs(xr.open_dataset(config['file_allstn']),var_name)
+                cdfs = calculate_monthly_cdfs(xr.open_dataset(config['file_allstn']),var_name, transform_setting)
                 ens_estimate = data_transformation(ens_estimate, transform_method, transform_setting, 'back_transform',
                                                 times=ds_out['time'].values,cdfs=cdfs)
             else:
@@ -96,7 +96,7 @@ def prob_estimate_for_one_var(var_name, reg_estimate, reg_error, nearby_stn_max,
         if len(transform_method) > 0:
             precip_err_cap = 0.2 # hard coded ...
             if transform_method == 'ecdf':
-                cdfs = calculate_monthly_cdfs(xr.open_dataset(config['file_allstn']),var_name)
+                cdfs = calculate_monthly_cdfs(xr.open_dataset(config['file_allstn']),var_name, transform_setting)
                 nearby_stn_max = data_transformation(nearby_stn_max+reg_error*precip_err_cap, transform_method, transform_setting, 'back_transform',
                                                 times=ds_out['time'].values,cdfs=cdfs)
             else:
