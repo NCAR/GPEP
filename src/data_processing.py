@@ -184,12 +184,13 @@ def inverse_normal_quantile_transform(data,time,monthly_cdfs, settings):
 
     #Convert to array
     back_transformed_data_array = back_transformed_data.astype(float).to_numpy()
+    back_transformed_data_array_transformed = back_transformed_data_array.T
 
     #Extra transform for grid regression
     if data.ndim == 3:
-        back_transformed_data_array = back_transformed_data_array.reshape(np.shape(data))
+       back_transformed_data_array_transformed = back_transformed_data_array_transformed.reshape(np.shape(data))
 
-    return back_transformed_data_array
+    return back_transformed_data_array_transformed
 
 def data_transformation(data, method, settings, mode='transform',times=None,cdfs=None):
     if method == 'boxcox':
