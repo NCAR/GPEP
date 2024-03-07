@@ -183,14 +183,15 @@ def inverse_normal_quantile_transform(data,time,monthly_cdfs, settings):
                     back_transformed_data.loc[z_scores.index, station] = np.zeros(len(z_scores))
 
     #Convert to array
-    back_transformed_data_array = back_transformed_data.astype(float).to_numpy()
-    back_transformed_data_array_transformed = back_transformed_data_array.T
+    back_transform_array = back_transformed_data.astype(float).to_numpy()
+    
 
     #Extra transform for grid regression
     if data.ndim == 3:
-       back_transformed_data_array_transformed = back_transformed_data_array_transformed.reshape(np.shape(data))
+       back_transform_array = back_transform_array.T
+       back_transform_array = back_transform_array.reshape(np.shape(data))
 
-    return back_transformed_data_array_transformed
+    return back_transform_array
 
 def data_transformation(data, method, settings, mode='transform',times=None,cdfs=None):
     if method == 'boxcox':
