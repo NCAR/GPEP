@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from multiprocessing import Pool
-from data_processing import data_transformation
+from data_processing import data_transformation, calculate_monthly_cdfs
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import LogisticRegression
 from evaluate import evaluate_allpoint
@@ -870,6 +870,7 @@ def regression_for_blocks(r1, r2, c1, c2):
                 xdata_near0 = stn_predictor[sample_nearIndex, :]
                 xdata_g0 = tar_predictor[r, c, :]
 
+
                 # interpolation for every time step
                 for d in range(ntime):
 
@@ -877,22 +878,14 @@ def regression_for_blocks(r1, r2, c1, c2):
                     if len(np.unique(ydata_near)) == 1:  # e.g., for prcp, all zero
                         ydata_tar[r-r1, c-c1, d] = ydata_near[0]
                     else:
-
                         # add dynamic predictors if flag is true and predictors are good
                         xdata_near = xdata_near0
                         xdata_g = xdata_g0
+                        
                         if dynamic_predictors['flag'] == True:
                             xdata_near_add = dynamic_predictors['stn_predictor_dynamic'][:, d, sample_nearIndex].T
                             xdata_g_add = dynamic_predictors['tar_predictor_dynamic'][:, d, r, c]
                             if np.all(~np.isnan(xdata_near_add)) and np.all(~np.isnan(xdata_g_add)):
-
-                                # # unique value check
-                                # uniquenum = np.zeros(xdata_near_add.shape[1])
-                                # for i in range(xdata_near_add.shape[1]):
-                                #     uniquenum[i] = len(np.unique(xdata_near_add[:, i]))
-                                #
-                                # xdata_near_add = xdata_near_add[:, uniquenum > 1]
-                                # xdata_g_add = xdata_g_add[uniquenum > 1]
 
                                 # whether use a dynamic predictor
                                 diff = np.max(xdata_near_add, axis=0) - np.min(xdata_near_add, axis=0)
@@ -1247,8 +1240,10 @@ def main_regression(config, target):
             print(f'{var_name_trans} instead of {var_name} will be loaded from the station data file {file_allstn}.')
 
             # adjust max/min limits
-            minRange_vars[vn] = data_transformation(minRange_vars[vn], transform_vars[vn], transform_settings[transform_vars[vn]], 'transform')
-            maxRange_vars[vn] = data_transformation(maxRange_vars[vn], transform_vars[vn], transform_settings[transform_vars[vn]], 'transform')
+            if minRange_vars[vn] != -np.inf:
+                minRange_vars[vn] = data_transformation(minRange_vars[vn], transform_vars[vn], transform_settings[transform_vars[vn]], 'transform')
+            if maxRange_vars[vn] != np.inf:
+                maxRange_vars[vn] = data_transformation(maxRange_vars[vn], transform_vars[vn], transform_settings[transform_vars[vn]], 'transform')
 
         else:
             var_name_trans = ''
@@ -1361,7 +1356,11 @@ def main_regression(config, target):
                 var_name_save = var_name_trans
             else:
                 var_name_save = var_name
-                estimates = data_transformation(estimates, transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
+                if 'ecdf' in var_name_trans:
+                    cdfs = calculate_monthly_cdfs(xr.open_dataset(file_allstn),var_name,transform_settings[transform_vars[vn]])
+                    estimates = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform',times=ds_out['time'].values, cdfs=cdfs)
+                else:   
+                    estimates = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
         else:
             var_name_save = var_name
 
@@ -1370,10 +1369,14 @@ def main_regression(config, target):
         elif estimates.ndim == 2:
             ds_out[var_name_save] = xr.DataArray(estimates, dims=('stn', 'time'))
 
-            # evalution
+            # evaluation
             dtmp1 = ds_stn[var_name].values
             if (len(var_name_trans) > 0) and (backtransform == False):
-                dtmp2 = data_transformation(estimates, transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
+                if 'ecdf' in var_name_trans:
+                    cdfs = calculate_monthly_cdfs(xr.open_dataset(file_allstn),var_name,transform_settings[transform_vars[vn]]) 
+                    dtmp2 = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform',times=ds_out['time'].values, cdfs=cdfs)
+                else:
+                    dtmp2 = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
             else:
                 dtmp2 = estimates
 
