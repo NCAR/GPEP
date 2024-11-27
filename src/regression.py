@@ -204,56 +204,89 @@ def logistic_regression(x, tx, yp):
 
     return b
 
+# ### GMET original linear logistic regression
+# def weight_linear_regression(nearinfo, weightnear, datanear, tarinfo):
+#     # # nearinfo: predictors from neighboring stations
+#     # # [station number, predictor number + 1] array with the first column being ones
+#     # nearinfo = np.zeros([nnum, npred+1])
+#     #
+#     # # weightnear: weight of neighboring stations
+#     # # [station number, station number] array with weights located in the diagonal
+#     # weightnear = np.zeros([nnum, nnum])
+#     # for i in range(nnum):
+#     #     weightnear[i, i] = 123
+#     #
+#     # # tarinfo:  predictors from target stations
+#     # # [predictor number + 1] vector with the first value being one
+#     # tarinfo = np.zeros(npred+1)
+#     #
+#     # # datanear: data from neighboring stations. [station number] vector
+#     # datanear = np.zeros(nnum)
 
-def weight_linear_regression(nearinfo, weightnear, datanear, tarinfo):
-    # # nearinfo: predictors from neighboring stations
-    # # [station number, predictor number + 1] array with the first column being ones
-    # nearinfo = np.zeros([nnum, npred+1])
-    #
-    # # weightnear: weight of neighboring stations
-    # # [station number, station number] array with weights located in the diagonal
-    # weightnear = np.zeros([nnum, nnum])
-    # for i in range(nnum):
-    #     weightnear[i, i] = 123
-    #
-    # # tarinfo:  predictors from target stations
-    # # [predictor number + 1] vector with the first value being one
-    # tarinfo = np.zeros(npred+1)
-    #
-    # # datanear: data from neighboring stations. [station number] vector
-    # datanear = np.zeros(nnum)
+#     # start regression
+#     w_pcp_red = np.diag(np.squeeze(weightnear))
+#     tx_red = np.transpose(nearinfo)
+#     twx_red = np.matmul(tx_red, w_pcp_red)
+#     b = least_squares_ludcmp(nearinfo, datanear, twx_red)
+#     datatar = np.dot(tarinfo, b)
 
-    # start regression
-    w_pcp_red = np.diag(np.squeeze(weightnear))
-    tx_red = np.transpose(nearinfo)
-    twx_red = np.matmul(tx_red, w_pcp_red)
-    b = least_squares_ludcmp(nearinfo, datanear, twx_red)
-    datatar = np.dot(tarinfo, b)
+#     return datatar
 
-    return datatar
+# def weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
+
+#     try:
+#         w_pcp_red = np.diag(np.squeeze(weightnear))
+
+#         # if len(np.unique(datanear)) == 1:
+#         #     poe = datanear[0] # all 0 (no rain) or all 1 (rain everywhere)
+#         # else:
+#         tx_red = np.transpose(nearinfo)
+#         twx_red = np.matmul(tx_red, w_pcp_red)
+#         b = logistic_regression(nearinfo, twx_red, datanear)
+#         if np.all(b == 0) or np.any(np.isnan(b)):
+#             poe = np.dot(weightnear, datanear)
+#         else:
+#             zb = - np.dot(tarinfo, b)
+#             poe = 1 / (1 + np.exp(zb))
+
+#     except:
+#         poe = sklearn_weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo)
+
+#     return poe
+# ### GMET original linear logistic regression
 
 
+# ### sklearn linear and logistic regression
+# def weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
+
+#     try:
+#         poe = sklearn_weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo)
+#     except:
+#         poe = np.nan
+
+#     return poe
+
+# def weight_linear_regression(nearinfo, weightnear, datanear, tarinfo):
+#     model = LinearRegression()
+#     model = model.fit(nearinfo, datanear, sample_weight=weightnear)
+#     datatar = model.predict(tarinfo[np.newaxis, :])
+#     return datatar
+# ### sklearn linear and logistic regression
+
+### statsmodel linear and logistic regression
+import statsmodels.api as sm
 def weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
-
     try:
-        w_pcp_red = np.diag(np.squeeze(weightnear))
-
-        # if len(np.unique(datanear)) == 1:
-        #     poe = datanear[0] # all 0 (no rain) or all 1 (rain everywhere)
-        # else:
-        tx_red = np.transpose(nearinfo)
-        twx_red = np.matmul(tx_red, w_pcp_red)
-        b = logistic_regression(nearinfo, twx_red, datanear)
-        if np.all(b == 0) or np.any(np.isnan(b)):
-            poe = np.dot(weightnear, datanear)
-        else:
-            zb = - np.dot(tarinfo, b)
-            poe = 1 / (1 + np.exp(zb))
-
+        model = sm.Logit(datanear, nearinfo, weights=weightnear).fit(disp=0)
+        poe = model.predict(tarinfo) # Returns probability estimates
     except:
         poe = sklearn_weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo)
-
     return poe
+
+def weight_linear_regression(nearinfo, weightnear, datanear, tarinfo):
+    model = sm.WLS(datanear, nearinfo, weights=weightnear).fit()
+    return model.predict(tarinfo[np.newaxis, :])
+### statsmodel linear and logistic regression
 
 def check_predictor_matrix_behavior(nearinfo, weightnear):
     # check to see if the station predictor matrix will be well behaved
