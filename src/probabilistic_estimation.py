@@ -7,6 +7,7 @@ import numpy as np
 from scipy import special
 from multiprocessing import Pool
 
+from data_processing import data_transformation
 import random_field_FortranGMET as rf_FGMET
 from data_processing import data_transformation, calculate_monthly_cdfs 
 
@@ -67,7 +68,36 @@ def perturb_estimates_general(data, uncert, rndnum, minrndnum=-3.99, maxrndnum=3
 
 
 def prob_estimate_for_one_var(var_name, reg_estimate, reg_error, nearby_stn_max, poe, random_field, minrndnum, maxrndnum,
-                              transform_method, transform_setting, ds_out,config):
+                              transform_method, transform_setting, times, config):
+
+    # calculate max limit
+    if np.array(nearby_stn_max).shape == reg_estimate.shape:
+        if len(transform_method) > 0:
+ 
+            precip_err_cap = 0.2 # hard coded ...
+            nearby_stn_max_tmp = nearby_stn_max+reg_error*precip_err_cap
+            
+            # perform max limit to regression estimates which should already be transformed
+            mask = reg_estimate > nearby_stn_max_tmp
+            reg_estimate[mask] = nearby_stn_max_tmp[mask]
+            
+            if transform_method == 'ecdf':
+                cdfs = calculate_monthly_cdfs(xr.open_dataset(config['file_allstn']),var_name, transform_setting)
+                nearby_stn_max = data_transformation(nearby_stn_max_tmp, transform_method, transform_setting, 'back_transform',
+                                                times=times,cdfs=cdfs)
+            else:
+                nearby_stn_max = data_transformation(nearby_stn_max_tmp, transform_method, transform_setting, 'back_transform')
+        else:
+            nearby_stn_max = nearby_stn_max + reg_error * 2
+
+            # perform max limit to regression estimates
+            mask = reg_estimate > nearby_stn_max
+            reg_estimate[mask] = nearby_stn_max[mask]
+
+        maxlflag = True
+    else:
+        maxlflag = False
+
     # generate probabilistic estimates
     if poe.shape == reg_estimate.shape:
 
@@ -77,7 +107,7 @@ def prob_estimate_for_one_var(var_name, reg_estimate, reg_error, nearby_stn_max,
             if transform_method == 'ecdf':
                 cdfs = calculate_monthly_cdfs(xr.open_dataset(config['file_allstn']),var_name, transform_setting)
                 ens_estimate = data_transformation(ens_estimate, transform_method, transform_setting, 'back_transform',
-                                                times=ds_out['time'].values,cdfs=cdfs)
+                                                times=times,cdfs=cdfs)
             else:
                 ens_estimate = data_transformation(ens_estimate, transform_method, transform_setting, 'back_transform')
 
@@ -92,24 +122,11 @@ def prob_estimate_for_one_var(var_name, reg_estimate, reg_error, nearby_stn_max,
         ens_estimate = perturb_estimates_general(reg_estimate, reg_error, random_field, minrndnum, maxrndnum)
 
     # max limit: may be changed in the future ...
-    if np.array(nearby_stn_max).shape == reg_estimate.shape:
-        if len(transform_method) > 0:
-            precip_err_cap = 0.2 # hard coded ...
-            if transform_method == 'ecdf':
-                cdfs = calculate_monthly_cdfs(xr.open_dataset(config['file_allstn']),var_name, transform_setting)
-                nearby_stn_max = data_transformation(nearby_stn_max+reg_error*precip_err_cap, transform_method, transform_setting, 'back_transform',
-                                                times=ds_out['time'].values,cdfs=cdfs)
-            else:
-                nearby_stn_max = data_transformation(nearby_stn_max+reg_error*precip_err_cap, transform_method, transform_setting, 'back_transform')
-        else:
-            nearby_stn_max = nearby_stn_max + reg_error * 2
+    if maxlflag == True:
         mask = ens_estimate > nearby_stn_max
         ens_estimate[mask] = nearby_stn_max[mask]
 
-    # # add to output ds
-    ds_out[var_name] = xr.DataArray(ens_estimate, dims=('y', 'x', 'time'))
-
-    return ds_out
+    return ens_estimate
 
 
 def generate_random_numbers(masterseed, n=1):
@@ -364,8 +381,20 @@ def generate_prob_estimates_serial(config, member_range=[]):
     with xr.open_dataset(file_grid_reg) as ds_grid_reg:
         for vn in range(len(target_vars)):
             var_name = target_vars[vn]
+            
             if len(transform_vars[vn]) > 0:
-                allvar_reg_estimate[var_name] = ds_grid_reg[var_name + '_' + transform_vars[vn]].values
+                var_name_trans = var_name + '_' + transform_vars[vn]
+                
+                if var_name_trans in ds_grid_reg.data_vars:
+                    allvar_reg_estimate[var_name] = ds_grid_reg[var_name + '_' + transform_vars[vn]].values
+                elif var_name in ds_grid_reg.data_vars:
+                    print(f'Cannot find {var_name_trans} but find {var_name} in {file_grid_reg}')
+                    print(f'Apply transformation to get {var_name_trans} from {var_name}')
+                    if transform_vars[vn] == 'ecdf':
+                        print('ecdf is not fully supported here yet')
+                    else:
+                        allvar_reg_estimate[var_name] = data_transformation(ds_grid_reg[var_name].values, transform_vars[vn], transform_settings[transform_vars[vn]], 'transform')
+                
             else:
                 allvar_reg_estimate[var_name] = ds_grid_reg[var_name].values
 
@@ -486,53 +515,172 @@ def generate_prob_estimates_serial(config, member_range=[]):
             var_name = target_vars_independent[vn]
             # print(f'Probabilistic estimation for {var_name} and ensemble member {ens}--{ensemble_number}')
 
-            # generate random numbers
-            random_field = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
-            for i in range(ntime):
-                rndi = rf_FGMET.field_rand(spcorr_jpos[var_name], spcorr_ipos[var_name], spcorr_wght[var_name], spcorr_sdev[var_name],
-                                           iorder[var_name], jorder[var_name], seeds_rf[var_name][ens, i])
-                if i == 0:
-                    random_field[:, :, i] = rndi
-                else:
-                    random_field[:, :, i] = random_field[:, :, i - 1] * allvar_auto_lag1_cc[var_name] + np.sqrt(1 - allvar_auto_lag1_cc[var_name] ** 2) * rndi
-
-            random_field[np.isnan(allvar_reg_estimate[var_name])] = np.nan
-
-            # probabilistic estimation (ensemble generation)
-            ds_out = prob_estimate_for_one_var(var_name, allvar_reg_estimate[var_name], allvar_reg_error[var_name],
-                                               nearby_stn_max[var_name], allvar_poe[var_name], random_field,
-                                               minrndnum, maxrndnum, transform_vars[var_name],
-                                               transform_settings[transform_vars[var_name]], ds_out, config)
-
             if output_randomfield == True:
+                # generate random numbers
+                ########################################
+                # method-1: generate random field for all time steps
+                # this method can cause memory problem if the time step is long 
+                t1 = time.time()
+                random_field = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
+                for i in range(ntime):
+                    rndi = rf_FGMET.field_rand(spcorr_jpos[var_name], spcorr_ipos[var_name], spcorr_wght[var_name], spcorr_sdev[var_name],
+                                               iorder[var_name], jorder[var_name], seeds_rf[var_name][ens, i])
+                    if i == 0:
+                        random_field[:, :, i] = rndi
+                    else:
+                        random_field[:, :, i] = random_field[:, :, i - 1] * allvar_auto_lag1_cc[var_name] + np.sqrt(1 - allvar_auto_lag1_cc[var_name] ** 2) * rndi
+    
+                random_field[np.isnan(allvar_reg_estimate[var_name])] = np.nan
+                t2 = time.time()
+                print('time cost of random field generation:', t2-t1)
+    
+                
+                # probabilistic estimation (ensemble generation)
+                t1 = time.time()
+                ens_estimate = prob_estimate_for_one_var(var_name, allvar_reg_estimate[var_name], allvar_reg_error[var_name],
+                                                   nearby_stn_max[var_name], allvar_poe[var_name], random_field,
+                                                   minrndnum, maxrndnum, transform_vars[var_name],
+                                                   transform_settings[transform_vars[var_name]], tartime, config)
+                ds_out[var_name] = xr.DataArray(ens_estimate, dims=('y', 'x', 'time'))
+                t2 = time.time()
+                print('time cost of probablistic estimation:', t2-t1)
+    
                 ds_out[var_name + '_rnd'] = xr.DataArray(random_field, dims=('y', 'x', 'time'))
+                ########################################
 
+            else:
+                ########################################
+                # method-2: generate random field for each time step
+                # this does not support output randomfield because the variables are already large
+                
+                # Initialize an empty list to store results for each time step
+                ens_estimate = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
+                masknan = np.isnan(allvar_reg_estimate[var_name][:,:,0])
+                
+                # Loop through each time step
+                for i in range(ntime):
+                    print(f'Generating time step {i}-{ntime} for {var_name}')
+                    
+                    # Generate a random field for the current time step
+                    rndi = rf_FGMET.field_rand(spcorr_jpos[var_name], spcorr_ipos[var_name], spcorr_wght[var_name], spcorr_sdev[var_name], 
+                                               iorder[var_name], jorder[var_name], seeds_rf[var_name][ens, i])
+                    if i == 0:
+                        rnd_now = rndi
+                    else:
+                        rnd_now = rnd_prev * allvar_auto_lag1_cc[var_name] + np.sqrt(1 - allvar_auto_lag1_cc[var_name] ** 2) * rndi
+                    
+                    rnd_prev = rnd_now.copy()
+                    
+                    # Mask random field where estimates are NaN
+                    rnd_now[masknan] = np.nan
+                
+                    # Generate probabilistic estimates for the current time step
+    
+                    d1 = allvar_reg_estimate[var_name][:,:,i]
+                    d2 = allvar_reg_error[var_name][:,:,i]
+                    if len(nearby_stn_max[var_name])>0:
+                        d3 = nearby_stn_max[var_name][:,:,i]
+                    else:
+                        d3 = nearby_stn_max[var_name]
+                    if len(allvar_poe[var_name])>0:
+                        d4 = allvar_poe[var_name][:,:,i]
+                    else:
+                        d4 = allvar_poe[var_name]
+    
+                    ens_estimate_step = prob_estimate_for_one_var(var_name, d1, d2, d3, d4, rnd_now, minrndnum, maxrndnum, transform_vars[var_name],
+                                                            transform_settings[transform_vars[var_name]], None, config)
+                    ens_estimate[:,:,i] = ens_estimate_step
+                
+                # Assign the combined estimates to the output dataset
+                ds_out[var_name] = xr.DataArray(ens_estimate, dims=('y', 'x', 'time'))
+
+
+            ########################################
+            
             # is any linked variable
             for d in range(len(target_vars_dependent)):
                 var_name_dep = target_vars_dependent[d]
                 if linkvar[var_name_dep] == var_name:
                     # print(f'Probabilistic estimation for {var_name_dep} and ensemble member {ens}--{ensemble_number}')
 
-                    # generate random numbers
-                    random_field_dep = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
-                    for i in range(ntime):
-                        rndi = rf_FGMET.field_rand(spcorr_jpos[var_name_dep], spcorr_ipos[var_name_dep], spcorr_wght[var_name_dep],
-                                                   spcorr_sdev[var_name_dep], iorder[var_name_dep], jorder[var_name_dep],
-                                                   seeds_rf[var_name_dep][ens, i])
-                        random_field_dep[:, :, i] = rndi
-                    random_field_dep = random_field * target_vars_dependent_cross_cc[d] + np.sqrt(1 - target_vars_dependent_cross_cc[d]**2) * random_field_dep
-                    del random_field
-                    random_field_dep[np.isnan(allvar_reg_estimate[var_name_dep])] = np.nan
-
-                    # probabilistic estimation
-                    ds_out = prob_estimate_for_one_var(var_name_dep, allvar_reg_estimate[var_name_dep], allvar_reg_error[var_name_dep],
-                                                       nearby_stn_max[var_name], allvar_poe[var_name_dep], random_field_dep,
-                                                       minrndnum, maxrndnum, transform_vars[var_name_dep],
-                                                       transform_settings[transform_vars[var_name_dep]], ds_out, config)
-
                     if output_randomfield == True:
-                        ds_out[var_name + '_rnd'] = xr.DataArray(random_field_dep, dims=('y', 'x', 'time'))
+                        #############################
+                        # method-1: use large memory 
+                        # generate random numbers
+                        t1 = time.time()
+                        random_field_dep = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
+                        for i in range(ntime):
+                            rndi = rf_FGMET.field_rand(spcorr_jpos[var_name_dep], spcorr_ipos[var_name_dep], spcorr_wght[var_name_dep],
+                                                       spcorr_sdev[var_name_dep], iorder[var_name_dep], jorder[var_name_dep],
+                                                       seeds_rf[var_name_dep][ens, i])
+                            random_field_dep[:, :, i] = rndi
+                        random_field_dep = random_field * target_vars_dependent_cross_cc[d] + np.sqrt(1 - target_vars_dependent_cross_cc[d]**2) * random_field_dep
+                        del random_field
+                        random_field_dep[np.isnan(allvar_reg_estimate[var_name_dep])] = np.nan
+                        t2 = time.time()
+                        print('time cost of random field generation:', t2-t1)
+                
+                        # probabilistic estimation
+                        t1 = time.time()
+                        ens_estimate = prob_estimate_for_one_var(var_name_dep, allvar_reg_estimate[var_name_dep], allvar_reg_error[var_name_dep],
+                                                           nearby_stn_max[var_name], allvar_poe[var_name_dep], random_field_dep,
+                                                           minrndnum, maxrndnum, transform_vars[var_name_dep],
+                                                           transform_settings[transform_vars[var_name_dep]], tartime, config)
+                        ds_out[var_name_dep] = xr.DataArray(ens_estimate, dims=('y', 'x', 'time'))
+                        t2 = time.time()
+                        print('time cost of probablistic estimation:', t2-t1)
+    
+    
+                        ds_out[var_name_dep + '_rnd'] = xr.DataArray(random_field_dep, dims=('y', 'x', 'time'))
+                    ###############################
 
+                    else:
+                        ###############################
+                        # method-2: loop each time step
+                        # Initialize an empty list to store results for each time step
+                        ens_estimate = np.nan * np.zeros([nrow, ncol, ntime], dtype=np.float32)
+                        masknan = np.isnan(allvar_reg_estimate[var_name_dep][:,:,0])
+                        
+                        # Loop through each time step
+                        for i in range(ntime):
+                            print(f'Generating time step {i}-{ntime} for {var_name_dep}')
+                            
+                            # Generate a random field for the current time step
+                            rndi = rf_FGMET.field_rand(spcorr_jpos[var_name_dep], spcorr_ipos[var_name_dep], spcorr_wght[var_name_dep], spcorr_sdev[var_name_dep], 
+                                                       iorder[var_name_dep], jorder[var_name_dep], seeds_rf[var_name_dep][ens, i])
+                            if i == 0:
+                                rnd_now = rndi
+                            else:
+                                rnd_now = rnd_prev * allvar_auto_lag1_cc[var_name_dep] + np.sqrt(1 - allvar_auto_lag1_cc[var_name_dep] ** 2) * rndi
+                            
+                            rnd_prev = rnd_now.copy()
+                            
+                            # Mask random field where estimates are NaN
+                            rnd_now[masknan] = np.nan
+                        
+                            # Generate probabilistic estimates for the current time step
+            
+                            d1 = allvar_reg_estimate[var_name_dep][:,:,i]
+                            d2 = allvar_reg_error[var_name_dep][:,:,i]
+                            if len(nearby_stn_max[var_name_dep])>0:
+                                d3 = nearby_stn_max[var_name_dep][:,:,i]
+                            else:
+                                d3 = nearby_stn_max[var_name_dep]
+                            if len(allvar_poe[var_name_dep])>0:
+                                d4 = allvar_poe[var_name_dep][:,:,i]
+                            else:
+                                d4 = allvar_poe[var_name_dep]
+            
+                            ens_estimate_step = prob_estimate_for_one_var(var_name_dep, d1, d2, d3, d4, rnd_now, minrndnum, maxrndnum, transform_vars[var_name_dep],
+                                                                    transform_settings[transform_vars[var_name_dep]], None, config)
+                            ens_estimate[:,:,i] = ens_estimate_step
+                        
+                        # Assign the combined estimates to the output dataset
+                        ds_out[var_name_dep] = xr.DataArray(ens_estimate, dims=('y', 'x', 'time'))
+            
+                        if output_randomfield == True:
+                            print('output_randomfield is not included due to memory consideration')
+        
         # save output file
         ds_out = ds_out.transpose('time', 'y', 'x')
 
@@ -576,11 +724,19 @@ def generate_prob_estimates(config):
     spcorr_structure(config)
 
     ensemble_number = ensemble_end - ensemble_start + 1
-    items = [(config, [e, e+1]) for e in range(ensemble_number)]
-    with Pool(num_processes) as pool:
-        pool.starmap(generate_prob_estimates_serial, items)
-
+    items = [(config, [e, e + 1]) for e in range(ensemble_number)]
+    
+    if num_processes == 1:
+        # Sequential processing using a for loop
+        for item in items:
+            generate_prob_estimates_serial(*item)
+    else:
+        # Parallel processing using Pool
+        with Pool(num_processes) as pool:
+            pool.starmap(generate_prob_estimates_serial, items)
+    
     t2 = time.time()
     print('Time cost (s):', t2 - t1)
     print('Probabilistic estimation (ensemble generation) completed successfully!\n\n')
+
 
