@@ -1087,7 +1087,14 @@ def main_regression(config, target):
     else:
         maxRange_vars = [np.inf] * len(target_vars)
 
-    if 'transform_vars' in config:
+    if 'onlytrans_ens' in config:
+        onlytrans_ens = config['onlytrans_ens']
+    else:
+        onlytrans_ens = False
+
+    if onlytrans_ens == True:
+        transform_vars = [''] * len(target_vars)
+    elif 'transform_vars' in config:
         transform_vars = config['transform_vars']
         if not isinstance(transform_vars, list):
             transform_vars = [transform_vars] * len(target_vars)
