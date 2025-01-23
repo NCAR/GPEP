@@ -53,7 +53,10 @@ probability_thresholds = [0]
 # the below three settings are optional. if not provided, there will be no min/max limit or transformation
 minRange_vars = [0, -100, 1]
 maxRange_vars = [2000, 60, 60]
+
+# (optional) if set onlytrans_ens to True, transformation is not implemented for the regression, and is only implemented for the ensemble estimation
 transform_vars = ['boxcox', '', '']
+onlytrans_ens = true
 
 ############################## dynamic predictors for regression
 # only useful when dynamic_predictor_filelist is valid
