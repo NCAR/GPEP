@@ -342,7 +342,7 @@ def generate_prob_estimates_serial(config, member_range=[]):
     if master_seed >= 0:
         master_seed = master_seed + date0 # ensure different input batches have different seeds
     else:
-        master_seed = np.random.randint(1e9)
+        master_seed = np.random.randint(1e9 - ensemble_start) + ensemble_start
 
     seeds_rf  = generate_random_numbers(master_seed, len(target_vars) * ensemble_number * ntime)
     seeds_rf  = np.reshape(seeds_rf, [len(target_vars), ensemble_number, ntime])
