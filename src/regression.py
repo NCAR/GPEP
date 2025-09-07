@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from multiprocessing import Pool
-from data_processing import data_transformation
+from data_processing import data_transformation, calculate_monthly_cdfs
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import LogisticRegression
 from evaluate import evaluate_allpoint
@@ -204,56 +204,89 @@ def logistic_regression(x, tx, yp):
 
     return b
 
+# ### GMET original linear logistic regression
+# def weight_linear_regression(nearinfo, weightnear, datanear, tarinfo):
+#     # # nearinfo: predictors from neighboring stations
+#     # # [station number, predictor number + 1] array with the first column being ones
+#     # nearinfo = np.zeros([nnum, npred+1])
+#     #
+#     # # weightnear: weight of neighboring stations
+#     # # [station number, station number] array with weights located in the diagonal
+#     # weightnear = np.zeros([nnum, nnum])
+#     # for i in range(nnum):
+#     #     weightnear[i, i] = 123
+#     #
+#     # # tarinfo:  predictors from target stations
+#     # # [predictor number + 1] vector with the first value being one
+#     # tarinfo = np.zeros(npred+1)
+#     #
+#     # # datanear: data from neighboring stations. [station number] vector
+#     # datanear = np.zeros(nnum)
 
-def weight_linear_regression(nearinfo, weightnear, datanear, tarinfo):
-    # # nearinfo: predictors from neighboring stations
-    # # [station number, predictor number + 1] array with the first column being ones
-    # nearinfo = np.zeros([nnum, npred+1])
-    #
-    # # weightnear: weight of neighboring stations
-    # # [station number, station number] array with weights located in the diagonal
-    # weightnear = np.zeros([nnum, nnum])
-    # for i in range(nnum):
-    #     weightnear[i, i] = 123
-    #
-    # # tarinfo:  predictors from target stations
-    # # [predictor number + 1] vector with the first value being one
-    # tarinfo = np.zeros(npred+1)
-    #
-    # # datanear: data from neighboring stations. [station number] vector
-    # datanear = np.zeros(nnum)
+#     # start regression
+#     w_pcp_red = np.diag(np.squeeze(weightnear))
+#     tx_red = np.transpose(nearinfo)
+#     twx_red = np.matmul(tx_red, w_pcp_red)
+#     b = least_squares_ludcmp(nearinfo, datanear, twx_red)
+#     datatar = np.dot(tarinfo, b)
 
-    # start regression
-    w_pcp_red = np.diag(np.squeeze(weightnear))
-    tx_red = np.transpose(nearinfo)
-    twx_red = np.matmul(tx_red, w_pcp_red)
-    b = least_squares_ludcmp(nearinfo, datanear, twx_red)
-    datatar = np.dot(tarinfo, b)
+#     return datatar
 
-    return datatar
+# def weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
+
+#     try:
+#         w_pcp_red = np.diag(np.squeeze(weightnear))
+
+#         # if len(np.unique(datanear)) == 1:
+#         #     poe = datanear[0] # all 0 (no rain) or all 1 (rain everywhere)
+#         # else:
+#         tx_red = np.transpose(nearinfo)
+#         twx_red = np.matmul(tx_red, w_pcp_red)
+#         b = logistic_regression(nearinfo, twx_red, datanear)
+#         if np.all(b == 0) or np.any(np.isnan(b)):
+#             poe = np.dot(weightnear, datanear)
+#         else:
+#             zb = - np.dot(tarinfo, b)
+#             poe = 1 / (1 + np.exp(zb))
+
+#     except:
+#         poe = sklearn_weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo)
+
+#     return poe
+# ### GMET original linear logistic regression
 
 
+# ### sklearn linear and logistic regression
+# def weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
+
+#     try:
+#         poe = sklearn_weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo)
+#     except:
+#         poe = np.nan
+
+#     return poe
+
+# def weight_linear_regression(nearinfo, weightnear, datanear, tarinfo):
+#     model = LinearRegression()
+#     model = model.fit(nearinfo, datanear, sample_weight=weightnear)
+#     datatar = model.predict(tarinfo[np.newaxis, :])
+#     return datatar
+# ### sklearn linear and logistic regression
+
+### statsmodel linear and logistic regression
+import statsmodels.api as sm
 def weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo):
-
     try:
-        w_pcp_red = np.diag(np.squeeze(weightnear))
-
-        # if len(np.unique(datanear)) == 1:
-        #     poe = datanear[0] # all 0 (no rain) or all 1 (rain everywhere)
-        # else:
-        tx_red = np.transpose(nearinfo)
-        twx_red = np.matmul(tx_red, w_pcp_red)
-        b = logistic_regression(nearinfo, twx_red, datanear)
-        if np.all(b == 0) or np.any(np.isnan(b)):
-            poe = np.dot(weightnear, datanear)
-        else:
-            zb = - np.dot(tarinfo, b)
-            poe = 1 / (1 + np.exp(zb))
-
+        model = sm.Logit(datanear, nearinfo, weights=weightnear).fit(disp=0)
+        poe = model.predict(tarinfo) # Returns probability estimates
     except:
         poe = sklearn_weight_logistic_regression(nearinfo, weightnear, datanear, tarinfo)
-
     return poe
+
+def weight_linear_regression(nearinfo, weightnear, datanear, tarinfo):
+    model = sm.WLS(datanear, nearinfo, weights=weightnear).fit()
+    return model.predict(tarinfo[np.newaxis, :])
+### statsmodel linear and logistic regression
 
 def check_predictor_matrix_behavior(nearinfo, weightnear):
     # check to see if the station predictor matrix will be well behaved
@@ -815,7 +848,7 @@ def ML_regression_grid_multiprocessing(stn_data, stn_predictor, tar_predictor, m
 # parallel version of loop regression: independent processes and large memory use if there are many cpus
 
 def init_worker(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag, settings,
-                dynamic_predictors, importmodules):
+                dynamic_predictors, importmodules, maxlimit):
     # Using a dictionary is not strictly necessary. You can also
     # use global variables.
     global mppool_ini_dict
@@ -829,6 +862,7 @@ def init_worker(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_pred
     mppool_ini_dict['probflag']           = probflag
     mppool_ini_dict['settings']           = settings
     mppool_ini_dict['dynamic_predictors'] = dynamic_predictors
+    mppool_ini_dict['maxlimit']           = maxlimit
 
     for im in importmodules:
         if '.' in im:
@@ -852,6 +886,7 @@ def regression_for_blocks(r1, r2, c1, c2):
     probflag           = mppool_ini_dict['probflag']
     settings           = mppool_ini_dict['settings']
     dynamic_predictors = mppool_ini_dict['dynamic_predictors']
+    maxlimit           = mppool_ini_dict['maxlimit']
 
     nstn, ntime = np.shape(stn_data)
     ydata_tar   = np.nan * np.zeros([r2-r1, c2-c1, ntime])
@@ -870,6 +905,7 @@ def regression_for_blocks(r1, r2, c1, c2):
                 xdata_near0 = stn_predictor[sample_nearIndex, :]
                 xdata_g0 = tar_predictor[r, c, :]
 
+
                 # interpolation for every time step
                 for d in range(ntime):
 
@@ -877,22 +913,14 @@ def regression_for_blocks(r1, r2, c1, c2):
                     if len(np.unique(ydata_near)) == 1:  # e.g., for prcp, all zero
                         ydata_tar[r-r1, c-c1, d] = ydata_near[0]
                     else:
-
                         # add dynamic predictors if flag is true and predictors are good
                         xdata_near = xdata_near0
                         xdata_g = xdata_g0
+                        
                         if dynamic_predictors['flag'] == True:
                             xdata_near_add = dynamic_predictors['stn_predictor_dynamic'][:, d, sample_nearIndex].T
                             xdata_g_add = dynamic_predictors['tar_predictor_dynamic'][:, d, r, c]
                             if np.all(~np.isnan(xdata_near_add)) and np.all(~np.isnan(xdata_g_add)):
-
-                                # # unique value check
-                                # uniquenum = np.zeros(xdata_near_add.shape[1])
-                                # for i in range(xdata_near_add.shape[1]):
-                                #     uniquenum[i] = len(np.unique(xdata_near_add[:, i]))
-                                #
-                                # xdata_near_add = xdata_near_add[:, uniquenum > 1]
-                                # xdata_g_add = xdata_g_add[uniquenum > 1]
 
                                 # whether use a dynamic predictor
                                 diff = np.max(xdata_near_add, axis=0) - np.min(xdata_near_add, axis=0)
@@ -931,12 +959,13 @@ def regression_for_blocks(r1, r2, c1, c2):
                         # else:
                         #     sys.exit(f'Unknonwn regression method: {method}')
 
+                        # apply max limit
+                        # ydata_near
+
     return ydata_tar
 
 def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag,
-                                           settings, dynamic_predictors={}, num_processes=4, importmodules=[]):
-#def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight, tar_predictor, method, probflag,
-#                                           settings, dynamic_predictors={}, num_processes=4):
+                                           settings, dynamic_predictors={}, num_processes=4, importmodules=[], maxlimit={}):
     t1 = time.time()
 
     if len(dynamic_predictors) == 0:
@@ -954,7 +983,7 @@ def loop_regression_2Dor3D_multiprocessing(stn_data, stn_predictor, tar_nearInde
 
     with Pool(processes=num_processes, initializer=init_worker, initargs=(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight,
                                                                           tar_predictor, method, probflag, settings, dynamic_predictors,
-                                                                          importmodules)) as pool:
+                                                                          importmodules, maxlimit)) as pool:
     #with Pool(processes=num_processes, initializer=init_worker, initargs=(stn_data, stn_predictor, tar_nearIndex, tar_nearWeight,
     #                                                                      tar_predictor, method, probflag, settings,
     #                                                                      dynamic_predictors)) as pool:
@@ -1058,7 +1087,14 @@ def main_regression(config, target):
     else:
         maxRange_vars = [np.inf] * len(target_vars)
 
-    if 'transform_vars' in config:
+    if 'onlytrans_ens' in config:
+        onlytrans_ens = config['onlytrans_ens']
+    else:
+        onlytrans_ens = False
+
+    if onlytrans_ens == True:
+        transform_vars = [''] * len(target_vars)
+    elif 'transform_vars' in config:
         transform_vars = config['transform_vars']
         if not isinstance(transform_vars, list):
             transform_vars = [transform_vars] * len(target_vars)
@@ -1069,6 +1105,12 @@ def main_regression(config, target):
         transform_settings = config['transform']
     else:
         transform_settings = {}
+
+    # this has not been really implemented yet
+    if 'target_vars_max_constrain' in config:
+        target_vars_max_constrain = config['target_vars_max_constrain']
+    else:
+        target_vars_max_constrain = []
 
     if 'dynamic_predictor_filelist' in config:
         dynamic_predictor_filelist  = config['dynamic_predictor_filelist']
@@ -1247,8 +1289,10 @@ def main_regression(config, target):
             print(f'{var_name_trans} instead of {var_name} will be loaded from the station data file {file_allstn}.')
 
             # adjust max/min limits
-            minRange_vars[vn] = data_transformation(minRange_vars[vn], transform_vars[vn], transform_settings[transform_vars[vn]], 'transform')
-            maxRange_vars[vn] = data_transformation(maxRange_vars[vn], transform_vars[vn], transform_settings[transform_vars[vn]], 'transform')
+            if minRange_vars[vn] != -np.inf:
+                minRange_vars[vn] = data_transformation(minRange_vars[vn], transform_vars[vn], transform_settings[transform_vars[vn]], 'transform')
+            if maxRange_vars[vn] != np.inf:
+                maxRange_vars[vn] = data_transformation(maxRange_vars[vn], transform_vars[vn], transform_settings[transform_vars[vn]], 'transform')
 
         else:
             var_name_trans = ''
@@ -1332,10 +1376,27 @@ def main_regression(config, target):
         # get estimates at station points
         probflag = False  # for continuous variables
         if gridcore_continuous.startswith('LWR:'):
+
+            if var_name in target_vars_max_constrain:
+                print('(Pending) Perform max constraint for ', var_name)
+
+                if len(transform_vars[vn]) > 0:
+                    maxlimit = {'flag': True, 
+                                'method': transform_vars[vn], 
+                                'setting': transform_settings[transform_vars[vn]]
+                               }
+                else:
+                    maxlimit = {'flag': True}
+            else:
+                maxlimit = {'flag': False}
+            
             estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor,
                                                                gridcore_continuous[4:], probflag, sklearn_config[gridcore_continuous_short],
-                                                               predictor_dynamic, num_processes)
+                                                               predictor_dynamic, num_processes, maxlimit=maxlimit)
         else:
+            if var_name in target_vars_max_constrain:
+                print(f'Do not perform max constraint for {var_name} for global regression')
+            
             if target == 'cval':
                 estimates = ML_regression_crossvalidation_multiprocessing(stn_value, stn_predictor, gridcore_continuous, probflag,
                                                                           sklearn_config[gridcore_continuous_short], predictor_dynamic,
@@ -1361,7 +1422,11 @@ def main_regression(config, target):
                 var_name_save = var_name_trans
             else:
                 var_name_save = var_name
-                estimates = data_transformation(estimates, transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
+                if 'ecdf' in var_name_trans:
+                    cdfs = calculate_monthly_cdfs(xr.open_dataset(file_allstn),var_name,transform_settings[transform_vars[vn]])
+                    estimates = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform',times=ds_out['time'].values, cdfs=cdfs)
+                else:   
+                    estimates = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
         else:
             var_name_save = var_name
 
@@ -1370,10 +1435,14 @@ def main_regression(config, target):
         elif estimates.ndim == 2:
             ds_out[var_name_save] = xr.DataArray(estimates, dims=('stn', 'time'))
 
-            # evalution
+            # evaluation
             dtmp1 = ds_stn[var_name].values
             if (len(var_name_trans) > 0) and (backtransform == False):
-                dtmp2 = data_transformation(estimates, transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
+                if 'ecdf' in var_name_trans:
+                    cdfs = calculate_monthly_cdfs(xr.open_dataset(file_allstn),var_name,transform_settings[transform_vars[vn]]) 
+                    dtmp2 = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform',times=ds_out['time'].values, cdfs=cdfs)
+                else:
+                    dtmp2 = data_transformation(estimates,transform_vars[vn], transform_settings[transform_vars[vn]], 'back_transform')
             else:
                 dtmp2 = estimates
 
@@ -1394,7 +1463,6 @@ def main_regression(config, target):
 
             probflag = True
             if gridcore_classification.startswith('LWR:'):
-
                 estimates = loop_regression_2Dor3D_multiprocessing(stn_value, stn_predictor, nearIndex, nearWeight, tar_predictor,
                                                                    gridcore_classification[4:], probflag,
                                                                    sklearn_config[gridcore_continuous_short], predictor_dynamic,
